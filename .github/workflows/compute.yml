@@ -31,10 +31,6 @@ jobs:
           ')
           echo "new_data=$result" >> $GITHUB_OUTPUT
 
-      - name: Compute coalition probabilities
-        if: steps.scrape.outputs.new_data == 'TRUE'
-        run: echo "TODO: Rscript scripts/compute_probabilities.R"
-
       - name: Commit results
         if: steps.scrape.outputs.new_data == 'TRUE'
         run: |
