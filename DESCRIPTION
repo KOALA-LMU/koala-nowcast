@@ -1,0 +1,16 @@
+Package: koala.nowcast
+Title: KOALA Nowcast Pipeline for German Election Polls
+Version: 0.1.0
+Description:
+    Automated nowcast pipeline for German federal and state elections.
+    Scrapes poll data from wahlrecht.de, pools surveys using Bayesian
+    methods, and computes Monte Carlo-based coalition probabilities and
+    seat distributions via the coalitions package.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+    coalitions (>= 0.6.27),
+    dplyr (>= 1.2.1),
+    jsonlite (>= 2.0.0),
+    tidyr,
+    yaml (>= 2.3.10)

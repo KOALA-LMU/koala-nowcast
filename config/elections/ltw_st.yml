@@ -1,0 +1,106 @@
+id: ltw_st
+name: Landtagswahl Sachsen-Anhalt 2026
+hashtag: "#ltwst"
+
+scraper:
+  function: scrape_ltw
+  url: https://www.wahlrecht.de/umfragen/landtage/sachsen-anhalt.htm
+  ind_row_remove: [1, 2]
+
+parliament:
+  seats: 83
+  majority: 42
+  hurdle: 0.05
+  seat_allocation: hare_niemeyer
+
+pooling:
+  period: 14
+  period_extended: 100
+
+parties:
+  - id: cdu
+    label: Union
+    color: "#000000"
+    required: true
+  - id: afd
+    label: AfD
+    color: "#82caff"
+    required: true
+  - id: left
+    label: Linke
+    color: "#ff1493"
+    required: true
+  - id: spd
+    label: SPD
+    color: "#E3000F"
+    required: true
+  - id: greens
+    label: Grüne
+    color: "#46962b"
+    required: false
+  - id: fdp
+    label: FDP
+    color: "#ffed00"
+    required: false
+  - id: fw
+    label: Freie Wähler
+    color: "#005fa3"
+    required: false
+  - id: bsw
+    label: BSW
+    color: "#6d1f99"
+    required: false
+  - id: others
+    label: Sonstige
+    color: "#808080"
+    required: false
+
+pollsters:
+  - allensbach
+  - civey
+  - emnid
+  - forsa
+  - fgw
+  - gms
+  - infratest
+  - insa
+
+coalitions:
+  - parties: [afd]
+    label: "AfD"
+    color: "#82caff"
+  - parties: [afd, cdu]
+    label: "AfD-Union"
+    color: "#82caff"
+  - parties: [afd, left]
+    label: "AfD-Linke"
+    color: "#82caff"
+  - parties: [afd, spd]
+    label: "AfD-SPD"
+    color: "#82caff"
+  - parties: [afd, bsw]
+    label: "AfD-BSW"
+    color: "#82caff"
+  - parties: [cdu, left, spd]
+    label: "Union-Linke-SPD"
+    color: "#000000"
+  - parties: [cdu, left, spd, bsw]
+    label: "Union-Linke-SPD-BSW"
+    color: "#000000"
+  - parties: [cdu, left, spd, greens]
+    label: "Union-Linke-SPD-Grüne"
+    color: "#000000"
+  - parties: [cdu, left, spd, bsw, greens]
+    label: "Union-Linke-SPD-BSW-Grüne"
+    color: "#000000"
+
+analyses:
+  biggest_party:
+    - parties: [cdu, afd]
+      label: "Wer wird stärkste Kraft?"
+  pass_hurdle:
+    parties: [spd, greens, fdp, bsw]
+    label: "Schaffen es die folgenden Parteien in den Landtag?"
+  afd_majority:
+    parties: [afd]
+    label: "Erreicht die AfD eine absolute Mehrheit?"
