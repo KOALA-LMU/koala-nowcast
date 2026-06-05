@@ -1,0 +1,101 @@
+id: ltw_mv
+name: Landtagswahl Mecklenburg-Vorpommern 2026
+hashtag: "#ltwmv"
+
+scraper:
+  function: scrape_ltw
+  url: https://www.wahlrecht.de/umfragen/landtage/mecklenburg-vorpommern.htm
+  ind_row_remove: [1]
+
+parliament:
+  seats: 71
+  majority: 36
+  hurdle: 0.05
+  seat_allocation: hare_niemeyer
+
+pooling:
+  period: 14
+  period_extended: 100
+
+parties:
+  - id: spd
+    label: SPD
+    color: "#E3000F"
+    required: true
+  - id: afd
+    label: AfD
+    color: "#82caff"
+    required: true
+  - id: cdu
+    label: Union
+    color: "#000000"
+    required: true
+  - id: left
+    label: Linke
+    color: "#ff1493"
+    required: false
+  - id: greens
+    label: Grüne
+    color: "#46962b"
+    required: false
+  - id: fdp
+    label: FDP
+    color: "#ffed00"
+    required: false
+  - id: bsw
+    label: BSW
+    color: "#6d1f99"
+    required: false
+  - id: others
+    label: Sonstige
+    color: "#808080"
+    required: false
+
+pollsters:
+  - allensbach
+  - emnid
+  - forsa
+  - fgw
+  - gms
+  - infratest
+  - insa
+
+coalitions:
+  - parties: [afd]
+    label: "AfD"
+    color: "#82caff"
+  - parties: [afd, cdu]
+    label: "AfD-Union"
+    color: "#82caff"
+  - parties: [afd, spd]
+    label: "AfD-SPD"
+    color: "#82caff"
+  - parties: [afd, left]
+    label: "AfD-Linke"
+    color: "#82caff"
+  - parties: [afd, bsw]
+    label: "AfD-BSW"
+    color: "#82caff"
+  - parties: [spd, cdu]
+    label: "SPD-Union"
+    color: "#E3000F"
+  - parties: [spd, cdu, left]
+    label: "SPD-Union-Linke"
+    color: "#E3000F"
+  - parties: [spd, cdu, greens]
+    label: "SPD-Union-Grüne"
+    color: "#E3000F"
+  - parties: [spd, cdu, bsw]
+    label: "SPD-Union-BSW"
+    color: "#E3000F"
+  - parties: [spd, left, greens]
+    label: "SPD-Linke-Grüne"
+    color: "#E3000F"
+
+analyses:
+  biggest_party:
+    - parties: [spd, afd]
+      label: "Wer wird stärkste Kraft?"
+  pass_hurdle:
+    parties: [greens, fdp, bsw]
+    label: "Schaffen es die folgenden Parteien in den Landtag?"
