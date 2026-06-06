@@ -127,9 +127,8 @@ compute_pooled <- function(raw, cfg) {
   # Reconstruct nested format expected by pool_surveys()
   surveys_nested <- raw %>%
     filter(pollster != "pooled") %>%
-    nest(data = c(party, percent, votes)) %>%
-    nest(surveys = c(date, start, end, respondents, data)) %>%
-    rename(survey = surveys)
+    nest(survey = c(party, percent, votes)) %>%
+    nest(surveys = c(date, start, end, respondents, survey))
 
   # Pool for each date a raw poll was published
   dates <- raw %>%
