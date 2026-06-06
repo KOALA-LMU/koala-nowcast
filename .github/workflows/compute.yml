@@ -33,11 +33,11 @@ jobs:
           ')
           echo "new_data=$result" >> $GITHUB_OUTPUT
 
-      - name: Commit results
+      - name: Commit updated polls and pooled data
         if: steps.scrape.outputs.new_data == 'TRUE'
         run: |
           git config user.name "KOALA Bot"
           git config user.email "koala-bot@users.noreply.github.com"
-          git add data/
-          git diff --staged --quiet || git commit -m "chore: update poll data and results $(date -I)"
+          git add data/surveys/
+          git diff --staged --quiet || git commit -m "chore: scrape and pool polls $(date -I)"
           git push

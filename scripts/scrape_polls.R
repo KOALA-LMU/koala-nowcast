@@ -80,16 +80,22 @@ scrape_election <- function(config_path, oldest_date = as.Date("2025-01-01")) {
     new_rows <- fresh
   }
 
-  if (nrow(new_rows) == 0) {
+  has_new_raw    <- nrow(new_rows) > 0
+  has_no_pooled  <- is.null(existing) || !any(existing$pollster == "pooled")
+
+  if (!has_new_raw && !has_no_pooled) {
     message("  No new polls.\n")
     return(invisible(FALSE))
   }
 
-  message(sprintf("  %d new poll(s) found\n", nrow(new_rows)))
+  if (has_new_raw)
+    message(sprintf("  %d new poll(s) found\n", nrow(new_rows)))
+  if (has_no_pooled)
+    message("  No pooled data found, computing pooled estimates\n")
 
   # Merge existing raw polls with new rows
   raw_updated <- bind_rows(
-    existing %>% filter(pollster != "pooled"),
+    if (!is.null(existing)) existing %>% filter(pollster != "pooled") else NULL,
     new_rows
   ) %>% arrange(desc(date))
 
@@ -98,8 +104,11 @@ scrape_election <- function(config_path, oldest_date = as.Date("2025-01-01")) {
 
   # Drop old pooled rows for recomputed dates, replace with fresh ones
   recompute_dates <- unique(pooled_updated$date)
-  existing_pooled <- existing %>%
-    filter(pollster == "pooled", !date %in% recompute_dates)
+  existing_pooled <- if (!is.null(existing)) {
+    existing %>% filter(pollster == "pooled", !date %in% recompute_dates)
+  } else {
+    NULL
+  }
 
   updated <- bind_rows(raw_updated, existing_pooled, pooled_updated) %>%
     arrange(desc(date), pollster)
