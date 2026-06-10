@@ -1,0 +1,8361 @@
+[
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...1"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 5.78,
+    "log.odds": -2.7912,
+    "_row": "2...2"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...3"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...4"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...5"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...6"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 94.22,
+    "log.odds": 2.7912,
+    "_row": "7...7"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "8...8"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...9"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...10"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...11"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 94.22,
+    "log.odds": 2.7912,
+    "_row": "12...12"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 92.1,
+    "log.odds": 2.456,
+    "_row": "13...13"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 8.93,
+    "log.odds": -2.3222,
+    "_row": "14...14"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 9.04,
+    "log.odds": -2.3088,
+    "_row": "15...15"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...16"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...17"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...18"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...19"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...20"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...21"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...22"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...23"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...24"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...25"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 75.02,
+    "log.odds": 1.0997,
+    "_row": "26...26"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.56,
+    "log.odds": -5.1794,
+    "_row": "27...27"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 0.72,
+    "log.odds": -4.9264,
+    "_row": "28...28"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...29"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "30...30"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...31"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "32...32"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "33...33"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "34...34"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 1.34,
+    "log.odds": -4.299,
+    "_row": "35...35"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 1.5,
+    "log.odds": -4.1846,
+    "_row": "36...36"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 1.29,
+    "log.odds": -4.3375,
+    "_row": "37...37"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...38"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...39"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...40"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...41"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...42"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...43"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...44"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...45"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...46"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...47"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 10.11,
+    "log.odds": -2.1851,
+    "_row": "48...48"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 10.21,
+    "log.odds": -2.1741,
+    "_row": "49...49"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0.81,
+    "log.odds": -4.8078,
+    "_row": "50...50"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "51...51"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...52"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...53"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...54"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...55"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...56"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...57"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...58"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...59"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...60"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.09,
+    "log.odds": -7.0122,
+    "_row": "61...61"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...62"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...63"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...64"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0,
+    "_row": "2...65"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...66"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...67"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...68"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...69"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 100,
+    "_row": "7...70"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.07,
+    "log.odds": -7.2637,
+    "_row": "8...71"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...72"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...73"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...74"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 100,
+    "_row": "12...75"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 50.38,
+    "log.odds": 0.0152,
+    "_row": "13...76"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "14...77"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 24.15,
+    "log.odds": -1.1445,
+    "_row": "15...78"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...79"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...80"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...81"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...82"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...83"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...84"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...85"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...86"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...87"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...88"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 75.46,
+    "log.odds": 1.1233,
+    "_row": "26...89"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "27...90"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 49.2,
+    "log.odds": -0.032,
+    "_row": "28...91"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...92"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "30...93"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...94"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "32...95"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "33...96"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "34...97"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.35,
+    "log.odds": -5.6515,
+    "_row": "35...98"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 46.25,
+    "log.odds": -0.1503,
+    "_row": "36...99"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0.32,
+    "log.odds": -5.7414,
+    "_row": "37...100"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...101"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...102"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...103"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...104"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...105"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...106"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...107"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...108"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...109"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...110"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0.32,
+    "log.odds": -5.7414,
+    "_row": "48...111"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 21.18,
+    "log.odds": -1.3141,
+    "_row": "49...112"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0.35,
+    "log.odds": -5.6515,
+    "_row": "50...113"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "51...114"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...115"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...116"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...117"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "55...118"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...119"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...120"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...121"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...122"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...123"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "61...124"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...125"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...126"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...127"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 25.88,
+    "log.odds": -1.0522,
+    "_row": "2...128"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...129"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...130"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...131"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...132"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 74.12,
+    "log.odds": 1.0522,
+    "_row": "7...133"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.14,
+    "log.odds": -6.5699,
+    "_row": "8...134"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...135"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...136"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...137"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 74.12,
+    "log.odds": 1.0522,
+    "_row": "12...138"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 71.08,
+    "log.odds": 0.8993,
+    "_row": "13...139"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 14.7,
+    "log.odds": -1.7583,
+    "_row": "14...140"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 14.76,
+    "log.odds": -1.7535,
+    "_row": "15...141"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...142"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...143"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...144"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...145"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...146"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...147"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...148"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...149"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...150"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...151"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 43.98,
+    "log.odds": -0.242,
+    "_row": "26...152"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.88,
+    "log.odds": -4.7242,
+    "_row": "27...153"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 0.78,
+    "log.odds": -4.8458,
+    "_row": "28...154"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...155"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "30...156"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...157"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "32...158"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "33...159"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "34...160"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 1.45,
+    "log.odds": -4.219,
+    "_row": "35...161"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 1.36,
+    "log.odds": -4.284,
+    "_row": "36...162"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 1.52,
+    "log.odds": -4.1711,
+    "_row": "37...163"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...164"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...165"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...166"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...167"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...168"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...169"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...170"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...171"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...172"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...173"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 14.76,
+    "log.odds": -1.7535,
+    "_row": "48...174"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 14.86,
+    "log.odds": -1.7456,
+    "_row": "49...175"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 1.25,
+    "log.odds": -4.3694,
+    "_row": "50...176"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "51...177"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...178"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...179"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...180"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...181"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...182"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...183"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...184"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...185"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...186"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.78,
+    "log.odds": -4.8458,
+    "_row": "61...187"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...188"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...189"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...190"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0.71,
+    "log.odds": -4.9405,
+    "_row": "2...191"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...192"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...193"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...194"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...195"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 99.29,
+    "log.odds": 4.9405,
+    "_row": "7...196"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.8,
+    "log.odds": -4.8203,
+    "_row": "8...197"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...198"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...199"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...200"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 99.25,
+    "log.odds": 4.8853,
+    "_row": "12...201"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 57.03,
+    "log.odds": 0.2831,
+    "_row": "13...202"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 3.28,
+    "log.odds": -3.384,
+    "_row": "14...203"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 25.46,
+    "log.odds": -1.0742,
+    "_row": "15...204"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...205"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...206"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...207"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...208"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...209"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...210"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...211"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...212"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...213"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...214"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 57.11,
+    "log.odds": 0.2863,
+    "_row": "26...215"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 3.45,
+    "log.odds": -3.3317,
+    "_row": "27...216"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 25.56,
+    "log.odds": -1.069,
+    "_row": "28...217"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...218"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "30...219"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...220"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "32...221"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "33...222"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "34...223"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 15.37,
+    "log.odds": -1.7059,
+    "_row": "35...224"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 33.75,
+    "log.odds": -0.6745,
+    "_row": "36...225"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 13.08,
+    "log.odds": -1.8939,
+    "_row": "37...226"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...227"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...228"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...229"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...230"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...231"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...232"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...233"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...234"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...235"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...236"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 15.37,
+    "log.odds": -1.7059,
+    "_row": "48...237"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 33.85,
+    "log.odds": -0.67,
+    "_row": "49...238"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 12.89,
+    "log.odds": -1.9107,
+    "_row": "50...239"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "51...240"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...241"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...242"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...243"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.2,
+    "log.odds": -6.2126,
+    "_row": "55...244"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...245"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...246"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...247"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...248"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...249"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.23,
+    "log.odds": -6.0725,
+    "_row": "61...250"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...251"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...252"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...253"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0.06,
+    "log.odds": -7.418,
+    "_row": "2...254"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...255"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...256"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...257"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...258"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 99.94,
+    "log.odds": 7.418,
+    "_row": "7...259"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0,
+    "_row": "8...260"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...261"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...262"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...263"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 99.72,
+    "log.odds": 5.8753,
+    "_row": "12...264"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 88.81,
+    "log.odds": 2.0715,
+    "_row": "13...265"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0.05,
+    "log.odds": -7.6004,
+    "_row": "14...266"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 47.6,
+    "log.odds": -0.0961,
+    "_row": "15...267"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...268"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...269"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...270"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...271"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...272"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...273"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...274"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...275"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...276"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...277"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 51.55,
+    "log.odds": 0.062,
+    "_row": "26...278"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "27...279"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 10.62,
+    "log.odds": -2.1302,
+    "_row": "28...280"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...281"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0.15,
+    "log.odds": -6.5008,
+    "_row": "30...282"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...283"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0.21,
+    "log.odds": -6.1637,
+    "_row": "32...284"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0.07,
+    "log.odds": -7.2637,
+    "_row": "33...285"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0.22,
+    "log.odds": -6.1171,
+    "_row": "34...286"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.51,
+    "log.odds": -5.2734,
+    "_row": "35...287"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 10.36,
+    "log.odds": -2.1578,
+    "_row": "36...288"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0.75,
+    "log.odds": -4.8853,
+    "_row": "37...289"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...290"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...291"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...292"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...293"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...294"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...295"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...296"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...297"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...298"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...299"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0.79,
+    "log.odds": -4.833,
+    "_row": "48...300"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 47.57,
+    "log.odds": -0.0973,
+    "_row": "49...301"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0.51,
+    "log.odds": -5.2734,
+    "_row": "50...302"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.07,
+    "log.odds": -7.2637,
+    "_row": "51...303"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...304"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...305"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...306"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...307"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...308"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...309"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...310"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...311"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...312"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "61...313"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...314"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...315"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...316"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0.99,
+    "log.odds": -4.6053,
+    "_row": "2...317"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...318"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...319"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...320"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...321"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 99.01,
+    "log.odds": 4.6053,
+    "_row": "7...322"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.02,
+    "log.odds": -8.517,
+    "_row": "8...323"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...324"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...325"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...326"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 99,
+    "log.odds": 4.5951,
+    "_row": "12...327"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 79.26,
+    "log.odds": 1.3407,
+    "_row": "13...328"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0.24,
+    "log.odds": -6.0299,
+    "_row": "14...329"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 80,
+    "log.odds": 1.3863,
+    "_row": "15...330"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...331"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...332"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...333"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...334"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...335"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...336"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...337"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...338"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...339"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...340"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 18.36,
+    "log.odds": -1.4921,
+    "_row": "26...341"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "27...342"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 19.05,
+    "log.odds": -1.4468,
+    "_row": "28...343"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...344"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "30...345"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...346"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "32...347"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "33...348"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "34...349"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.61,
+    "log.odds": -5.0933,
+    "_row": "35...350"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 9.69,
+    "log.odds": -2.2322,
+    "_row": "36...351"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0.57,
+    "log.odds": -5.1616,
+    "_row": "37...352"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...353"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...354"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...355"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...356"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...357"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...358"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...359"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...360"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...361"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...362"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0.62,
+    "log.odds": -5.077,
+    "_row": "48...363"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 70.55,
+    "log.odds": 0.8736,
+    "_row": "49...364"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0.68,
+    "log.odds": -4.984,
+    "_row": "50...365"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "51...366"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...367"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...368"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...369"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...370"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...371"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...372"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...373"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...374"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...375"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.12,
+    "log.odds": -6.7242,
+    "_row": "61...376"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...377"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...378"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...379"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0,
+    "_row": "2...380"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...381"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...382"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...383"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...384"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 100,
+    "_row": "7...385"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 48.58,
+    "log.odds": -0.0568,
+    "_row": "8...386"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0.48,
+    "log.odds": -5.3343,
+    "_row": "9...387"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...388"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 3.06,
+    "log.odds": -3.4557,
+    "_row": "11...389"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 0.63,
+    "log.odds": -5.0609,
+    "_row": "12...390"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "13...391"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "14...392"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "15...393"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...394"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...395"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...396"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...397"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...398"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...399"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...400"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...401"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...402"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...403"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 51.41,
+    "log.odds": 0.0564,
+    "_row": "26...404"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.7,
+    "log.odds": -4.9548,
+    "_row": "27...405"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 51.19,
+    "log.odds": 0.0476,
+    "_row": "28...406"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0.15,
+    "log.odds": -6.5008,
+    "_row": "29...407"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 95.84,
+    "log.odds": 3.1372,
+    "_row": "30...408"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0.3,
+    "log.odds": -5.8061,
+    "_row": "31...409"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 96.01,
+    "log.odds": 3.1807,
+    "_row": "32...410"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0.19,
+    "log.odds": -6.264,
+    "_row": "33...411"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 98.74,
+    "log.odds": 4.3614,
+    "_row": "34...412"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "35...413"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 50.72,
+    "log.odds": 0.0288,
+    "_row": "36...414"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "37...415"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...416"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...417"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...418"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...419"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...420"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...421"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...422"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...423"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...424"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...425"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "48...426"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "49...427"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "50...428"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.18,
+    "log.odds": -6.3182,
+    "_row": "51...429"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0.29,
+    "log.odds": -5.8401,
+    "_row": "52...430"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0.3,
+    "log.odds": -5.8061,
+    "_row": "53...431"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0.15,
+    "log.odds": -6.5008,
+    "_row": "54...432"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.7,
+    "log.odds": -4.9548,
+    "_row": "55...433"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...434"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...435"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...436"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...437"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...438"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "61...439"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...440"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...441"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...442"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0,
+    "_row": "2...443"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...444"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...445"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...446"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...447"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 100,
+    "_row": "7...448"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0,
+    "_row": "8...449"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 4.16,
+    "log.odds": -3.1372,
+    "_row": "9...450"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...451"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 92.6,
+    "log.odds": 2.5268,
+    "_row": "11...452"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 0,
+    "_row": "12...453"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 1.14,
+    "log.odds": -4.4627,
+    "_row": "13...454"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "14...455"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 85.33,
+    "log.odds": 1.7607,
+    "_row": "15...456"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...457"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...458"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...459"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...460"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...461"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...462"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...463"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...464"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...465"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...466"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 9.87,
+    "log.odds": -2.2118,
+    "_row": "26...467"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "27...468"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 6.09,
+    "log.odds": -2.7357,
+    "_row": "28...469"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0.43,
+    "log.odds": -5.4448,
+    "_row": "29...470"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 7.4,
+    "log.odds": -2.5268,
+    "_row": "30...471"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0.35,
+    "log.odds": -5.6515,
+    "_row": "31...472"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 5.91,
+    "log.odds": -2.7676,
+    "_row": "32...473"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "33...474"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 10.08,
+    "log.odds": -2.1884,
+    "_row": "34...475"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.17,
+    "log.odds": -6.3754,
+    "_row": "35...476"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 14.67,
+    "log.odds": -1.7607,
+    "_row": "36...477"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0.64,
+    "log.odds": -5.045,
+    "_row": "37...478"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...479"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...480"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...481"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...482"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...483"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...484"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...485"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...486"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...487"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...488"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0.21,
+    "log.odds": -6.1637,
+    "_row": "48...489"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "49...490"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "50...491"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "51...492"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0.18,
+    "log.odds": -6.3182,
+    "_row": "52...493"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...494"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...495"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...496"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...497"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...498"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...499"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...500"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...501"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "61...502"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...503"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...504"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...505"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 11.27,
+    "log.odds": -2.0635,
+    "_row": "2...506"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...507"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...508"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...509"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...510"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 88.73,
+    "log.odds": 2.0635,
+    "_row": "7...511"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "8...512"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...513"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...514"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...515"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 88.73,
+    "log.odds": 2.0635,
+    "_row": "12...516"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 87.45,
+    "log.odds": 1.9413,
+    "_row": "13...517"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 10.59,
+    "log.odds": -2.1333,
+    "_row": "14...518"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 10.2,
+    "log.odds": -2.1752,
+    "_row": "15...519"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...520"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...521"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...522"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...523"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...524"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...525"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...526"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...527"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...528"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...529"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 66.79,
+    "log.odds": 0.6987,
+    "_row": "26...530"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.29,
+    "log.odds": -5.8401,
+    "_row": "27...531"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 0.26,
+    "log.odds": -5.9496,
+    "_row": "28...532"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...533"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "30...534"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...535"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "32...536"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "33...537"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "34...538"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.97,
+    "log.odds": -4.6259,
+    "_row": "35...539"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 0.94,
+    "log.odds": -4.6576,
+    "_row": "36...540"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 1.28,
+    "log.odds": -4.3454,
+    "_row": "37...541"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...542"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...543"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...544"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...545"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...546"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...547"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...548"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...549"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...550"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...551"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 11.7,
+    "log.odds": -2.0212,
+    "_row": "48...552"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 11.31,
+    "log.odds": -2.0595,
+    "_row": "49...553"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0.72,
+    "log.odds": -4.9264,
+    "_row": "50...554"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "51...555"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...556"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...557"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...558"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...559"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...560"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...561"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...562"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...563"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...564"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.14,
+    "log.odds": -6.5699,
+    "_row": "61...565"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...566"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...567"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...568"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 3.28,
+    "log.odds": -3.384,
+    "_row": "2...569"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...570"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...571"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...572"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...573"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 96.72,
+    "log.odds": 3.384,
+    "_row": "7...574"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.12,
+    "log.odds": -6.7242,
+    "_row": "8...575"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...576"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...577"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...578"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 96.72,
+    "log.odds": 3.384,
+    "_row": "12...579"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 89.32,
+    "log.odds": 2.1239,
+    "_row": "13...580"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 7.74,
+    "log.odds": -2.4782,
+    "_row": "14...581"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 15.42,
+    "log.odds": -1.702,
+    "_row": "15...582"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...583"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...584"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...585"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...586"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...587"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...588"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...589"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...590"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...591"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...592"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 69.75,
+    "log.odds": 0.8354,
+    "_row": "26...593"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 1.29,
+    "log.odds": -4.3375,
+    "_row": "27...594"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 2.95,
+    "log.odds": -3.4934,
+    "_row": "28...595"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...596"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "30...597"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...598"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "32...599"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "33...600"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "34...601"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 4.25,
+    "log.odds": -3.1148,
+    "_row": "35...602"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 5.8,
+    "log.odds": -2.7876,
+    "_row": "36...603"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 3.85,
+    "log.odds": -3.2178,
+    "_row": "37...604"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...605"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...606"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...607"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...608"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...609"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...610"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...611"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...612"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...613"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...614"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 11.36,
+    "log.odds": -2.0545,
+    "_row": "48...615"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 18.94,
+    "log.odds": -1.4539,
+    "_row": "49...616"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 3.04,
+    "log.odds": -3.4624,
+    "_row": "50...617"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "51...618"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...619"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...620"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...621"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...622"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...623"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...624"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...625"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...626"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...627"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.15,
+    "log.odds": -6.5008,
+    "_row": "61...628"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...629"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...630"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...631"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0.8,
+    "log.odds": -4.8203,
+    "_row": "2...632"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...633"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...634"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...635"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...636"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 99.2,
+    "log.odds": 4.8203,
+    "_row": "7...637"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.73,
+    "log.odds": -4.9126,
+    "_row": "8...638"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...639"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...640"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...641"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 99.17,
+    "log.odds": 4.7832,
+    "_row": "12...642"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 56.8,
+    "log.odds": 0.2737,
+    "_row": "13...643"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 3.14,
+    "log.odds": -3.429,
+    "_row": "14...644"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 24.85,
+    "log.odds": -1.1066,
+    "_row": "15...645"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...646"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...647"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...648"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...649"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...650"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...651"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...652"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...653"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...654"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...655"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 57.57,
+    "log.odds": 0.3051,
+    "_row": "26...656"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 3.37,
+    "log.odds": -3.356,
+    "_row": "27...657"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 25.41,
+    "log.odds": -1.0769,
+    "_row": "28...658"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...659"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "30...660"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...661"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "32...662"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "33...663"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "34...664"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 15.69,
+    "log.odds": -1.6815,
+    "_row": "35...665"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 33.95,
+    "log.odds": -0.6655,
+    "_row": "36...666"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 13.28,
+    "log.odds": -1.8764,
+    "_row": "37...667"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...668"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...669"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...670"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...671"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...672"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...673"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...674"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...675"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...676"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...677"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 15.48,
+    "log.odds": -1.6974,
+    "_row": "48...678"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 33.45,
+    "log.odds": -0.6879,
+    "_row": "49...679"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 13.37,
+    "log.odds": -1.8686,
+    "_row": "50...680"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "51...681"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...682"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...683"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...684"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.27,
+    "log.odds": -5.9118,
+    "_row": "55...685"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...686"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...687"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...688"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...689"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...690"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.14,
+    "log.odds": -6.5699,
+    "_row": "61...691"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...692"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...693"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...694"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0.12,
+    "log.odds": -6.7242,
+    "_row": "2...695"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...696"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...697"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...698"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...699"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 99.88,
+    "log.odds": 6.7242,
+    "_row": "7...700"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0,
+    "_row": "8...701"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...702"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...703"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...704"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 99.81,
+    "log.odds": 6.264,
+    "_row": "12...705"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 87.74,
+    "log.odds": 1.968,
+    "_row": "13...706"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "14...707"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 47.3,
+    "log.odds": -0.1081,
+    "_row": "15...708"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...709"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...710"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...711"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...712"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...713"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...714"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...715"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...716"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...717"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...718"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 51.79,
+    "log.odds": 0.0716,
+    "_row": "26...719"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "27...720"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 11.55,
+    "log.odds": -2.0358,
+    "_row": "28...721"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...722"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "30...723"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...724"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0.06,
+    "log.odds": -7.418,
+    "_row": "32...725"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "33...726"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0.07,
+    "log.odds": -7.2637,
+    "_row": "34...727"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.59,
+    "log.odds": -5.1269,
+    "_row": "35...728"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 11.16,
+    "log.odds": -2.0745,
+    "_row": "36...729"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0.78,
+    "log.odds": -4.8458,
+    "_row": "37...730"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...731"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...732"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...733"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...734"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...735"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...736"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...737"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...738"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...739"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...740"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0.79,
+    "log.odds": -4.833,
+    "_row": "48...741"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 47.11,
+    "log.odds": -0.1157,
+    "_row": "49...742"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0.59,
+    "log.odds": -5.1269,
+    "_row": "50...743"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "51...744"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...745"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...746"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...747"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...748"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...749"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...750"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...751"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...752"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...753"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "61...754"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...755"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...756"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...757"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0.23,
+    "log.odds": -6.0725,
+    "_row": "2...758"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...759"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...760"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...761"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...762"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 99.77,
+    "log.odds": 6.0725,
+    "_row": "7...763"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "8...764"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...765"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...766"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...767"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 99.73,
+    "log.odds": 5.9118,
+    "_row": "12...768"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 71.38,
+    "log.odds": 0.9139,
+    "_row": "13...769"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0.07,
+    "log.odds": -7.2637,
+    "_row": "14...770"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 62.35,
+    "log.odds": 0.5044,
+    "_row": "15...771"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...772"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...773"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...774"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...775"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...776"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...777"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...778"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...779"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...780"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...781"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 36.75,
+    "log.odds": -0.543,
+    "_row": "26...782"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.03,
+    "log.odds": -8.1114,
+    "_row": "27...783"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 27.73,
+    "log.odds": -0.9579,
+    "_row": "28...784"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...785"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "30...786"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...787"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "32...788"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "33...789"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "34...790"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.62,
+    "log.odds": -5.077,
+    "_row": "35...791"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 20.05,
+    "log.odds": -1.3832,
+    "_row": "36...792"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0.6,
+    "log.odds": -5.11,
+    "_row": "37...793"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...794"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...795"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...796"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...797"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...798"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...799"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...800"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...801"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...802"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...803"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0.63,
+    "log.odds": -5.0609,
+    "_row": "48...804"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 54.69,
+    "log.odds": 0.1882,
+    "_row": "49...805"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0.61,
+    "log.odds": -5.0933,
+    "_row": "50...806"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.04,
+    "log.odds": -7.8236,
+    "_row": "51...807"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...808"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...809"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...810"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...811"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...812"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...813"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...814"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...815"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...816"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0.02,
+    "log.odds": -8.517,
+    "_row": "61...817"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...818"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...819"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...820"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0,
+    "_row": "2...821"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...822"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...823"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...824"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...825"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 100,
+    "_row": "7...826"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0.5,
+    "log.odds": -5.2933,
+    "_row": "8...827"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "9...828"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...829"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "11...830"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 97.25,
+    "log.odds": 3.5657,
+    "_row": "12...831"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 6.09,
+    "log.odds": -2.7357,
+    "_row": "13...832"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "14...833"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 3.21,
+    "log.odds": -3.4063,
+    "_row": "15...834"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...835"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...836"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...837"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...838"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...839"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...840"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...841"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...842"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...843"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...844"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 96.18,
+    "log.odds": 3.226,
+    "_row": "26...845"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.08,
+    "log.odds": -7.1301,
+    "_row": "27...846"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 93.17,
+    "log.odds": 2.6131,
+    "_row": "28...847"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "29...848"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 2.57,
+    "log.odds": -3.6352,
+    "_row": "30...849"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "31...850"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 2.75,
+    "log.odds": -3.5657,
+    "_row": "32...851"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0.18,
+    "log.odds": -6.3182,
+    "_row": "33...852"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 2.75,
+    "log.odds": -3.5657,
+    "_row": "34...853"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.24,
+    "log.odds": -6.0299,
+    "_row": "35...854"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 91.5,
+    "log.odds": 2.3763,
+    "_row": "36...855"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0.11,
+    "log.odds": -6.8113,
+    "_row": "37...856"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...857"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...858"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...859"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...860"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...861"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...862"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...863"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...864"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...865"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...866"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0.11,
+    "log.odds": -6.8113,
+    "_row": "48...867"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 1.46,
+    "log.odds": -4.212,
+    "_row": "49...868"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0.21,
+    "log.odds": -6.1637,
+    "_row": "50...869"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.18,
+    "log.odds": -6.3182,
+    "_row": "51...870"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "52...871"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...872"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "54...873"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.05,
+    "log.odds": -7.6004,
+    "_row": "55...874"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...875"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...876"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...877"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...878"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...879"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "61...880"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...881"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...882"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...883"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0,
+    "_row": "2...884"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...885"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...886"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...887"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...888"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 100,
+    "_row": "7...889"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 48.17,
+    "log.odds": -0.0732,
+    "_row": "8...890"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 0.7,
+    "log.odds": -4.9548,
+    "_row": "9...891"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...892"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 2.87,
+    "log.odds": -3.5217,
+    "_row": "11...893"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 0.65,
+    "log.odds": -5.0294,
+    "_row": "12...894"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "13...895"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "14...896"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "15...897"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...898"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...899"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...900"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...901"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...902"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...903"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...904"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...905"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...906"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...907"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 51.79,
+    "log.odds": 0.0716,
+    "_row": "26...908"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0.8,
+    "log.odds": -4.8203,
+    "_row": "27...909"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 51.66,
+    "log.odds": 0.0664,
+    "_row": "28...910"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0.2,
+    "log.odds": -6.2126,
+    "_row": "29...911"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 95.89,
+    "log.odds": 3.1498,
+    "_row": "30...912"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0.35,
+    "log.odds": -5.6515,
+    "_row": "31...913"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 96.13,
+    "log.odds": 3.2124,
+    "_row": "32...914"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0.2,
+    "log.odds": -6.2126,
+    "_row": "33...915"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 98.45,
+    "log.odds": 4.1513,
+    "_row": "34...916"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "35...917"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 51.03,
+    "log.odds": 0.0412,
+    "_row": "36...918"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "37...919"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...920"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...921"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...922"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...923"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...924"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...925"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...926"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...927"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...928"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...929"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "48...930"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "49...931"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "50...932"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.2,
+    "log.odds": -6.2126,
+    "_row": "51...933"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0.35,
+    "log.odds": -5.6515,
+    "_row": "52...934"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0.5,
+    "log.odds": -5.2933,
+    "_row": "53...935"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0.2,
+    "log.odds": -6.2126,
+    "_row": "54...936"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0.8,
+    "log.odds": -4.8203,
+    "_row": "55...937"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...938"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...939"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...940"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...941"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...942"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "61...943"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...944"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...945"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu",
+    "size": 1,
+    "prob": 0,
+    "_row": "1...946"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd",
+    "size": 1,
+    "prob": 0,
+    "_row": "2...947"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "left",
+    "size": 1,
+    "prob": 0,
+    "_row": "3...948"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "spd",
+    "size": 1,
+    "prob": 0,
+    "_row": "4...949"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "greens",
+    "size": 1,
+    "prob": 0,
+    "_row": "5...950"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "bsw",
+    "size": 1,
+    "prob": 0,
+    "_row": "6...951"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd",
+    "size": 2,
+    "prob": 100,
+    "_row": "7...952"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|left",
+    "size": 2,
+    "prob": 0,
+    "_row": "8...953"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|spd",
+    "size": 2,
+    "prob": 4.33,
+    "log.odds": -3.0953,
+    "_row": "9...954"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "10...955"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|bsw",
+    "size": 2,
+    "prob": 93.43,
+    "log.odds": 2.6547,
+    "_row": "11...956"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|left",
+    "size": 2,
+    "prob": 0,
+    "_row": "12...957"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|spd",
+    "size": 2,
+    "prob": 0.76,
+    "log.odds": -4.872,
+    "_row": "13...958"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "14...959"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|bsw",
+    "size": 2,
+    "prob": 84.96,
+    "log.odds": 1.7315,
+    "_row": "15...960"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "left|spd",
+    "size": 2,
+    "prob": 0,
+    "_row": "16...961"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "left|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "17...962"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "left|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "18...963"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "spd|greens",
+    "size": 2,
+    "prob": 0,
+    "_row": "19...964"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "spd|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "20...965"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "greens|bsw",
+    "size": 2,
+    "prob": 0,
+    "_row": "21...966"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left",
+    "size": 3,
+    "prob": 0,
+    "_row": "22...967"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|spd",
+    "size": 3,
+    "prob": 0,
+    "_row": "23...968"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "24...969"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "25...970"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|spd",
+    "size": 3,
+    "prob": 10.02,
+    "log.odds": -2.195,
+    "_row": "26...971"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "27...972"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|bsw",
+    "size": 3,
+    "prob": 5.64,
+    "log.odds": -2.8172,
+    "_row": "28...973"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|spd|greens",
+    "size": 3,
+    "prob": 0.46,
+    "log.odds": -5.3771,
+    "_row": "29...974"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|spd|bsw",
+    "size": 3,
+    "prob": 6.57,
+    "log.odds": -2.6547,
+    "_row": "30...975"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|greens|bsw",
+    "size": 3,
+    "prob": 0.35,
+    "log.odds": -5.6515,
+    "_row": "31...976"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|left|spd",
+    "size": 3,
+    "prob": 5.46,
+    "log.odds": -2.8516,
+    "_row": "32...977"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|left|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "33...978"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|left|bsw",
+    "size": 3,
+    "prob": 10.25,
+    "log.odds": -2.1698,
+    "_row": "34...979"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|spd|greens",
+    "size": 3,
+    "prob": 0.17,
+    "log.odds": -6.3754,
+    "_row": "35...980"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|spd|bsw",
+    "size": 3,
+    "prob": 15.04,
+    "log.odds": -1.7315,
+    "_row": "36...981"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|greens|bsw",
+    "size": 3,
+    "prob": 0.69,
+    "log.odds": -4.9693,
+    "_row": "37...982"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "left|spd|greens",
+    "size": 3,
+    "prob": 0,
+    "_row": "38...983"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "left|spd|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "39...984"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "left|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "40...985"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "spd|greens|bsw",
+    "size": 3,
+    "prob": 0,
+    "_row": "41...986"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|spd",
+    "size": 4,
+    "prob": 0,
+    "_row": "42...987"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "43...988"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "44...989"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|spd|greens",
+    "size": 4,
+    "prob": 0,
+    "_row": "45...990"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "46...991"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "47...992"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|spd|greens",
+    "size": 4,
+    "prob": 0.24,
+    "log.odds": -6.0299,
+    "_row": "48...993"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "49...994"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "50...995"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "51...996"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|left|spd|greens",
+    "size": 4,
+    "prob": 0.18,
+    "log.odds": -6.3182,
+    "_row": "52...997"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|left|spd|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "53...998"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|left|greens|bsw",
+    "size": 4,
+    "prob": 0.01,
+    "log.odds": -9.2102,
+    "_row": "54...999"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "55...1000"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "left|spd|greens|bsw",
+    "size": 4,
+    "prob": 0,
+    "_row": "56...1001"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|spd|greens",
+    "size": 5,
+    "prob": 0,
+    "_row": "57...1002"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|spd|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "58...1003"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "59...1004"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "60...1005"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "61...1006"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "afd|left|spd|greens|bsw",
+    "size": 5,
+    "prob": 0,
+    "_row": "62...1007"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "coalition": "cdu|afd|left|spd|greens|bsw",
+    "size": 6,
+    "prob": 0,
+    "_row": "63...1008"
+  }
+]
