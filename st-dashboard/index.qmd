@@ -1,0 +1,263 @@
+---
+title: "KOALA — ST 2026"
+subtitle: "Koalitionswahrscheinlichkeiten Sachsen-Anhalt Landtagswahl 2026"
+format:
+  dashboard:
+    theme: cosmo
+    nav-buttons:
+      - icon: github
+        href: https://github.com/adibender/koala
+---
+
+```{r}
+#| output: false
+library(jsonlite)
+
+coal_json     <- fromJSON("data/coalition_probabilities.json", simplifyVector = FALSE)
+party_json    <- fromJSON("data/party_shares.json",           simplifyVector = FALSE)
+hurdle_json   <- fromJSON("data/hurdle_probabilities.json",   simplifyVector = FALSE)
+pollster_json <- fromJSON("data/per_pollster.json",           simplifyVector = FALSE)
+
+ojs_define(
+  coalitions    = coal_json,
+  party_data    = party_json,
+  hurdle_data   = hurdle_json,
+  pollster_data = pollster_json,
+  party_colors  = list(
+    cdu = "#1c1c1b", spd = "#e3000f", afd = "#82caff",
+    greens = "#46962b", fdp = "#ffed00", fw = "#005fa3",
+    left = "#be3075", bsw = "#6d1f99", others = "#aaaaaa"
+  ),
+  party_names   = list(
+    cdu = "Union", spd = "SPD", afd = "AfD",
+    greens = "Grüne", fdp = "FDP", fw = "Freie Wähler",
+    left = "Linke", bsw = "BSW", others = "Sonstige"
+  )
+)
+```
+
+```{ojs}
+//| output: false
+updated = new Date(coalitions.updated).toLocaleDateString("de-DE", {
+  day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+})
+d3 = require("d3@7")
+```
+
+# Überblick
+
+## Row {height=8%}
+
+```{ojs}
+html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size:0.88em;color:#444">
+  <b>Sachsen-Anhalt Landtagswahl 2026</b> &nbsp;|&nbsp;
+  Gepoolte Umfragen (letzte 14 Tage) &nbsp;|&nbsp;
+  10.000 Monte-Carlo-Simulationen &nbsp;|&nbsp;
+  Aktualisiert: ${updated}
+</div>`
+```
+
+## Row {height=52%}
+
+#### Koalitionswahrscheinlichkeiten (Mehrheit ≥ 42 Sitze)
+
+```{ojs}
+{
+  const coal = coalitions.coalitions
+    .filter(d => d.probability > 0.001)
+    .sort((a, b) => b.probability - a.probability)
+
+  const stack = coal.flatMap(d => [
+    { label: d.label, prob: d.probability, x1: 0, x2: d.probability,
+      fill: d.probability >= 0.9 ? "#2e7d32" : d.probability >= 0.5 ? "#e65100" : "#c62828" },
+    { label: d.label, prob: d.probability, x1: d.probability, x2: 1.0, fill: "#e8e8e8" }
+  ])
+  const domain = coal.map(d => d.label)
+
+  return Plot.plot({
+    marginLeft: 220,
+    marginRight: 10,
+    height: Math.max(200, coal.length * 46 + 40),
+    x: { label: null, domain: [0, 1], tickFormat: d => (d * 100).toFixed(0) + "%", axis: "top" },
+    y: { domain, label: null },
+    marks: [
+      Plot.barX(stack, { y: "label", x1: "x1", x2: "x2", fill: "fill" }),
+      Plot.text(coal.filter(d => d.probability >= 0.12), {
+        y: "label", x: d => d.probability / 2,
+        text: d => (d.probability * 100).toFixed(1) + "%",
+        fill: "white", fontWeight: "bold", fontSize: 13, textAnchor: "middle"
+      }),
+      Plot.text(coal.filter(d => d.probability < 0.12), {
+        y: "label", x: d => d.probability + 0.015,
+        text: d => (d.probability * 100).toFixed(1) + "%",
+        fill: "#444", fontWeight: "bold", fontSize: 12, textAnchor: "start"
+      }),
+      Plot.ruleX([0.5], { stroke: "#555", strokeDasharray: "4 3", strokeWidth: 1.5 }),
+      Plot.ruleX([0])
+    ]
+  })
+}
+```
+
+## Row {height=40%}
+
+### Column {width=50%}
+
+#### Umfragewerte (gepooled)
+
+```{ojs}
+{
+  const order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
+  const shares = party_data.party_shares
+    .filter(d => d.party !== "others")
+    .sort((a, b) => order.indexOf(a.party) - order.indexOf(b.party))
+
+  const maxX = 45
+  const stack = shares.flatMap(d => [
+    { name: party_names[d.party] || d.party, party: d.party, pct: d.percent,
+      x1: 0, x2: d.percent, fill: party_colors[d.party] || "#aaa" },
+    { name: party_names[d.party] || d.party, party: d.party, pct: d.percent,
+      x1: d.percent, x2: maxX, fill: "#f2f2f2" }
+  ])
+  const domain = shares.map(d => party_names[d.party] || d.party)
+
+  return Plot.plot({
+    marginLeft: 80,
+    marginRight: 50,
+    height: 280,
+    x: { label: "Stimmenanteil (%)", domain: [0, maxX] },
+    y: { domain, label: null },
+    marks: [
+      Plot.barX(stack, { y: "name", x1: "x1", x2: "x2", fill: "fill" }),
+      Plot.ruleX([5], { stroke: "#c0392b", strokeDasharray: "4 3", strokeWidth: 1.5 }),
+      Plot.text(shares.filter(d => d.percent >= 8), {
+        y: d => party_names[d.party] || d.party,
+        x: d => d.percent / 2,
+        text: d => d.percent.toFixed(1) + "%",
+        fill: d => d.party === "fdp" ? "#555" : "white",
+        fontWeight: "bold", fontSize: 12, textAnchor: "middle"
+      }),
+      Plot.text(shares.filter(d => d.percent < 8), {
+        y: d => party_names[d.party] || d.party,
+        x: d => d.percent + 0.8,
+        text: d => d.percent.toFixed(1) + "%",
+        fill: "#555", fontSize: 12, textAnchor: "start"
+      }),
+      Plot.ruleX([0])
+    ]
+  })
+}
+```
+
+### Column {width=50%}
+
+#### Wahrscheinlichkeit des Einzugs (5%-Hürde)
+
+```{ojs}
+{
+  const hurdles = hurdle_data.hurdle
+    .filter(d => d.party !== "others")
+    .sort((a, b) => b.prob_above_hurdle - a.prob_above_hurdle)
+
+  const domain = hurdles.map(d => party_names[d.party] || d.party)
+  const stack = hurdles.flatMap(d => [
+    { name: party_names[d.party] || d.party, party: d.party, p: d.prob_above_hurdle,
+      x1: 0, x2: d.prob_above_hurdle,
+      fill: d.prob_above_hurdle >= 0.9 ? (party_colors[d.party] || "#aaa") : "#bdbdbd" },
+    { name: party_names[d.party] || d.party, party: d.party, p: d.prob_above_hurdle,
+      x1: d.prob_above_hurdle, x2: 1.0, fill: "#f2f2f2" }
+  ])
+
+  return Plot.plot({
+    marginLeft: 80,
+    marginRight: 10,
+    height: 280,
+    x: { label: "Einzugswahrscheinlichkeit", domain: [0, 1],
+         tickFormat: d => (d * 100).toFixed(0) + "%" },
+    y: { domain, label: null },
+    marks: [
+      Plot.barX(stack, { y: "name", x1: "x1", x2: "x2", fill: "fill" }),
+      Plot.ruleX([0.5], { stroke: "#e65100", strokeDasharray: "4 3", strokeWidth: 1.5 }),
+      Plot.text(hurdles.filter(d => d.prob_above_hurdle >= 0.2), {
+        y: d => party_names[d.party] || d.party,
+        x: d => d.prob_above_hurdle / 2,
+        text: d => (d.prob_above_hurdle * 100).toFixed(1) + "%",
+        fill: d => d.party === "fdp" ? "#555" : "white",
+        fontWeight: "bold", fontSize: 12, textAnchor: "middle"
+      }),
+      Plot.text(hurdles.filter(d => d.prob_above_hurdle < 0.2), {
+        y: d => party_names[d.party] || d.party,
+        x: d => d.prob_above_hurdle + 0.015,
+        text: d => (d.prob_above_hurdle * 100).toFixed(1) + "%",
+        fill: "#555", fontSize: 12, textAnchor: "start"
+      }),
+      Plot.ruleX([0])
+    ]
+  })
+}
+```
+
+# Umfragen nach Institut
+
+## Row
+
+```{ojs}
+{
+  const order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
+  const pp = pollster_data.per_pollster
+    .filter(d => d.party !== "others")
+    .sort((a, b) => order.indexOf(a.party) - order.indexOf(b.party))
+
+  return Plot.plot({
+    marginLeft: 100,
+    height: 400,
+    fy: { label: null },
+    x:  { label: "Stimmenanteil (%)", domain: [0, 50] },
+    marks: [
+      Plot.barX(pp, {
+        fy: "pollster",
+        y: d => party_names[d.party] || d.party,
+        x: "percent",
+        fill: d => party_colors[d.party] || "#aaa"
+      }),
+      Plot.text(pp.filter(d => d.percent >= 7), {
+        fy: "pollster",
+        y: d => party_names[d.party] || d.party,
+        x: d => d.percent / 2,
+        text: d => d.percent.toFixed(0) + "%",
+        fill: d => d.party === "fdp" ? "#555" : "white",
+        fontSize: 11, fontWeight: "bold", textAnchor: "middle"
+      }),
+      Plot.ruleX([5], { stroke: "#c0392b", strokeDasharray: "3 3", strokeWidth: 1.5 }),
+      Plot.ruleX([0])
+    ]
+  })
+}
+```
+
+# Methodik
+
+## Row
+
+```{ojs}
+html`
+<div style="max-width:700px;line-height:1.7;font-size:0.95em">
+<h3>Methodik</h3>
+<p>Die Koalitionswahrscheinlichkeiten werden mit dem R-Paket
+<a href="https://github.com/adibender/coalitions" target="_blank"><code>coalitions</code></a>
+berechnet (Bender &amp; Bauer, 2018).</p>
+<h4>Datenbasis</h4>
+<p>Umfragedaten der letzten 14 Tage von <a href="https://www.wahlrecht.de" target="_blank">wahlrecht.de</a>
+werden gepooled.</p>
+<h4>Berechnung</h4>
+<ol>
+  <li><b>Pooling:</b> Mehrere Umfragen werden gewichtet gemittelt.</li>
+  <li><b>Monte-Carlo-Simulation:</b> 10.000 Wahlausgänge werden aus der Dirichlet-Posterior-Verteilung gezogen.</li>
+  <li><b>Sitzverteilung:</b> Für jeden simulierten Ausgang wird die Sitzverteilung nach dem Hare-Niemeyer-Verfahren berechnet (83 Sitze, 5%-Hürde).</li>
+  <li><b>Koalitionswahrscheinlichkeit:</b> Anteil der Simulationen, in denen eine Koalition ≥ 42 Sitze erreicht.</li>
+</ol>
+<p><b>Hinweis:</b> Die Berechnung basiert auf Umfragedaten und spiegelt den Informationsstand zum Zeitpunkt der letzten Aktualisierung wider.
+Wahlüberraschungen, strategisches Wählen und Mobilisierungseffekte am Wahltag sind nicht modelliert.</p>
+</div>
+`
+```

@@ -4,6 +4,7 @@
 **/index_files/
 **/index.html
 .quarto/
+data/
 
 # R
 .Rproj.user

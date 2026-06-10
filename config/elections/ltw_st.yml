@@ -38,10 +38,6 @@ parties:
     label: Grüne
     color: "#46962b"
     required: false
-  - id: fdp
-    label: FDP
-    color: "#ffed00"
-    required: false
   - id: fw
     label: Freie Wähler
     color: "#005fa3"
@@ -103,7 +99,7 @@ analyses:
     - parties: [left, spd, bsw, greens]
       label: "Wer wird drittstärkste Kraft?"
   pass_hurdle:
-    parties: [spd, greens, fdp, bsw]
+    parties: [spd, greens, bsw]
     label: "Schaffen es die folgenden Parteien in den Landtag?"
   afd_majority:
     parties: [afd]
