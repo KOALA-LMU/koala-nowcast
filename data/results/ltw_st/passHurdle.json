@@ -1,0 +1,786 @@
+[
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...1"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...2"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...3"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "party": "spd",
+    "prob": 99.7215,
+    "_row": "4...4"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "party": "greens",
+    "prob": 9.628,
+    "_row": "5...5"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...6"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "party": "bsw",
+    "prob": 8.9716,
+    "_row": "7...7"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...8"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...9"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...10"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "party": "spd",
+    "prob": 99.6462,
+    "_row": "4...11"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "party": "greens",
+    "prob": 0.0197,
+    "_row": "5...12"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...13"
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "party": "bsw",
+    "prob": 90.7608,
+    "_row": "7...14"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...15"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...16"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...17"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "party": "spd",
+    "prob": 94.0636,
+    "_row": "4...18"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "party": "greens",
+    "prob": 11.693,
+    "_row": "5...19"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...20"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "party": "bsw",
+    "prob": 11.1733,
+    "_row": "7...21"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...22"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...23"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...24"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "party": "spd",
+    "prob": 94.1824,
+    "_row": "4...25"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "party": "greens",
+    "prob": 12.441,
+    "_row": "5...26"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...27"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "party": "bsw",
+    "prob": 59.2767,
+    "_row": "7...28"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...29"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...30"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...31"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "party": "spd",
+    "prob": 100,
+    "_row": "4...32"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "party": "greens",
+    "prob": 0.295,
+    "_row": "5...33"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...34"
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "party": "bsw",
+    "prob": 91.7011,
+    "_row": "7...35"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...36"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...37"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...38"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "party": "spd",
+    "prob": 93.5529,
+    "_row": "4...39"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "party": "greens",
+    "prob": 0.3615,
+    "_row": "5...40"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...41"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "party": "bsw",
+    "prob": 93.332,
+    "_row": "7...42"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...43"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...44"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...45"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "party": "spd",
+    "prob": 99.5067,
+    "_row": "4...46"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "party": "greens",
+    "prob": 0.1233,
+    "_row": "5...47"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...48"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "party": "bsw",
+    "prob": 100,
+    "_row": "7...49"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...50"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...51"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "party": "left",
+    "prob": 12.0638,
+    "_row": "3...52"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "party": "spd",
+    "prob": 100,
+    "_row": "4...53"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "party": "greens",
+    "prob": 0.5184,
+    "_row": "5...54"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...55"
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "party": "bsw",
+    "prob": 100,
+    "_row": "7...56"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...57"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...58"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...59"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "party": "spd",
+    "prob": 99.4232,
+    "_row": "4...60"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "party": "greens",
+    "prob": 7.5378,
+    "_row": "5...61"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...62"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "party": "bsw",
+    "prob": 7.5179,
+    "_row": "7...63"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...64"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...65"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...66"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "party": "spd",
+    "prob": 99.4408,
+    "_row": "4...67"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "party": "greens",
+    "prob": 9.5466,
+    "_row": "5...68"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...69"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "party": "bsw",
+    "prob": 20.8508,
+    "_row": "7...70"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...71"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...72"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...73"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "party": "spd",
+    "prob": 94.3973,
+    "_row": "4...74"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "party": "greens",
+    "prob": 12.3693,
+    "_row": "5...75"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...76"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "party": "bsw",
+    "prob": 62.1622,
+    "_row": "7...77"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...78"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...79"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...80"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "party": "spd",
+    "prob": 100,
+    "_row": "4...81"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "party": "greens",
+    "prob": 0.3215,
+    "_row": "5...82"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...83"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "party": "bsw",
+    "prob": 92.7653,
+    "_row": "7...84"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...85"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...86"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...87"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "party": "spd",
+    "prob": 97.3043,
+    "_row": "4...88"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "party": "greens",
+    "prob": 0.1586,
+    "_row": "5...89"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...90"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "party": "bsw",
+    "prob": 92.4678,
+    "_row": "7...91"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...92"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...93"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...94"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "party": "spd",
+    "prob": 99.7427,
+    "_row": "4...95"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "party": "greens",
+    "prob": 0.0792,
+    "_row": "5...96"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...97"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "party": "bsw",
+    "prob": 98.3175,
+    "_row": "7...98"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...99"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...100"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "party": "left",
+    "prob": 100,
+    "_row": "3...101"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "party": "spd",
+    "prob": 99.558,
+    "_row": "4...102"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "party": "greens",
+    "prob": 0.2411,
+    "_row": "5...103"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...104"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "party": "bsw",
+    "prob": 99.9799,
+    "_row": "7...105"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "party": "cdu",
+    "prob": 100,
+    "_row": "1...106"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "party": "afd",
+    "prob": 100,
+    "_row": "2...107"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "party": "left",
+    "prob": 12.6643,
+    "_row": "3...108"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "party": "spd",
+    "prob": 100,
+    "_row": "4...109"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "party": "greens",
+    "prob": 0.5974,
+    "_row": "5...110"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "party": "fw",
+    "prob": 0,
+    "_row": "6...111"
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "party": "bsw",
+    "prob": 100,
+    "_row": "7...112"
+  }
+]

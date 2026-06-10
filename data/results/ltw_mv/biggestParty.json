@@ -1,0 +1,226 @@
+[
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 100
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0.02
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 99.98
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.16
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 49.64
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.42
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0.03
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 99.97
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0.09
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 99.91
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0.01
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.73
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 100
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 100
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 100
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 49.79
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.72
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0.02
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 99.98
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0.02
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 99.98
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "index": "biggestParty1",
+    "party": "spd",
+    "prob": 0.02
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 99.98
+  }
+]

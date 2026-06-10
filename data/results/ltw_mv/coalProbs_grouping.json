@@ -1,0 +1,1063 @@
+[
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "AfD",
+    "prob": 0.01,
+    "log.odds": -9.2102
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "AfD-BSW",
+    "prob": 3.6,
+    "log.odds": -3.2876
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "AfD-Linke",
+    "prob": 95.97,
+    "log.odds": 3.1703
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "AfD-SPD",
+    "prob": 99.99,
+    "log.odds": 9.2102
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "AfD-Union",
+    "prob": 99.48,
+    "log.odds": 5.2539
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 1.04,
+    "log.odds": -4.5555
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 0.05,
+    "log.odds": -7.6004
+  },
+  {
+    "pollster": "forsa",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 90.68,
+    "log.odds": 2.2752
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "AfD-BSW",
+    "prob": 0
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "AfD-Linke",
+    "prob": 0
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "AfD-SPD",
+    "prob": 99.75,
+    "log.odds": 5.989
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "AfD-Union",
+    "prob": 49.03,
+    "log.odds": -0.0388
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 71.87,
+    "log.odds": 0.938
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 27.3,
+    "log.odds": -0.9795
+  },
+  {
+    "pollster": "forsa",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 49.55,
+    "log.odds": -0.018
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "AfD-BSW",
+    "prob": 0.1794,
+    "log.odds": -6.3214
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "AfD-Linke",
+    "prob": 96.8301,
+    "log.odds": 3.4193
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "AfD-Union",
+    "prob": 67.1252,
+    "log.odds": 0.7139
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 2.6914,
+    "log.odds": -3.5878
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 0.6778,
+    "log.odds": -4.9872
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 97.7273,
+    "log.odds": 3.7612
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "AfD-BSW",
+    "prob": 0.1007,
+    "log.odds": -6.8995
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "AfD-Linke",
+    "prob": 76.8131,
+    "log.odds": 1.1978
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "AfD-Union",
+    "prob": 89.9678,
+    "log.odds": 2.1936
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0.0403,
+    "log.odds": -7.8164
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 14.9073,
+    "log.odds": -1.7419
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 0.0403,
+    "log.odds": -7.8164
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 98.3078,
+    "log.odds": 4.0621
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "AfD-BSW",
+    "prob": 26.6561,
+    "log.odds": -1.0121
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "AfD-Linke",
+    "prob": 97.8183,
+    "log.odds": 3.803
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "AfD-Union",
+    "prob": 99.5438,
+    "log.odds": 5.3855
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 0.0198,
+    "log.odds": -8.5254
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 13.7644,
+    "log.odds": -1.835
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "AfD-BSW",
+    "prob": 0.1,
+    "log.odds": -6.9068
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "AfD-Linke",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "AfD-Union",
+    "prob": 74.53,
+    "log.odds": 1.0737
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Union",
+    "prob": 0.01,
+    "log.odds": -9.2102
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 97.28,
+    "log.odds": 3.577
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 25.09,
+    "log.odds": -1.0938
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 50.82,
+    "log.odds": 0.0328
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "AfD-BSW",
+    "prob": 0.09,
+    "log.odds": -7.0122
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "AfD-Linke",
+    "prob": 41.62,
+    "log.odds": -0.3384
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "AfD-Union",
+    "prob": 70.67,
+    "log.odds": 0.8794
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 1.79,
+    "log.odds": -4.0049
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Union",
+    "prob": 0.3,
+    "log.odds": -5.8061
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 11.39,
+    "log.odds": -2.0515
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 11.53,
+    "log.odds": -2.0377
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 92.89,
+    "log.odds": 2.5699
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "AfD-BSW",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "AfD-Linke",
+    "prob": 20.6346,
+    "log.odds": -1.3471
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "AfD-SPD",
+    "prob": 98.3839,
+    "log.odds": 4.1089
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "AfD-Union",
+    "prob": 53.0745,
+    "log.odds": 0.1231
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0.2759,
+    "log.odds": -5.8901
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Union",
+    "prob": 0.0197,
+    "log.odds": -8.5317
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 19.9054,
+    "log.odds": -1.3922
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 2.5227,
+    "log.odds": -3.6543
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 99.9803,
+    "log.odds": 8.5317
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "AfD-BSW",
+    "prob": 0.12,
+    "log.odds": -6.7242
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "AfD-Linke",
+    "prob": 89.94,
+    "log.odds": 2.1906
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "AfD-Union",
+    "prob": 84.5,
+    "log.odds": 1.6959
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0.78,
+    "log.odds": -4.8458
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 2.16,
+    "log.odds": -3.8132
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 0.33,
+    "log.odds": -5.7105
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 96.16,
+    "log.odds": 3.2205
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "AfD-BSW",
+    "prob": 0.29,
+    "log.odds": -5.8401
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "AfD-Linke",
+    "prob": 67.92,
+    "log.odds": 0.7501
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "AfD-Union",
+    "prob": 88.2,
+    "log.odds": 2.0115
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0.15,
+    "log.odds": -6.5008
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Union",
+    "prob": 0.05,
+    "log.odds": -7.6004
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 9.64,
+    "log.odds": -2.2379
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 1.42,
+    "log.odds": -4.2402
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-17",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 93.63,
+    "log.odds": 2.6878
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "AfD-BSW",
+    "prob": 1.52,
+    "log.odds": -4.1711
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "AfD-Linke",
+    "prob": 91.35,
+    "log.odds": 2.3571
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "AfD-Union",
+    "prob": 98.14,
+    "log.odds": 3.9658
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 2.79,
+    "log.odds": -3.5508
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 0.13,
+    "log.odds": -6.6441
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-02-19",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 93.84,
+    "log.odds": 2.7235
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "AfD-BSW",
+    "prob": 0.2209,
+    "log.odds": -6.1129
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "AfD-Linke",
+    "prob": 76.3406,
+    "log.odds": 1.1714
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "AfD-Union",
+    "prob": 89.6766,
+    "log.odds": 2.1618
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 14.6616,
+    "log.odds": -1.7614
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 0.0803,
+    "log.odds": -7.1259
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 98.1522,
+    "log.odds": 3.9725
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "AfD-BSW",
+    "prob": 26.3801,
+    "log.odds": -1.0263
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "AfD-Linke",
+    "prob": 97.9298,
+    "log.odds": 3.8566
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "AfD-SPD",
+    "prob": 100
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "AfD-Union",
+    "prob": 99.5268,
+    "log.odds": 5.3487
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-25",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 15.1814,
+    "log.odds": -1.7204
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "AfD-BSW",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "AfD-Linke",
+    "prob": 0.29,
+    "log.odds": -5.8401
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "AfD-SPD",
+    "prob": 99.69,
+    "log.odds": 5.7732
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "AfD-Union",
+    "prob": 51.79,
+    "log.odds": 0.0716
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 50.03,
+    "log.odds": 0.0012
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 8.32,
+    "log.odds": -2.3996
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-04-28",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 97.39,
+    "log.odds": 3.6194
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "AfD-BSW",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "AfD-Linke",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "AfD-SPD",
+    "prob": 99.99,
+    "log.odds": 9.2102
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "AfD-Union",
+    "prob": 63.93,
+    "log.odds": 0.5723
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 93.3,
+    "log.odds": 2.6337
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 23.32,
+    "log.odds": -1.1903
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-02-07",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 49.75,
+    "log.odds": -0.01
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "AfD",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "AfD-BSW",
+    "prob": 0.07,
+    "log.odds": -7.2637
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "AfD-Linke",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "AfD-SPD",
+    "prob": 99.99,
+    "log.odds": 9.2102
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "AfD-Union",
+    "prob": 74.23,
+    "log.odds": 1.058
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Linke-Grüne",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Union",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Union-BSW",
+    "prob": 97.47,
+    "log.odds": 3.6513
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Union-Grüne",
+    "prob": 24.81,
+    "log.odds": -1.1088
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-28",
+    "coal_type": "SPD-Union-Linke",
+    "prob": 50.84,
+    "log.odds": 0.0336
+  }
+]

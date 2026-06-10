@@ -1,0 +1,674 @@
+[
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.27
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.24
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0.03
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2026-05-07",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.87
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.87
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "infratest",
+    "date": "2025-09-04",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.03
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.03
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-05-13",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.88
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.88
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-03-25",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.85
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 49.81
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 1.03
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0.01
+  },
+  {
+    "pollster": "insa",
+    "date": "2026-01-27",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 49.79
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 49.77
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0.01
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0.01
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-10-15",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 45.27
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 3.38
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 47.39
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0.1
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 1.16
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-06-19",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 32.73
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 17.42
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 0
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0.01
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 50.14
+  },
+  {
+    "pollster": "insa",
+    "date": "2025-01-16",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.28
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.28
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-13",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.07
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.06
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0.01
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-05-07",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.69
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.69
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-03-25",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 49.76
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 48.7
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 1.05
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0.01
+  },
+  {
+    "pollster": "pooled",
+    "date": "2026-01-27",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.45
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.45
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-10-15",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 0.1
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 50.42
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 50.52
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-09-04",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 46.28
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 3.49
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 48.55
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0.16
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 1.06
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-06-19",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "index": "biggestParty1",
+    "party": "cdu",
+    "prob": 32.55
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "index": "biggestParty1",
+    "party": "afd",
+    "prob": 17.67
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "index": "biggestParty2",
+    "party": "left",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "index": "biggestParty2",
+    "party": "spd",
+    "prob": 0
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "index": "biggestParty2",
+    "party": "bsw",
+    "prob": 50.22
+  },
+  {
+    "pollster": "pooled",
+    "date": "2025-01-16",
+    "index": "biggestParty2",
+    "party": "greens",
+    "prob": 0
+  }
+]
