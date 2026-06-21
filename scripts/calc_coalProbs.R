@@ -86,42 +86,9 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
         filter(party != "others") %>%
         right_join(data.frame(party = parties, stringsAsFactors = FALSE), by = "party")
 
-      # Impute parties absent from this poll from the closest date where they had > 0%;
-      # subtract the total imputed share from "others" (Sonstige) to keep percents consistent.
-      missing_pts <- survey$party[is.na(survey$percent)]
-      if (length(missing_pts) > 0) {
-        total_votes_cur   <- sum(survey_raw$votes, na.rm = TRUE)
-        ref_pool          <- survey_byTime %>% filter(date != date_ins, percent > 0,
-                                                      abs(as.numeric(date - date_ins)) <= 84)
-        total_imputed_pct <- 0
-
-        for (mp in missing_pts) {
-          mp_ref <- ref_pool %>%
-            filter(party == mp) %>%
-            mutate(days_diff = abs(as.numeric(date - date_ins))) %>%
-            arrange(days_diff)
-
-          if (nrow(mp_ref) > 0) {
-            imp_pct <- mp_ref$percent[1]
-            survey$percent[survey$party == mp] <- imp_pct
-            survey$votes[survey$party == mp]   <- round((imp_pct / 100) * total_votes_cur)
-            total_imputed_pct <- total_imputed_pct + imp_pct
-          }
-        }
-
-        # Subtract total imputed share from "others" and include it in survey so the
-        # Dirichlet is parameterised over the full 100%.
-        others_row <- survey_raw %>% filter(party == "others")
-        if (nrow(others_row) > 0) {
-          adj_pct <- max(0, others_row$percent[1] - total_imputed_pct)
-          survey <- bind_rows(survey, data.frame(
-            party   = "others",
-            percent = adj_pct,
-            votes   = as.integer(round((adj_pct / 100) * total_votes_cur)),
-            stringsAsFactors = FALSE
-          ))
-        }
-      }
+      others_row <- survey_raw %>% filter(party == "others")
+      if (nrow(others_row) > 0)
+        survey <- bind_rows(survey, others_row %>% select(party, percent, votes))
 
       survey <- survey %>%
         mutate(percent = ifelse(is.na(percent), 0, percent),
