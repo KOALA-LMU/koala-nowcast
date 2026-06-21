@@ -4,19 +4,30 @@ name: Deploy Website
 # and deploys it to GitHub Pages.
 
 on:
-  # push:
-  #   paths: ['data/results/**', 'website/**']   # enable once site is set up
+  workflow_run:
+    workflows: ["Scrape, Pool and Compute"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
   pages: write
   id-token: write
+  actions: read
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download results artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: results-data
+          path: data/results/
+          workflow_conclusion: success
+
       - uses: quarto-dev/quarto-actions/setup@v2
       - name: Render site
         run: echo "TODO: cd website && quarto render"

@@ -1,0 +1,179 @@
+id: ltw_st
+name: Landtagswahl Sachsen-Anhalt 2026
+hashtag: "#ltwst"
+
+scraper:
+  function: scrape_ltw
+  url: https://www.wahlrecht.de/umfragen/landtage/sachsen-anhalt.htm
+  ind_row_remove: [1, 2]
+
+parliament:
+  seats: 83
+  majority: 42
+  hurdle: 0.05
+  seat_allocation: hare_niemeyer
+
+pooling:
+  period: 14
+  period_extended: 100
+
+parties:
+  - id: cdu
+    label: Union
+    color: "#000000"
+    required: true
+  - id: afd
+    label: AfD
+    color: "#82caff"
+    required: true
+  - id: left
+    label: Linke
+    color: "#ff1493"
+    required: true
+  - id: spd
+    label: SPD
+    color: "#E3000F"
+    required: true
+  - id: greens
+    label: Grüne
+    color: "#46962b"
+    required: false
+  - id: bsw
+    label: BSW
+    color: "#6d1f99"
+    required: false
+  - id: fdp
+    label: FDP
+    color: "#ffed00"
+    required: false
+  - id: others
+    label: Sonstige
+    color: "#808080"
+    required: false
+
+pollsters:
+  - allensbach
+  - civey
+  - emnid
+  - forsa
+  - fgw
+  - gms
+  - infratest
+  - insa
+
+coalitions:
+  # AfD-led (mathematically viable, politically mostly ruled out)
+  - parties: [afd]
+    label: "AfD"
+    color: "#82caff"
+  - parties: [afd, cdu]
+    label: "AfD-Union"
+    color: "#82caff"
+  - parties: [cdu, afd]
+    label: "Union-AfD"
+    color: "#000000"
+  - parties: [afd, left]
+    label: "AfD-Linke"
+    color: "#82caff"
+  - parties: [left, afd]
+    label: "Linke-AfD"
+    color: "#ff1493"
+  - parties: [afd, spd]
+    label: "AfD-SPD"
+    color: "#82caff"
+  - parties: [spd, afd]
+    label: "SPD-AfD"
+    color: "#E3000F"
+  - parties: [afd, bsw]
+    label: "AfD-BSW"
+    color: "#82caff"
+  - parties: [bsw, afd]
+    label: "BSW-AfD"
+    color: "#6d1f99"
+  - parties: [afd, fdp]
+    label: "AfD-FDP"
+    color: "#82caff"
+  - parties: [fdp, afd]
+    label: "FDP-AfD"
+    color: "#ffed00"
+  # Non-AfD majorities
+  - parties: [cdu, left, spd]
+    label: "Union-Linke-SPD"
+    color: "#000000"
+  - parties: [left, cdu, spd]
+    label: "Linke-Union-SPD"
+    color: "#ff1493"
+  - parties: [spd, cdu, left]
+    label: "SPD-Union-Linke"
+    color: "#E3000F"
+  - parties: [cdu, left, spd, bsw]
+    label: "Union-Linke-SPD-BSW"
+    color: "#000000"
+  - parties: [left, cdu, spd, bsw]
+    label: "Linke-Union-SPD-BSW"
+    color: "#ff1493"
+  - parties: [spd, cdu, left, bsw]
+    label: "SPD-Union-Linke-BSW"
+    color: "#E3000F"
+  - parties: [bsw, cdu, left, spd]
+    label: "BSW-Union-Linke-SPD"
+    color: "#6d1f99"
+  - parties: [cdu, left, spd, greens]
+    label: "Union-Linke-SPD-Grüne"
+    color: "#000000"
+  - parties: [left, cdu, spd, greens]
+    label: "Linke-Union-SPD-Grüne"
+    color: "#ff1493"
+  - parties: [spd, cdu, left, greens]
+    label: "SPD-Union-Linke-Grüne"
+    color: "#E3000F"
+  - parties: [greens, cdu, left, spd]
+    label: "Grüne-Union-Linke-SPD"
+    color: "#46962b"
+  - parties: [cdu, left, spd, bsw, greens]
+    label: "Union-Linke-SPD-BSW-Grüne"
+    color: "#000000"
+  - parties: [left, cdu, spd, bsw, greens]
+    label: "Linke-Union-SPD-BSW-Grüne"
+    color: "#ff1493"
+  - parties: [spd, cdu, left, bsw, greens]
+    label: "SPD-Union-Linke-BSW-Grüne"
+    color: "#E3000F"
+  - parties: [bsw, cdu, left, spd, greens]
+    label: "BSW-Union-Linke-SPD-Grüne"
+    color: "#6d1f99"
+  - parties: [greens, cdu, left, spd, bsw]
+    label: "Grüne-Union-Linke-SPD-BSW"
+    color: "#46962b"
+  # Non-AfD 3-party with FDP
+  - parties: [cdu, left, fdp]
+    label: "Union-Linke-FDP"
+    color: "#000000"
+  - parties: [left, cdu, fdp]
+    label: "Linke-Union-FDP"
+    color: "#ff1493"
+  - parties: [fdp, cdu, left]
+    label: "FDP-Union-Linke"
+    color: "#ffed00"
+  - parties: [cdu, spd, fdp]
+    label: "Union-SPD-FDP"
+    color: "#000000"
+  - parties: [spd, cdu, fdp]
+    label: "SPD-Union-FDP"
+    color: "#E3000F"
+  - parties: [fdp, cdu, spd]
+    label: "FDP-Union-SPD"
+    color: "#ffed00"
+
+analyses:
+  biggest_party:
+    - parties: [cdu, afd]
+      label: "Wer wird stärkste Kraft?"
+    - parties: [left, spd, bsw, greens]
+      label: "Wer wird drittstärkste Kraft?"
+  pass_hurdle:
+    parties: [spd, greens, bsw, fdp]
+    label: "Schaffen es die folgenden Parteien in den Landtag?"
+  afd_majority:
+    parties: [afd]
+    label: "Erreicht die AfD eine absolute Mehrheit?"

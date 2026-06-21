@@ -1,6 +1,6 @@
 ---
-title: "KOALA — RLP 2026"
-subtitle: "Koalitionswahrscheinlichkeiten Rheinland-Pfalz Landtagswahl 2026"
+title: "KOALA — ST 2026"
+subtitle: "Koalitionswahrscheinlichkeiten Sachsen-Anhalt Landtagswahl 2026"
 format:
   dashboard:
     theme: cosmo
@@ -15,25 +15,23 @@ library(jsonlite)
 
 coal_json     <- fromJSON("data/coalition_probabilities.json", simplifyVector = FALSE)
 party_json    <- fromJSON("data/party_shares.json",           simplifyVector = FALSE)
-seats_json    <- fromJSON("data/seat_distribution.json",      simplifyVector = FALSE)
 hurdle_json   <- fromJSON("data/hurdle_probabilities.json",   simplifyVector = FALSE)
 pollster_json <- fromJSON("data/per_pollster.json",           simplifyVector = FALSE)
 
 ojs_define(
   coalitions    = coal_json,
   party_data    = party_json,
-  seats_data    = seats_json,
   hurdle_data   = hurdle_json,
   pollster_data = pollster_json,
   party_colors  = list(
-    cdu = "#1c1c1b", spd = "#e3000f", afd = "#009ee0",
-    greens = "#46962b", fdp = "#ffed00", fw = "#f77f00",
-    left = "#be3075", others = "#aaaaaa"
+    cdu = "#1c1c1b", spd = "#e3000f", afd = "#82caff",
+    greens = "#46962b", fdp = "#ffed00", fw = "#005fa3",
+    left = "#be3075", bsw = "#6d1f99", others = "#aaaaaa"
   ),
   party_names   = list(
-    cdu = "CDU", spd = "SPD", afd = "AfD",
-    greens = "Grüne", fdp = "FDP", fw = "FW",
-    left = "Linke", others = "Sonstige"
+    cdu = "Union", spd = "SPD", afd = "AfD",
+    greens = "Grüne", fdp = "FDP", fw = "Freie Wähler",
+    left = "Linke", bsw = "BSW", others = "Sonstige"
   )
 )
 ```
@@ -52,16 +50,16 @@ d3 = require("d3@7")
 
 ```{ojs}
 html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size:0.88em;color:#444">
-  <b>Rheinland-Pfalz Landtagswahl — 22. März 2026</b> &nbsp;|&nbsp;
+  <b>Sachsen-Anhalt Landtagswahl 2026</b> &nbsp;|&nbsp;
   Gepoolte Umfragen (letzte 14 Tage) &nbsp;|&nbsp;
-  100.000 Monte-Carlo-Simulationen &nbsp;|&nbsp;
+  10.000 Monte-Carlo-Simulationen &nbsp;|&nbsp;
   Aktualisiert: ${updated}
 </div>`
 ```
 
 ## Row {height=52%}
 
-#### Koalitionswahrscheinlichkeiten (Mehrheit ≥ 51 Sitze)
+#### Koalitionswahrscheinlichkeiten (Mehrheit ≥ 42 Sitze)
 
 ```{ojs}
 {
@@ -69,7 +67,6 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
     .filter(d => d.probability > 0.001)
     .sort((a, b) => b.probability - a.probability)
 
-  // Full-width stacked bars: colored fill + gray remainder
   const stack = coal.flatMap(d => [
     { label: d.label, prob: d.probability, x1: 0, x2: d.probability,
       fill: d.probability >= 0.9 ? "#2e7d32" : d.probability >= 0.5 ? "#e65100" : "#c62828" },
@@ -85,13 +82,11 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
     y: { domain, label: null },
     marks: [
       Plot.barX(stack, { y: "label", x1: "x1", x2: "x2", fill: "fill" }),
-      // white label inside bar (if wide enough)
       Plot.text(coal.filter(d => d.probability >= 0.12), {
         y: "label", x: d => d.probability / 2,
         text: d => (d.probability * 100).toFixed(1) + "%",
         fill: "white", fontWeight: "bold", fontSize: 13, textAnchor: "middle"
       }),
-      // dark label outside bar (if too narrow)
       Plot.text(coal.filter(d => d.probability < 0.12), {
         y: "label", x: d => d.probability + 0.015,
         text: d => (d.probability * 100).toFixed(1) + "%",
@@ -112,12 +107,12 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
 
 ```{ojs}
 {
-  const order = ["left", "spd", "greens", "fdp", "fw", "cdu", "afd"]
+  const order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
   const shares = party_data.party_shares
     .filter(d => d.party !== "others")
     .sort((a, b) => order.indexOf(a.party) - order.indexOf(b.party))
 
-  const maxX = 40
+  const maxX = 45
   const stack = shares.flatMap(d => [
     { name: party_names[d.party] || d.party, party: d.party, pct: d.percent,
       x1: 0, x2: d.percent, fill: party_colors[d.party] || "#aaa" },
@@ -127,9 +122,9 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
   const domain = shares.map(d => party_names[d.party] || d.party)
 
   return Plot.plot({
-    marginLeft: 60,
+    marginLeft: 80,
     marginRight: 50,
-    height: 240,
+    height: 280,
     x: { label: "Stimmenanteil (%)", domain: [0, maxX] },
     y: { domain, label: null },
     marks: [
@@ -174,9 +169,9 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
   ])
 
   return Plot.plot({
-    marginLeft: 60,
+    marginLeft: 80,
     marginRight: 10,
-    height: 240,
+    height: 280,
     x: { label: "Einzugswahrscheinlichkeit", domain: [0, 1],
          tickFormat: d => (d * 100).toFixed(0) + "%" },
     y: { domain, label: null },
@@ -202,186 +197,22 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
 }
 ```
 
-# Sitzverteilung
-
-## Row {height=50%}
-
-### Column {width=55%}
-
-#### Parlamentarischer Halbkreis (Mediansitze)
-
-```{ojs}
-{
-  const partyOrder = ["left", "spd", "greens", "fdp", "fw", "cdu", "afd"]
-  const seats = seats_data.seats
-    .filter(d => d.party !== "others" && d.seats_median > 0)
-    .sort((a, b) => partyOrder.indexOf(a.party) - partyOrder.indexOf(b.party))
-
-  const total = seats.reduce((s, d) => s + d.seats_median, 0)
-
-  let cum = 0
-  const arcs = seats.map(d => {
-    const start = cum / total
-    cum += d.seats_median
-    const end = cum / total
-    return { ...d, start, end, mid: start + (end - start) / 2 }
-  })
-
-  const W = 420, H = 240, r = 190, r0 = 95, cx = W / 2, cy = H - 4
-
-  const arcGen = d3.arc()
-    .innerRadius(r0).outerRadius(r)
-    .startAngle(d => (d.start - 0.5) * Math.PI)
-    .endAngle(d =>   (d.end   - 0.5) * Math.PI)
-
-  const svg = d3.create("svg")
-    .attr("width", W).attr("height", H)
-    .attr("viewBox", `0 0 ${W} ${H}`)
-    .attr("style", "max-width:100%;height:auto")
-
-  const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
-
-  // Party arc segments
-  g.selectAll("path")
-    .data(arcs)
-    .join("path")
-    .attr("d", arcGen)
-    .attr("fill", d => party_colors[d.party] || "#aaa")
-    .attr("stroke", "white").attr("stroke-width", 2.5)
-
-  // Seat count labels inside segments (only if segment is wide enough)
-  g.selectAll("text.label")
-    .data(arcs.filter(d => (d.end - d.start) > 0.06))
-    .join("text").attr("class", "label")
-    .attr("transform", d => {
-      const angle = (d.mid - 0.5) * Math.PI
-      const lr = (r0 + r) / 2
-      return `translate(${lr * Math.sin(angle)},${-lr * Math.cos(angle)})`
-    })
-    .attr("text-anchor", "middle").attr("dominant-baseline", "middle")
-    .attr("fill", d => d.party === "fdp" ? "#333" : "white")
-    .attr("font-size", 14).attr("font-weight", "bold")
-    .text(d => d.seats_median)
-
-  // Party name labels outside arc
-  g.selectAll("text.pname")
-    .data(arcs.filter(d => (d.end - d.start) > 0.06))
-    .join("text").attr("class", "pname")
-    .attr("transform", d => {
-      const angle = (d.mid - 0.5) * Math.PI
-      const lr = r + 16
-      return `translate(${lr * Math.sin(angle)},${-lr * Math.cos(angle)})`
-    })
-    .attr("text-anchor", d => {
-      const angle = (d.mid - 0.5) * Math.PI
-      return angle < -0.1 ? "end" : angle > 0.1 ? "start" : "middle"
-    })
-    .attr("dominant-baseline", "middle")
-    .attr("fill", d => party_colors[d.party] || "#555")
-    .attr("font-size", 11).attr("font-weight", "bold")
-    .text(d => party_names[d.party] || d.party)
-
-  // Majority threshold line at 51/101
-  const majorityAngle = (51 / total - 0.5) * Math.PI
-  g.append("line")
-    .attr("x1", (r0 - 8) * Math.sin(majorityAngle))
-    .attr("y1", -(r0 - 8) * Math.cos(majorityAngle))
-    .attr("x2", (r + 12) * Math.sin(majorityAngle))
-    .attr("y2", -(r + 12) * Math.cos(majorityAngle))
-    .attr("stroke", "#c0392b").attr("stroke-width", 2.5).attr("stroke-dasharray", "5 3")
-
-  g.append("text")
-    .attr("x", (r + 22) * Math.sin(majorityAngle))
-    .attr("y", -(r + 22) * Math.cos(majorityAngle))
-    .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", "#c0392b")
-    .text("51")
-
-  return svg.node()
-}
-```
-
-### Column {width=45%}
-
-#### Sitzverteilung (Median + 90%-Intervall)
-
-```{ojs}
-{
-  const s = seats_data.seats
-    .filter(d => d.party !== "others")
-    .sort((a, b) => b.seats_median - a.seats_median)
-
-  const sDomain = s.map(d => party_names[d.party] || d.party)
-
-  return Plot.plot({
-    marginLeft: 70,
-    height: 260,
-    x: { label: "Sitze", domain: [0, 50] },
-    y: { domain: sDomain },
-    marks: [
-      Plot.ruleX([0]),
-      Plot.ruleX([51], { stroke: "#c0392b", strokeDasharray: "5 3", strokeWidth: 1.5 }),
-      Plot.barX(s, {
-        y: d => party_names[d.party] || d.party,
-        x1: "seats_q05", x2: "seats_q95",
-        fill: d => party_colors[d.party] || "#aaa",
-        fillOpacity: 0.3
-      }),
-      Plot.tickX(s, {
-        y: d => party_names[d.party] || d.party,
-        x: "seats_median",
-        stroke: d => party_colors[d.party] || "#aaa",
-        strokeWidth: 4
-      }),
-      Plot.text(s, {
-        y: d => party_names[d.party] || d.party,
-        x: d => d.seats_q95 + 0.5,
-        text: d => `${d.seats_median} [${d.seats_q05}–${d.seats_q95}]`,
-        textAnchor: "start", fontSize: 11
-      })
-    ]
-  })
-}
-```
-
-## Row {height=50%}
-
-#### Sitzverteilung Tabelle
-
-```{ojs}
-{
-  const partyOrder = ["left", "spd", "greens", "fdp", "fw", "cdu", "afd"]
-  const s = seats_data.seats
-    .filter(d => d.party !== "others")
-    .sort((a, b) => partyOrder.indexOf(a.party) - partyOrder.indexOf(b.party))
-
-  return Inputs.table(
-    s.map(d => ({
-      Partei:  party_names[d.party] || d.party,
-      Median:  d.seats_median,
-      "5%-Q":  d.seats_q05,
-      "95%-Q": d.seats_q95
-    })),
-    { width: { Partei: 120, Median: 80, "5%-Q": 80, "95%-Q": 80 } }
-  )
-}
-```
-
 # Umfragen nach Institut
 
 ## Row
 
 ```{ojs}
 {
-  const order = ["left", "spd", "greens", "fdp", "fw", "cdu", "afd"]
+  const order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
   const pp = pollster_data.per_pollster
     .filter(d => d.party !== "others")
     .sort((a, b) => order.indexOf(a.party) - order.indexOf(b.party))
 
   return Plot.plot({
     marginLeft: 100,
-    height: 360,
+    height: 400,
     fy: { label: null },
-    x:  { label: "Stimmenanteil (%)", domain: [0, 42] },
+    x:  { label: "Stimmenanteil (%)", domain: [0, 50] },
     marks: [
       Plot.barX(pp, {
         fy: "pollster",
@@ -417,13 +248,13 @@ html`
 berechnet (Bender &amp; Bauer, 2018).</p>
 <h4>Datenbasis</h4>
 <p>Umfragedaten der letzten 14 Tage von <a href="https://www.wahlrecht.de" target="_blank">wahlrecht.de</a>
-werden gepooled. Aktuell fließen Umfragen von FGW, INSA, Infratest dimap, Forsa und Ges/Phone &amp; Field ein.</p>
+werden gepooled.</p>
 <h4>Berechnung</h4>
 <ol>
   <li><b>Pooling:</b> Mehrere Umfragen werden gewichtet gemittelt.</li>
-  <li><b>Monte-Carlo-Simulation:</b> 100.000 Wahlausgänge werden aus der Dirichlet-Posterior-Verteilung gezogen.</li>
-  <li><b>Sitzverteilung:</b> Für jeden simulierten Ausgang wird die Sitzverteilung nach dem Sainte-Laguë/Schepers-Verfahren berechnet (101 Sitze, 5%-Hürde).</li>
-  <li><b>Koalitionswahrscheinlichkeit:</b> Anteil der Simulationen, in denen eine Koalition ≥ 51 Sitze erreicht.</li>
+  <li><b>Monte-Carlo-Simulation:</b> 10.000 Wahlausgänge werden aus der Dirichlet-Posterior-Verteilung gezogen.</li>
+  <li><b>Sitzverteilung:</b> Für jeden simulierten Ausgang wird die Sitzverteilung nach dem Hare-Niemeyer-Verfahren berechnet (83 Sitze, 5%-Hürde).</li>
+  <li><b>Koalitionswahrscheinlichkeit:</b> Anteil der Simulationen, in denen eine Koalition ≥ 42 Sitze erreicht.</li>
 </ol>
 <p><b>Hinweis:</b> Die Berechnung basiert auf Umfragedaten und spiegelt den Informationsstand zum Zeitpunkt der letzten Aktualisierung wider.
 Wahlüberraschungen, strategisches Wählen und Mobilisierungseffekte am Wahltag sind nicht modelliert.</p>

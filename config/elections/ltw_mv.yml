@@ -1,0 +1,144 @@
+id: ltw_mv
+name: Landtagswahl Mecklenburg-Vorpommern 2026
+hashtag: "#ltwmv"
+
+scraper:
+  function: scrape_ltw
+  url: https://www.wahlrecht.de/umfragen/landtage/mecklenburg-vorpommern.htm
+  ind_row_remove: [1]
+
+parliament:
+  seats: 71
+  majority: 36
+  hurdle: 0.05
+  seat_allocation: hare_niemeyer
+
+pooling:
+  period: 14
+  period_extended: 100
+
+parties:
+  - id: spd
+    label: SPD
+    color: "#E3000F"
+    required: true
+  - id: afd
+    label: AfD
+    color: "#82caff"
+    required: true
+  - id: cdu
+    label: Union
+    color: "#000000"
+    required: true
+  - id: left
+    label: Linke
+    color: "#ff1493"
+    required: false
+  - id: greens
+    label: Grüne
+    color: "#46962b"
+    required: false
+  - id: fdp
+    label: FDP
+    color: "#ffed00"
+    required: false
+  - id: bsw
+    label: BSW
+    color: "#6d1f99"
+    required: false
+  - id: others
+    label: Sonstige
+    color: "#808080"
+    required: false
+
+pollsters:
+  - allensbach
+  - emnid
+  - forsa
+  - fgw
+  - gms
+  - infratest
+  - insa
+
+coalitions:
+  # AfD majority
+  - parties: [afd]
+    label: "AfD"
+    color: "#82caff"
+  # 2-party AfD coalitions
+  - parties: [afd, cdu]
+    label: "AfD-Union"
+    color: "#82caff"
+  - parties: [cdu, afd]
+    label: "Union-AfD"
+    color: "#000000"
+  - parties: [afd, spd]
+    label: "AfD-SPD"
+    color: "#82caff"
+  - parties: [spd, afd]
+    label: "SPD-AfD"
+    color: "#E3000F"
+  - parties: [afd, left]
+    label: "AfD-Linke"
+    color: "#82caff"
+  - parties: [left, afd]
+    label: "Linke-AfD"
+    color: "#ff1493"
+  - parties: [afd, bsw]
+    label: "AfD-BSW"
+    color: "#82caff"
+  - parties: [bsw, afd]
+    label: "BSW-AfD"
+    color: "#6d1f99"
+  # 2-party non-AfD coalitions
+  - parties: [spd, cdu]
+    label: "SPD-Union"
+    color: "#E3000F"
+  - parties: [cdu, spd]
+    label: "Union-SPD"
+    color: "#000000"
+  # 3-party non-AfD coalitions
+  - parties: [spd, cdu, left]
+    label: "SPD-Union-Linke"
+    color: "#E3000F"
+  - parties: [cdu, spd, left]
+    label: "Union-SPD-Linke"
+    color: "#000000"
+  - parties: [left, spd, cdu]
+    label: "Linke-SPD-Union"
+    color: "#ff1493"
+  - parties: [spd, cdu, greens]
+    label: "SPD-Union-Grüne"
+    color: "#E3000F"
+  - parties: [cdu, spd, greens]
+    label: "Union-SPD-Grüne"
+    color: "#000000"
+  - parties: [greens, spd, cdu]
+    label: "Grüne-SPD-Union"
+    color: "#46962b"
+  - parties: [spd, cdu, bsw]
+    label: "SPD-Union-BSW"
+    color: "#E3000F"
+  - parties: [cdu, spd, bsw]
+    label: "Union-SPD-BSW"
+    color: "#000000"
+  - parties: [bsw, spd, cdu]
+    label: "BSW-SPD-Union"
+    color: "#6d1f99"
+  - parties: [spd, left, greens]
+    label: "SPD-Linke-Grüne"
+    color: "#E3000F"
+  - parties: [left, spd, greens]
+    label: "Linke-SPD-Grüne"
+    color: "#ff1493"
+  - parties: [greens, spd, left]
+    label: "Grüne-SPD-Linke"
+    color: "#46962b"
+
+analyses:
+  biggest_party:
+    - parties: [spd, afd]
+      label: "Wer wird stärkste Kraft?"
+  pass_hurdle:
+    parties: [greens, fdp, bsw]
+    label: "Schaffen es die folgenden Parteien in den Landtag?"
