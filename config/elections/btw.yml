@@ -47,7 +47,7 @@ parties:
   - id: others
     label: Sonstige
     color: "#808080"
-    required: false
+    required: true
 
 pollsters:
   - allensbach
@@ -163,4 +163,4 @@ analyses:
       label: "Wer wird stärkste Kraft?"
   pass_hurdle:
     parties: [fdp, bsw]
-    label: "Schaffen es die folgenden Parteien in den Landtag?"
+    label: "Schaffen es die folgenden Parteien in den Bundestag?"

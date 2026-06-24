@@ -2,13 +2,14 @@ library("dplyr")
 library("coalitions")
 
 scrape_btw <- function() {
-  pollster_df <- getFromNamespace(".pollster_df", "coalitions")
-  bind_rows(lapply(seq_len(nrow(pollster_df)), function(i) {
-    coalitions::scrape_wahlrecht(address = pollster_df$address[i]) %>%
+  lookup <- coalitions:::.pollster_df
+  scraped_list <- lapply(seq_len(nrow(lookup)), function(i) {
+    scrape_wahlrecht(lookup$address[[i]]) %>%
       mutate(
-        pollster = pollster_df$pollster[i],
-        start = if_else(start > end, as.Date(start) - 365, start),
-        .before = 1
-      )
-  }))
+      pollster = lookup$pollster[[i]],
+      start = if_else(start > end, as.Date(start)- 365, start),
+      .before = 1
+    )
+  })
+  bind_rows(scraped_list)
 }
