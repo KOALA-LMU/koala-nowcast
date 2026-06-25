@@ -3,6 +3,7 @@ library(yaml)
 library(dplyr)
 library(tidyr)
 library(jsonlite)
+source("scripts/scrape_btw.R")
 
 scrape_election <- function(config_path, oldest_date = as.Date("2025-01-01")) {
   cfg <- read_yaml(config_path)
