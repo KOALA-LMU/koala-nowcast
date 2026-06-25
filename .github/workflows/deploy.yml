@@ -24,6 +24,7 @@ jobs:
         with:
           name: results-data
           path: data/results/
+          workflow: compute.yml
           workflow_conclusion: success
 
       - name: Download surveys artifact
@@ -31,6 +32,7 @@ jobs:
         with:
           name: survey-data
           path: data/surveys/
+          workflow: compute.yml
           workflow_conclusion: success
 
       - uses: r-lib/actions/setup-r@v2

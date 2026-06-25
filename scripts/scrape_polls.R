@@ -4,7 +4,7 @@ library(dplyr)
 library(tidyr)
 library(jsonlite)
 
-scrape_election <- function(config_path, oldest_date = as.Date("2025-01-01")) {
+scrape_election <- function(config_path, oldest_date = as.Date("2026-01-01")) {
   cfg <- read_yaml(config_path)
   message(sprintf("Scraping polls for %s...\n", cfg$name))
 
