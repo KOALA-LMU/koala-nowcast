@@ -10,11 +10,20 @@ on:
 jobs:
   compute:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download existing data from R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 sync s3://koala-bucket/surveys data/surveys/ \
+            --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          aws s3 sync s3://koala-bucket/results data/results/ \
+            --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -43,11 +52,16 @@ jobs:
             invisible(lapply(configs, calc_coalProbs))
           '
 
-      - name: Commit and push data
+      - name: Upload data to R2
         if: steps.scrape.outputs.new_data == 'TRUE'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/surveys/ data/results/
-          git commit -m "chore: update survey and results data [skip ci]"
-          git push
+          aws s3 sync data/surveys/ s3://koala-bucket/surveys \
+            --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com \
+            --delete
+          aws s3 sync data/results/ s3://koala-bucket/results \
+            --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com \
+            --delete
