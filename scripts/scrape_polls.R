@@ -5,7 +5,7 @@ library(tidyr)
 library(jsonlite)
 source("scripts/scrape_btw.R")
 
-scrape_election <- function(config_path, oldest_date = as.Date("2026-01-01")) {
+scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   cfg <- read_yaml(config_path)
   message(sprintf("Scraping polls for %s...\n", cfg$name))
 
