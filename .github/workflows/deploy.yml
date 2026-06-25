@@ -4,10 +4,13 @@ name: Deploy Website
 # and deploys it to GitHub Pages.
 
 on:
-  workflow_run:
-    workflows: ["Scrape, Pool and Compute"]
-    types: [completed]
   workflow_dispatch:
+    # disabled until website is implemented
+    inputs:
+      force:
+        description: 'Set to true to force deploy'
+        required: true
+        default: 'false'
 
 permissions:
   pages: write

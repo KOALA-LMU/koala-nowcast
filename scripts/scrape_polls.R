@@ -132,14 +132,63 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   invisible(TRUE)
 }
 
-compute_pooled <- function(raw, cfg, from_date = NULL) {
+impute_polls_for_pooling <- function(raw, cfg) {
+  parties_all      <- sapply(cfg$parties, `[[`, "id")
+  parties_to_check <- parties_all[parties_all != "others"]
+
+  raw %>%
+    filter(pollster != "pooled") %>%
+    group_by(pollster, date) %>%
+    group_modify(function(poll, key) {
+      missing_pts <- parties_to_check[!parties_to_check %in% poll$party[!is.na(poll$percent)]]
+      if (length(missing_pts) == 0) return(poll)
+
+      ref <- raw %>%
+        filter(pollster != "pooled", date < key$date, !is.na(percent), percent > 0) %>%
+        mutate(same_pollster = pollster == key$pollster)
+
+      total_votes       <- sum(poll$votes, na.rm = TRUE)
+      total_imputed_pct <- 0
+      template_row      <- poll[1, ]
+
+      for (mp in missing_pts) {
+        mp_ref <- ref %>%
+          filter(party == mp) %>%
+          arrange(desc(date), desc(same_pollster))
+
+        if (nrow(mp_ref) > 0) {
+          imp_pct          <- mp_ref$percent[1]
+          new_row          <- template_row
+          new_row$party    <- mp
+          new_row$percent  <- imp_pct
+          new_row$votes    <- as.integer(round((imp_pct / 100) * total_votes))
+          poll             <- bind_rows(poll, new_row)
+          total_imputed_pct <- total_imputed_pct + imp_pct
+        }
+      }
+
+      if ("others" %in% poll$party && total_imputed_pct > 0) {
+        idx              <- which(poll$party == "others")
+        poll$percent[idx] <- max(0, poll$percent[idx] - total_imputed_pct)
+        poll$votes[idx]   <- as.integer(round((poll$percent[idx] / 100) * total_votes))
+      }
+
+      poll
+    }) %>%
+    ungroup()
+}
+
+compute_pooled <- function(raw, cfg) {
   pollsters <- sapply(cfg$pollsters, identity)
   period          <- cfg$pooling$period
   period_extended <- cfg$pooling$period_extended
 
+  # Impute missing parties in individual polls before pooling (imputed values
+  # are used only for the pooling calculation — raw rows in polls.json stay clean)
+  raw_imputed <- impute_polls_for_pooling(raw, cfg)
+
   # Reconstruct nested format expected by pool_surveys()
-  surveys_nested <- raw %>%
-    filter(pollster != "pooled") %>%
+  surveys_nested <- raw_imputed %>%
     nest(survey = c(party, percent, votes)) %>%
     nest(surveys = c(date, start, end, respondents, survey))
 
