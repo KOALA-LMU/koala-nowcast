@@ -26,7 +26,9 @@ jobs:
         with:
           name: results-data
           path: data/results/
+          workflow: compute.yml
           workflow_conclusion: success
+          search_artifacts: true
 
       - uses: quarto-dev/quarto-actions/setup@v2
       - name: Render site
