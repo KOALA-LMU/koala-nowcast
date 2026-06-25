@@ -41,6 +41,8 @@ jobs:
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: knitr, rmarkdown
 
       - name: Prepare dashboard data
         run: Rscript st-dashboard/prepare_data.R
