@@ -6,6 +6,10 @@ on:
     types: [completed]
   workflow_dispatch:
 
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
 permissions:
   pages: write
   id-token: write
