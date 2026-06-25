@@ -23,6 +23,7 @@ jobs:
           name: survey-data
           path: data/surveys/
           if_no_artifact_found: warn
+          workflow: compute.yml
           workflow_conclusion: success
 
       - name: Download previous results artifact
@@ -31,6 +32,7 @@ jobs:
           name: results-data
           path: data/results/
           if_no_artifact_found: warn
+          workflow: compute.yml
           workflow_conclusion: success
 
       - uses: r-lib/actions/setup-r@v2
