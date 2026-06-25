@@ -178,7 +178,7 @@ impute_polls_for_pooling <- function(raw, cfg) {
     ungroup()
 }
 
-compute_pooled <- function(raw, cfg) {
+compute_pooled <- function(raw, cfg, from_date) {
   pollsters <- sapply(cfg$pollsters, identity)
   period          <- cfg$pooling$period
   period_extended <- cfg$pooling$period_extended
