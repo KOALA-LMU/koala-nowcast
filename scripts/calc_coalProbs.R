@@ -53,8 +53,17 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   dates_todo     <- sort(unique(surveys_byTime$date))
 
   # ── Determine which dates need (re-)computation ──────────────────────────────
-  log_file <- file.path(results_dir, "info.log")
-  if (!file.exists(log_file) || force_newCalculation) {
+  log_file     <- file.path(results_dir, "info.log")
+  pending_file <- file.path("data", "surveys", cfg$id, "pending_dates.json")
+
+  if (force_newCalculation) {
+    dates <- dates_todo
+  } else if (file.exists(pending_file)) {
+    # scrape_election wrote exactly which dates have new/updated pooled estimates
+    pending <- as.Date(jsonlite::fromJSON(pending_file))
+    dates   <- dates_todo[dates_todo %in% pending]
+    file.remove(pending_file)
+  } else if (!file.exists(log_file)) {
     dates <- dates_todo
   } else {
     info        <- readLines(log_file)
