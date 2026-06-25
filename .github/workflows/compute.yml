@@ -42,13 +42,12 @@ jobs:
       - name: Scrape and pool polls
         id: scrape
         run: |
-          result=$(Rscript -e '
+          Rscript -e '
             source("scripts/scrape_polls.R")
             configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
             new_data <- any(sapply(configs, scrape_election))
-            cat(new_data)
-          ')
-          echo "new_data=$result" >> $GITHUB_OUTPUT
+            cat(paste0("new_data=", new_data, "\n"), file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
+          '
 
       - name: Compute coalition probabilities
         if: steps.scrape.outputs.new_data == 'TRUE'

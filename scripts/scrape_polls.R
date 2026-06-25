@@ -3,8 +3,9 @@ library(yaml)
 library(dplyr)
 library(tidyr)
 library(jsonlite)
+source("scripts/scrape_btw.R")
 
-scrape_election <- function(config_path, oldest_date = as.Date("2026-01-01")) {
+scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   cfg <- read_yaml(config_path)
   message(sprintf("Scraping polls for %s...\n", cfg$name))
 
@@ -29,15 +30,18 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-01-01")) {
     )
     if (!is.null(existing)) {
       scrape_from <- max(existing$date) - 30
-      message(sprintf("  Existing data up to %s, re-scraping from %s\n", max(existing$date), scrape_from))
     } else {
       scrape_from <- oldest_date
     }
   } else {
     existing   <- NULL
     scrape_from <- oldest_date
-    message(sprintf("  No existing data, scraping from %s\n", scrape_from))
   }
+
+  cat(sprintf("  [%s] existing data up to: %s — scraping from: %s\n",
+              cfg$id,
+              if (!is.null(existing)) as.character(max(existing$date)) else "none",
+              scrape_from))
 
   # assign scraper function to fn
   fn <- match.fun(cfg$scraper[["function"]])
@@ -99,8 +103,17 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-01-01")) {
     new_rows
   ) %>% arrange(desc(date))
 
-  # Recompute pooled estimates for all affected dates
-  pooled_updated <- compute_pooled(raw_updated, cfg)
+  # Only recompute pooled from the earliest new poll date forward; recompute all when
+  # there is no existing pooled data yet.
+  from_date <- if (has_new_raw && !has_no_pooled) min(unique(new_rows$date)) else NULL
+  pooled_updated <- compute_pooled(raw_updated, cfg, from_date = from_date)
+
+  # Write affected dates so calc_coalProbs knows exactly which dates to recompute.
+  pending_raw <- raw_updated %>% filter(pollster != "pooled")
+  if (!is.null(from_date))
+    pending_raw <- pending_raw %>% filter(date >= from_date)
+  pending_dates <- as.character(sort(unique(pending_raw$date)))
+  write_json(pending_dates, file.path(out_dir, "pending_dates.json"), auto_unbox = TRUE)
 
   # Drop old pooled rows for recomputed dates, replace with fresh ones
   recompute_dates <- unique(pooled_updated$date)
@@ -119,7 +132,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-01-01")) {
   invisible(TRUE)
 }
 
-compute_pooled <- function(raw, cfg) {
+compute_pooled <- function(raw, cfg, from_date = NULL) {
   pollsters <- sapply(cfg$pollsters, identity)
   period          <- cfg$pooling$period
   period_extended <- cfg$pooling$period_extended
@@ -130,12 +143,16 @@ compute_pooled <- function(raw, cfg) {
     nest(survey = c(party, percent, votes)) %>%
     nest(surveys = c(date, start, end, respondents, survey))
 
-  # Pool for each date a raw poll was published
+  # Pool for each date a raw poll was published; skip dates before from_date if
+  # provided (earlier pooled estimates are unaffected by polls published later).
   dates <- raw %>%
     filter(pollster != "pooled") %>%
     pull(date) %>%
     unique() %>%
     sort()
+
+  if (!is.null(from_date))
+    dates <- dates[dates >= from_date]
 
   pooled <- lapply(dates, function(d) {
     pool_surveys(
