@@ -11,10 +11,27 @@ jobs:
   compute:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      actions: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
+
+      - name: Download previous surveys artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: survey-data
+          path: data/surveys/
+          if_no_artifact_found: warn
+          workflow_conclusion: success
+
+      - name: Download previous results artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: results-data
+          path: data/results/
+          if_no_artifact_found: warn
+          workflow_conclusion: success
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -33,15 +50,6 @@ jobs:
           ')
           echo "new_data=$result" >> $GITHUB_OUTPUT
 
-      - name: Commit updated polls and pooled data
-        if: steps.scrape.outputs.new_data == 'TRUE'
-        run: |
-          git config user.name "KOALA Bot"
-          git config user.email "koala-bot@users.noreply.github.com"
-          git add data/surveys/
-          git diff --staged --quiet || git commit -m "chore: scrape and pool polls $(date -I)"
-          git push
-
       - name: Compute coalition probabilities
         if: steps.scrape.outputs.new_data == 'TRUE'
         run: |
@@ -53,9 +61,18 @@ jobs:
             invisible(lapply(configs, calc_coalProbs))
           '
 
-      - name: Commit computed results
+      - name: Upload surveys artifact
         if: steps.scrape.outputs.new_data == 'TRUE'
-        run: |
-          git add data/results/
-          git diff --staged --quiet || git commit -m "chore: compute coalition probs $(date -I)"
-          git push
+        uses: actions/upload-artifact@v4
+        with:
+          name: survey-data
+          path: data/surveys/
+          overwrite: true
+
+      - name: Upload results artifact
+        if: steps.scrape.outputs.new_data == 'TRUE'
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-data
+          path: data/results/
+          overwrite: true
