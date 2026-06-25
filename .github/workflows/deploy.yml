@@ -9,6 +9,10 @@ on:
         required: true
         default: 'false'
 
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
 permissions:
   pages: write
   id-token: write
