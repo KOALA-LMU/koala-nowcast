@@ -10,6 +10,7 @@
 .quarto/
 
 # R
+*.Rproj
 .Rproj.user
 .Rhistory
 .RData
