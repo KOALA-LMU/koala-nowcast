@@ -5,7 +5,7 @@ library(tidyr)
 library(jsonlite)
 source("scripts/scrape_btw.R")
 
-scrape_election <- function(config_path, oldest_date = as.Date("2026-01-01")) {
+scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   cfg <- read_yaml(config_path)
   message(sprintf("Scraping polls for %s...\n", cfg$name))
 
@@ -178,7 +178,7 @@ impute_polls_for_pooling <- function(raw, cfg) {
     ungroup()
 }
 
-compute_pooled <- function(raw, cfg) {
+compute_pooled <- function(raw, cfg, from_date = NULL) {
   pollsters <- sapply(cfg$pollsters, identity)
   period          <- cfg$pooling$period
   period_extended <- cfg$pooling$period_extended
