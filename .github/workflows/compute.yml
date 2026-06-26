@@ -2,7 +2,7 @@ name: Scrape, Pool and Compute
 
 on:
   schedule:
-    - cron: '0 7 * * *'   # daily at 07:00 UTC
+    - cron: '0 4 * * *'   # daily at 07:00 UTC
   workflow_dispatch:        # allow manual trigger
 
 jobs:
