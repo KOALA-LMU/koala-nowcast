@@ -54,13 +54,21 @@ jobs:
 
       - name: Compute coalition probabilities
         if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false'
+        env:
+          FORCE_ALL: ${{ steps.check_results.outputs.has_results == 'false' }}
         run: |
           Rscript -e '
             library(coalitions); library(dplyr); library(tidyr); library(yaml); library(jsonlite)
             source("scripts/calc_coalProbs_helpers.R")
             source("scripts/calc_coalProbs.R")
             configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
-            invisible(lapply(configs, calc_coalProbs))
+            force_all <- Sys.getenv("FORCE_ALL") == "true"
+            has_pending <- function(cfg_path) {
+              id <- yaml::read_yaml(cfg_path)$id
+              file.exists(file.path("data", "surveys", id, "pending_dates.json"))
+            }
+            configs_todo <- if (force_all) configs else Filter(has_pending, configs)
+            invisible(lapply(configs_todo, calc_coalProbs))
           '
 
       - name: Upload data to R2
