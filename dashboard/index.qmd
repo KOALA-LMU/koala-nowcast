@@ -78,24 +78,6 @@ updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
 ```
 
 ```{ojs}
-html`<hr style="margin:12px 0">`
-```
-
-```{ojs}
-//| output: false
-pollsters = {
-  const names = Array.from(
-    new Set(cur.pollster_data.per_pollster.map(d => d.pollster))
-  ).sort()
-  return ["Pooled", ...names]
-}
-```
-
-```{ojs}
-viewof institute = Inputs.select(pollsters, { value: "Pooled", label: "Institut" })
-```
-
-```{ojs}
 html`<hr style="margin:12px 0">
 <div style="font-size:0.8em;color:#666;line-height:1.6">
   <b>${cur_meta.title}</b><br>
@@ -106,72 +88,32 @@ html`<hr style="margin:12px 0">
 
 # Überblick
 
-## Row
+## Row {height=52%}
+
+#### Koalitionswahrscheinlichkeiten
 
 ```{ojs}
 {
-  const pollsterKey = institute === "Pooled" ? "pooled" : institute
-
-  // --- Party shares ---
-  const rawShares = institute === "Pooled"
-    ? cur.party_data.party_shares
-    : cur.pollster_data.per_pollster.filter(d => d.pollster === institute)
-
-  const shares = rawShares
-    .filter(d => d.party !== "others")
-    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
-
-  const maxX = 45
-  const shareStack = shares.flatMap(d => [
-    { name: party_names[d.party] || d.party, party: d.party,
-      x1: 0, x2: d.percent, fill: party_colors[d.party] || "#aaa" },
-    { name: party_names[d.party] || d.party, party: d.party,
-      x1: d.percent, x2: maxX, fill: "#f2f2f2" }
-  ])
-  const shareDomain = shares.map(d => party_names[d.party] || d.party)
-
-  const sharesPlot = Plot.plot({
-    marginLeft: 80, marginRight: 50, height: 260,
-    x: { label: "Stimmenanteil (%)", domain: [0, maxX] },
-    y: { domain: shareDomain, label: null },
-    marks: [
-      Plot.barX(shareStack, { y: "name", x1: "x1", x2: "x2", fill: "fill" }),
-      Plot.ruleX([5], { stroke: "#c0392b", strokeDasharray: "4 3", strokeWidth: 1.5 }),
-      Plot.text(shares.filter(d => d.percent >= 8), {
-        y: d => party_names[d.party] || d.party, x: d => d.percent / 2,
-        text: d => d.percent.toFixed(1) + "%",
-        fill: d => d.party === "fdp" ? "#555" : "white",
-        fontWeight: "bold", fontSize: 12, textAnchor: "middle"
-      }),
-      Plot.text(shares.filter(d => d.percent < 8), {
-        y: d => party_names[d.party] || d.party, x: d => d.percent + 0.8,
-        text: d => d.percent.toFixed(1) + "%",
-        fill: "#555", fontSize: 12, textAnchor: "start"
-      }),
-      Plot.ruleX([0])
-    ]
-  })
-
-  // --- Coalition probabilities (per pollster) ---
-  const coalAll = cur.coalitions.coalitions
-  const coalHasPollster = coalAll.some(d => d.pollster != null)
-  const coal = coalAll
-    .filter(d => (!coalHasPollster || d.pollster === pollsterKey) && d.probability > 0.001)
+  const coal = cur.coalitions.coalitions
+    .filter(d => d.probability > 0.001)
     .sort((a, b) => b.probability - a.probability)
-  const coalStack = coal.flatMap(d => [
-    { label: d.label, x1: 0, x2: d.probability,
+
+  const stack = coal.flatMap(d => [
+    { label: d.label, prob: d.probability, x1: 0, x2: d.probability,
       fill: d.probability >= 0.9 ? "#2e7d32" : d.probability >= 0.5 ? "#e65100" : "#c62828" },
-    { label: d.label, x1: d.probability, x2: 1.0, fill: "#e8e8e8" }
+    { label: d.label, prob: d.probability, x1: d.probability, x2: 1.0, fill: "#e8e8e8" }
   ])
-  const coalDomain = coal.map(d => d.label)
-  const coalPlot = Plot.plot({
-    marginLeft: 220, marginRight: 10,
+  const domain = coal.map(d => d.label)
+
+  return Plot.plot({
+    marginLeft: 220,
+    marginRight: 10,
     height: Math.max(200, coal.length * 46 + 40),
     caption: `Mehrheit ≥ ${cur_meta.majority} Sitze`,
     x: { label: null, domain: [0, 1], tickFormat: d => (d * 100).toFixed(0) + "%", axis: "top" },
-    y: { domain: coalDomain, label: null },
+    y: { domain, label: null },
     marks: [
-      Plot.barX(coalStack, { y: "label", x1: "x1", x2: "x2", fill: "fill" }),
+      Plot.barX(stack, { y: "label", x1: "x1", x2: "x2", fill: "fill" }),
       Plot.text(coal.filter(d => d.probability >= 0.12), {
         y: "label", x: d => d.probability / 2,
         text: d => (d.probability * 100).toFixed(1) + "%",
@@ -186,62 +128,140 @@ html`<hr style="margin:12px 0">
       Plot.ruleX([0])
     ]
   })
+}
+```
 
-  // --- Hurdle probabilities (per pollster) ---
-  const hurdleAll = cur.hurdle_data.hurdle
-  const hurdleHasPollster = hurdleAll.some(d => d.pollster != null)
-  const hurdles = hurdleAll
-    .filter(d => (!hurdleHasPollster || d.pollster === pollsterKey) && d.party !== "others")
+## Row {height=48%}
+
+### Column {width=50%}
+
+#### Umfragewerte (gepooled)
+
+```{ojs}
+{
+  const shares = cur.party_data.party_shares
+    .filter(d => d.party !== "others")
+    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
+
+  const maxX = 45
+  const stack = shares.flatMap(d => [
+    { name: party_names[d.party] || d.party, party: d.party, pct: d.percent,
+      x1: 0, x2: d.percent, fill: party_colors[d.party] || "#aaa" },
+    { name: party_names[d.party] || d.party, party: d.party, pct: d.percent,
+      x1: d.percent, x2: maxX, fill: "#f2f2f2" }
+  ])
+  const domain = shares.map(d => party_names[d.party] || d.party)
+
+  return Plot.plot({
+    marginLeft: 80,
+    marginRight: 50,
+    height: 280,
+    x: { label: "Stimmenanteil (%)", domain: [0, maxX] },
+    y: { domain, label: null },
+    marks: [
+      Plot.barX(stack, { y: "name", x1: "x1", x2: "x2", fill: "fill" }),
+      Plot.ruleX([5], { stroke: "#c0392b", strokeDasharray: "4 3", strokeWidth: 1.5 }),
+      Plot.text(shares.filter(d => d.percent >= 8), {
+        y: d => party_names[d.party] || d.party,
+        x: d => d.percent / 2,
+        text: d => d.percent.toFixed(1) + "%",
+        fill: d => d.party === "fdp" ? "#555" : "white",
+        fontWeight: "bold", fontSize: 12, textAnchor: "middle"
+      }),
+      Plot.text(shares.filter(d => d.percent < 8), {
+        y: d => party_names[d.party] || d.party,
+        x: d => d.percent + 0.8,
+        text: d => d.percent.toFixed(1) + "%",
+        fill: "#555", fontSize: 12, textAnchor: "start"
+      }),
+      Plot.ruleX([0])
+    ]
+  })
+}
+```
+
+### Column {width=50%}
+
+#### Wahrscheinlichkeit des Einzugs (5%-Hürde)
+
+```{ojs}
+{
+  const hurdles = cur.hurdle_data.hurdle
+    .filter(d => d.party !== "others")
     .sort((a, b) => b.prob_above_hurdle - a.prob_above_hurdle)
-  const hurdleDomain = hurdles.map(d => party_names[d.party] || d.party)
-  const hurdleStack = hurdles.flatMap(d => [
-    { name: party_names[d.party] || d.party, party: d.party,
+
+  const domain = hurdles.map(d => party_names[d.party] || d.party)
+  const stack = hurdles.flatMap(d => [
+    { name: party_names[d.party] || d.party, party: d.party, p: d.prob_above_hurdle,
       x1: 0, x2: d.prob_above_hurdle,
       fill: d.prob_above_hurdle >= 0.9 ? (party_colors[d.party] || "#aaa") : "#bdbdbd" },
-    { name: party_names[d.party] || d.party, party: d.party,
+    { name: party_names[d.party] || d.party, party: d.party, p: d.prob_above_hurdle,
       x1: d.prob_above_hurdle, x2: 1.0, fill: "#f2f2f2" }
   ])
-  const hurdlePlot = Plot.plot({
-    marginLeft: 80, marginRight: 10, height: 260,
+
+  return Plot.plot({
+    marginLeft: 80,
+    marginRight: 10,
+    height: 280,
     x: { label: "Einzugswahrscheinlichkeit", domain: [0, 1],
          tickFormat: d => (d * 100).toFixed(0) + "%" },
-    y: { domain: hurdleDomain, label: null },
+    y: { domain, label: null },
     marks: [
-      Plot.barX(hurdleStack, { y: "name", x1: "x1", x2: "x2", fill: "fill" }),
+      Plot.barX(stack, { y: "name", x1: "x1", x2: "x2", fill: "fill" }),
       Plot.ruleX([0.5], { stroke: "#e65100", strokeDasharray: "4 3", strokeWidth: 1.5 }),
       Plot.text(hurdles.filter(d => d.prob_above_hurdle >= 0.2), {
-        y: d => party_names[d.party] || d.party, x: d => d.prob_above_hurdle / 2,
+        y: d => party_names[d.party] || d.party,
+        x: d => d.prob_above_hurdle / 2,
         text: d => (d.prob_above_hurdle * 100).toFixed(1) + "%",
         fill: d => d.party === "fdp" ? "#555" : "white",
         fontWeight: "bold", fontSize: 12, textAnchor: "middle"
       }),
       Plot.text(hurdles.filter(d => d.prob_above_hurdle < 0.2), {
-        y: d => party_names[d.party] || d.party, x: d => d.prob_above_hurdle + 0.015,
+        y: d => party_names[d.party] || d.party,
+        x: d => d.prob_above_hurdle + 0.015,
         text: d => (d.prob_above_hurdle * 100).toFixed(1) + "%",
         fill: "#555", fontSize: 12, textAnchor: "start"
       }),
       Plot.ruleX([0])
     ]
   })
+}
+```
 
-  const sharesLabel = institute === "Pooled" ? "Umfragewerte (Pooled)" : `Umfragewerte — ${institute}`
+# Umfragen nach Institut
 
-  return html`<div style="display:flex;flex-direction:column;gap:20px">
-    <div>
-      <div style="font-size:0.9em;font-weight:600;color:#333;margin-bottom:4px">Koalitionswahrscheinlichkeiten</div>
-      ${coalPlot}
-    </div>
-    <div style="display:flex;gap:20px">
-      <div style="flex:1">
-        <div style="font-size:0.9em;font-weight:600;color:#333;margin-bottom:4px">${sharesLabel}</div>
-        ${sharesPlot}
-      </div>
-      <div style="flex:1">
-        <div style="font-size:0.9em;font-weight:600;color:#333;margin-bottom:4px">Wahrscheinlichkeit des Einzugs (5%-Hürde)</div>
-        ${hurdlePlot}
-      </div>
-    </div>
-  </div>`
+## Row
+
+```{ojs}
+{
+  const pp = cur.pollster_data.per_pollster
+    .filter(d => d.party !== "others")
+    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
+
+  return Plot.plot({
+    marginLeft: 100,
+    height: 400,
+    fy: { label: null },
+    x:  { label: "Stimmenanteil (%)", domain: [0, 50] },
+    marks: [
+      Plot.barX(pp, {
+        fy: "pollster",
+        y: d => party_names[d.party] || d.party,
+        x: "percent",
+        fill: d => party_colors[d.party] || "#aaa"
+      }),
+      Plot.text(pp.filter(d => d.percent >= 7), {
+        fy: "pollster",
+        y: d => party_names[d.party] || d.party,
+        x: d => d.percent / 2,
+        text: d => d.percent.toFixed(0) + "%",
+        fill: d => d.party === "fdp" ? "#555" : "white",
+        fontSize: 11, fontWeight: "bold", textAnchor: "middle"
+      }),
+      Plot.ruleX([5], { stroke: "#c0392b", strokeDasharray: "3 3", strokeWidth: 1.5 }),
+      Plot.ruleX([0])
+    ]
+  })
 }
 ```
 

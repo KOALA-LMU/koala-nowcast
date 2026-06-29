@@ -16,14 +16,11 @@ prepare_election <- function(election_id) {
   )
   updated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
 
-  coal <- fromJSON(gsub("\\b-?Inf\\b|\\bNaN\\b", "null",
-                        paste(readLines(file.path(results_dir, "coalProbs.json"), warn = FALSE), collapse = "\n"))) %>%
-    group_by(pollster) %>%
-    filter(date == max(date)) %>%
-    ungroup() %>%
-    filter(coalition %in% names(coal_labels)) %>%
+  coal <- fromJSON(file.path(results_dir, "coalProbs.json")) %>%
+    filter(pollster == "pooled", date == max(date),
+           coalition %in% names(coal_labels)) %>%
     mutate(label = coal_labels[coalition], probability = prob / 100) %>%
-    select(pollster, label, probability)
+    select(label, probability)
   write_json(list(coalitions = coal, updated = updated),
              file.path(out_dir, "coalition_probabilities.json"), auto_unbox = TRUE)
 
@@ -33,13 +30,10 @@ prepare_election <- function(election_id) {
   write_json(list(party_shares = shares, updated = updated),
              file.path(out_dir, "party_shares.json"), auto_unbox = TRUE)
 
-  hurdle <- fromJSON(gsub("\\b-?Inf\\b|\\bNaN\\b", "null",
-                          paste(readLines(file.path(results_dir, "passHurdle.json"), warn = FALSE), collapse = "\n"))) %>%
-    group_by(pollster) %>%
-    filter(date == max(date)) %>%
-    ungroup() %>%
+  hurdle <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
+    filter(pollster == "pooled", date == max(date)) %>%
     mutate(prob_above_hurdle = prob / 100) %>%
-    select(pollster, party, prob_above_hurdle)
+    select(party, prob_above_hurdle)
   write_json(list(hurdle = hurdle, updated = updated),
              file.path(out_dir, "hurdle_probabilities.json"), auto_unbox = TRUE)
 
