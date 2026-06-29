@@ -16,7 +16,8 @@ prepare_election <- function(election_id) {
   )
   updated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
 
-  coal <- fromJSON(file.path(results_dir, "coalProbs.json")) %>%
+  coal <- fromJSON(gsub("\\b-?Inf\\b|\\bNaN\\b", "null",
+                        paste(readLines(file.path(results_dir, "coalProbs.json"), warn = FALSE), collapse = "\n"))) %>%
     group_by(pollster) %>%
     filter(date == max(date)) %>%
     ungroup() %>%
@@ -32,7 +33,8 @@ prepare_election <- function(election_id) {
   write_json(list(party_shares = shares, updated = updated),
              file.path(out_dir, "party_shares.json"), auto_unbox = TRUE)
 
-  hurdle <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
+  hurdle <- fromJSON(gsub("\\b-?Inf\\b|\\bNaN\\b", "null",
+                          paste(readLines(file.path(results_dir, "passHurdle.json"), warn = FALSE), collapse = "\n"))) %>%
     group_by(pollster) %>%
     filter(date == max(date)) %>%
     ungroup() %>%

@@ -82,13 +82,16 @@ html`<hr style="margin:12px 0">`
 ```
 
 ```{ojs}
+//| output: false
 pollsters = {
   const names = Array.from(
     new Set(cur.pollster_data.per_pollster.map(d => d.pollster))
   ).sort()
   return ["Pooled", ...names]
 }
+```
 
+```{ojs}
 viewof institute = Inputs.select(pollsters, { value: "Pooled", label: "Institut" })
 ```
 
@@ -107,8 +110,6 @@ html`<hr style="margin:12px 0">
 
 ```{ojs}
 {
-  const pollsterKey = institute === "Pooled" ? "pooled" : institute
-
   // --- Party shares ---
   const rawShares = institute === "Pooled"
     ? cur.party_data.party_shares
@@ -150,8 +151,10 @@ html`<hr style="margin:12px 0">
   })
 
   // --- Coalition probabilities (per pollster) ---
-  const coal = cur.coalitions.coalitions
-    .filter(d => d.pollster === pollsterKey && d.probability > 0.001)
+  const coalAll = cur.coalitions.coalitions
+  const coalHasPollster = coalAll.some(d => d.pollster != null)
+  const coal = coalAll
+    .filter(d => (!coalHasPollster || d.pollster === pollsterKey) && d.probability > 0.001)
     .sort((a, b) => b.probability - a.probability)
   const coalStack = coal.flatMap(d => [
     { label: d.label, x1: 0, x2: d.probability,
@@ -183,8 +186,10 @@ html`<hr style="margin:12px 0">
   })
 
   // --- Hurdle probabilities (per pollster) ---
-  const hurdles = cur.hurdle_data.hurdle
-    .filter(d => d.pollster === pollsterKey && d.party !== "others")
+  const hurdleAll = cur.hurdle_data.hurdle
+  const hurdleHasPollster = hurdleAll.some(d => d.pollster != null)
+  const hurdles = hurdleAll
+    .filter(d => (!hurdleHasPollster || d.pollster === pollsterKey) && d.party !== "others")
     .sort((a, b) => b.prob_above_hurdle - a.prob_above_hurdle)
   const hurdleDomain = hurdles.map(d => party_names[d.party] || d.party)
   const hurdleStack = hurdles.flatMap(d => [
