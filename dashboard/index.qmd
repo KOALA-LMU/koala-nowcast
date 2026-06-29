@@ -75,6 +75,33 @@ cur_meta = election_meta[election]
 updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
   day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
 })
+
+coal_source = institute === "Pooled"
+  ? cur.coalitions.coalitions
+  : cur.pollster_data.per_pollster_coalitions.filter(d => d.pollster === institute)
+
+shares_source = institute === "Pooled"
+  ? cur.party_data.party_shares
+  : cur.pollster_data.per_pollster.filter(d => d.pollster === institute)
+
+hurdle_source = institute === "Pooled"
+  ? cur.hurdle_data.hurdle
+  : cur.pollster_data.per_pollster_hurdle.filter(d => d.pollster === institute)
+```
+
+```{ojs}
+html`<hr style="margin:12px 0">`
+```
+
+```{ojs}
+pollsters = {
+  const names = Array.from(
+    new Set(cur.pollster_data.per_pollster.map(d => d.pollster))
+  ).sort()
+  return ["Pooled", ...names]
+}
+
+viewof institute = Inputs.select(pollsters, { value: "Pooled", label: "Institut" })
 ```
 
 ```{ojs}
@@ -94,7 +121,7 @@ html`<hr style="margin:12px 0">
 
 ```{ojs}
 {
-  const coal = cur.coalitions.coalitions
+  const coal = coal_source
     .filter(d => d.probability > 0.001)
     .sort((a, b) => b.probability - a.probability)
 
@@ -139,7 +166,7 @@ html`<hr style="margin:12px 0">
 
 ```{ojs}
 {
-  const shares = cur.party_data.party_shares
+  const shares = shares_source
     .filter(d => d.party !== "others")
     .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
 
@@ -186,7 +213,7 @@ html`<hr style="margin:12px 0">
 
 ```{ojs}
 {
-  const hurdles = cur.hurdle_data.hurdle
+  const hurdles = hurdle_source
     .filter(d => d.party !== "others")
     .sort((a, b) => b.prob_above_hurdle - a.prob_above_hurdle)
 
