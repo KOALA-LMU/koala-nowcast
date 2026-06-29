@@ -107,7 +107,9 @@ html`<hr style="margin:12px 0">
 
 ```{ojs}
 {
-  // --- Party shares: works for both pooled and single institute ---
+  const pollsterKey = institute === "Pooled" ? "pooled" : institute
+
+  // --- Party shares ---
   const rawShares = institute === "Pooled"
     ? cur.party_data.party_shares
     : cur.pollster_data.per_pollster.filter(d => d.pollster === institute)
@@ -147,19 +149,9 @@ html`<hr style="margin:12px 0">
     ]
   })
 
-  // Single-institute view: just the party shares chart
-  if (institute !== "Gepooled") {
-    return html`<div style="padding:4px 0">
-      <div style="font-size:0.9em;font-weight:600;color:#333;margin-bottom:8px">
-        Umfragewerte — ${institute}
-      </div>
-      ${sharesPlot}
-    </div>`
-  }
-
-  // --- Coalition chart (pooled only) ---
+  // --- Coalition probabilities (per pollster) ---
   const coal = cur.coalitions.coalitions
-    .filter(d => d.probability > 0.001)
+    .filter(d => d.pollster === pollsterKey && d.probability > 0.001)
     .sort((a, b) => b.probability - a.probability)
   const coalStack = coal.flatMap(d => [
     { label: d.label, x1: 0, x2: d.probability,
@@ -190,9 +182,9 @@ html`<hr style="margin:12px 0">
     ]
   })
 
-  // --- Hurdle chart (pooled only) ---
+  // --- Hurdle probabilities (per pollster) ---
   const hurdles = cur.hurdle_data.hurdle
-    .filter(d => d.party !== "others")
+    .filter(d => d.pollster === pollsterKey && d.party !== "others")
     .sort((a, b) => b.prob_above_hurdle - a.prob_above_hurdle)
   const hurdleDomain = hurdles.map(d => party_names[d.party] || d.party)
   const hurdleStack = hurdles.flatMap(d => [
@@ -225,7 +217,8 @@ html`<hr style="margin:12px 0">
     ]
   })
 
-  // Pooled view: all three charts
+  const sharesLabel = institute === "Pooled" ? "Umfragewerte (Pooled)" : `Umfragewerte — ${institute}`
+
   return html`<div style="display:flex;flex-direction:column;gap:20px">
     <div>
       <div style="font-size:0.9em;font-weight:600;color:#333;margin-bottom:4px">Koalitionswahrscheinlichkeiten</div>
@@ -233,7 +226,7 @@ html`<hr style="margin:12px 0">
     </div>
     <div style="display:flex;gap:20px">
       <div style="flex:1">
-        <div style="font-size:0.9em;font-weight:600;color:#333;margin-bottom:4px">Umfragewerte (Pooled)</div>
+        <div style="font-size:0.9em;font-weight:600;color:#333;margin-bottom:4px">${sharesLabel}</div>
         ${sharesPlot}
       </div>
       <div style="flex:1">
