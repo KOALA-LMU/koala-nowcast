@@ -94,14 +94,10 @@ html`<hr style="margin:12px 0">`
 ```
 
 ```{ojs}
-pollsters = {
-  const names = Array.from(
-    new Set(cur.pollster_data.per_pollster.map(d => d.pollster))
-  ).sort()
-  return ["Pooled", ...names]
-}
-
-viewof institute = Inputs.select(pollsters, { value: "Pooled", label: "Institut" })
+viewof institute = Inputs.select(
+  ["Pooled", ...Array.from(new Set(cur.pollster_data.per_pollster.map(d => d.pollster))).sort()],
+  { value: "Pooled", label: "Institut" }
+)
 ```
 
 ```{ojs}
