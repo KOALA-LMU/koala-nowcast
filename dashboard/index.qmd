@@ -110,6 +110,8 @@ html`<hr style="margin:12px 0">
 
 ```{ojs}
 {
+  const pollsterKey = institute === "Pooled" ? "pooled" : institute
+
   // --- Party shares ---
   const rawShares = institute === "Pooled"
     ? cur.party_data.party_shares
