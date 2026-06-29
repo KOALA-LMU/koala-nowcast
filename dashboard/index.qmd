@@ -1,6 +1,6 @@
 ---
-title: "KOALA — ST 2026"
-subtitle: "Koalitionswahrscheinlichkeiten Sachsen-Anhalt Landtagswahl 2026"
+title: "KOALA Nowcast"
+subtitle: "Koalitionswahrscheinlichkeiten Landtagswahlen 2026"
 format:
   dashboard:
     theme: cosmo
@@ -13,22 +13,35 @@ format:
 #| output: false
 library(jsonlite)
 
-coal_json     <- fromJSON("data/coalition_probabilities.json", simplifyVector = FALSE)
-party_json    <- fromJSON("data/party_shares.json",           simplifyVector = FALSE)
-hurdle_json   <- fromJSON("data/hurdle_probabilities.json",   simplifyVector = FALSE)
-pollster_json <- fromJSON("data/per_pollster.json",           simplifyVector = FALSE)
+load_election <- function(dir) {
+  tryCatch(
+    list(
+      coalitions    = fromJSON(file.path(dir, "coalition_probabilities.json"), simplifyVector = FALSE),
+      party_data    = fromJSON(file.path(dir, "party_shares.json"),            simplifyVector = FALSE),
+      hurdle_data   = fromJSON(file.path(dir, "hurdle_probabilities.json"),    simplifyVector = FALSE),
+      pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE)
+    ),
+    error = function(e) NULL
+  )
+}
 
 ojs_define(
-  coalitions    = coal_json,
-  party_data    = party_json,
-  hurdle_data   = hurdle_json,
-  pollster_data = pollster_json,
-  party_colors  = list(
+  all_data = list(
+    ST = load_election("data/st"),
+    MV = load_election("data/mv"),
+    BE = load_election("data/be")
+  ),
+  election_meta = list(
+    ST = list(title = "Sachsen-Anhalt Landtagswahl 2026",         seats = 83L,  majority = 42L),
+    MV = list(title = "Mecklenburg-Vorpommern Landtagswahl 2026", seats = 71L,  majority = 36L),
+    BE = list(title = "Abgeordnetenhauswahl Berlin 2026",          seats = 130L, majority = 66L)
+  ),
+  party_colors = list(
     cdu = "#1c1c1b", spd = "#e3000f", afd = "#82caff",
     greens = "#46962b", fdp = "#ffed00", fw = "#005fa3",
     left = "#be3075", bsw = "#6d1f99", others = "#aaaaaa"
   ),
-  party_names   = list(
+  party_names = list(
     cdu = "Union", spd = "SPD", afd = "AfD",
     greens = "Grüne", fdp = "FDP", fw = "Freie Wähler",
     left = "Linke", bsw = "BSW", others = "Sonstige"
@@ -38,32 +51,50 @@ ojs_define(
 
 ```{ojs}
 //| output: false
-updated = new Date(coalitions.updated).toLocaleDateString("de-DE", {
-  day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
-})
 d3 = require("d3@7")
+party_order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
 ```
 
-# Überblick
-
-## Row {height=8%}
+# {.sidebar}
 
 ```{ojs}
-html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size:0.88em;color:#444">
-  <b>Sachsen-Anhalt Landtagswahl 2026</b> &nbsp;|&nbsp;
-  Gepoolte Umfragen (letzte 14 Tage) &nbsp;|&nbsp;
-  10.000 Monte-Carlo-Simulationen &nbsp;|&nbsp;
+viewof election = Inputs.radio(
+  new Map([
+    ["Sachsen-Anhalt",          "ST"],
+    ["Mecklenburg-Vorpommern",  "MV"],
+    ["Berlin",                  "BE"]
+  ]),
+  { value: "ST", label: "Bundesland" }
+)
+```
+
+```{ojs}
+//| output: false
+cur      = all_data[election]
+cur_meta = election_meta[election]
+updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
+  day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+})
+```
+
+```{ojs}
+html`<hr style="margin:12px 0">
+<div style="font-size:0.8em;color:#666;line-height:1.6">
+  <b>${cur_meta.title}</b><br>
+  ${cur_meta.seats} Sitze &nbsp;·&nbsp; Mehrheit ≥ ${cur_meta.majority}<br>
   Aktualisiert: ${updated}
 </div>`
 ```
 
+# Überblick
+
 ## Row {height=52%}
 
-#### Koalitionswahrscheinlichkeiten (Mehrheit ≥ 42 Sitze)
+#### Koalitionswahrscheinlichkeiten
 
 ```{ojs}
 {
-  const coal = coalitions.coalitions
+  const coal = cur.coalitions.coalitions
     .filter(d => d.probability > 0.001)
     .sort((a, b) => b.probability - a.probability)
 
@@ -78,6 +109,7 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
     marginLeft: 220,
     marginRight: 10,
     height: Math.max(200, coal.length * 46 + 40),
+    caption: `Mehrheit ≥ ${cur_meta.majority} Sitze`,
     x: { label: null, domain: [0, 1], tickFormat: d => (d * 100).toFixed(0) + "%", axis: "top" },
     y: { domain, label: null },
     marks: [
@@ -99,7 +131,7 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
 }
 ```
 
-## Row {height=40%}
+## Row {height=48%}
 
 ### Column {width=50%}
 
@@ -107,10 +139,9 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
 
 ```{ojs}
 {
-  const order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
-  const shares = party_data.party_shares
+  const shares = cur.party_data.party_shares
     .filter(d => d.party !== "others")
-    .sort((a, b) => order.indexOf(a.party) - order.indexOf(b.party))
+    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
 
   const maxX = 45
   const stack = shares.flatMap(d => [
@@ -155,7 +186,7 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
 
 ```{ojs}
 {
-  const hurdles = hurdle_data.hurdle
+  const hurdles = cur.hurdle_data.hurdle
     .filter(d => d.party !== "others")
     .sort((a, b) => b.prob_above_hurdle - a.prob_above_hurdle)
 
@@ -203,10 +234,9 @@ html`<div style="background:#f0f4f8;border-radius:6px;padding:8px 20px;font-size
 
 ```{ojs}
 {
-  const order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
-  const pp = pollster_data.per_pollster
+  const pp = cur.pollster_data.per_pollster
     .filter(d => d.party !== "others")
-    .sort((a, b) => order.indexOf(a.party) - order.indexOf(b.party))
+    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
 
   return Plot.plot({
     marginLeft: 100,
@@ -253,11 +283,12 @@ werden gepooled.</p>
 <ol>
   <li><b>Pooling:</b> Mehrere Umfragen werden gewichtet gemittelt.</li>
   <li><b>Monte-Carlo-Simulation:</b> 10.000 Wahlausgänge werden aus der Dirichlet-Posterior-Verteilung gezogen.</li>
-  <li><b>Sitzverteilung:</b> Für jeden simulierten Ausgang wird die Sitzverteilung nach dem Hare-Niemeyer-Verfahren berechnet (83 Sitze, 5%-Hürde).</li>
-  <li><b>Koalitionswahrscheinlichkeit:</b> Anteil der Simulationen, in denen eine Koalition ≥ 42 Sitze erreicht.</li>
+  <li><b>Sitzverteilung:</b> Für jeden simulierten Ausgang wird die Sitzverteilung nach dem Hare-Niemeyer-Verfahren berechnet
+  (${cur_meta.seats} Sitze, 5%-Hürde).</li>
+  <li><b>Koalitionswahrscheinlichkeit:</b> Anteil der Simulationen, in denen eine Koalition ≥ ${cur_meta.majority} Sitze erreicht.</li>
 </ol>
-<p><b>Hinweis:</b> Die Berechnung basiert auf Umfragedaten und spiegelt den Informationsstand zum Zeitpunkt der letzten Aktualisierung wider.
-Wahlüberraschungen, strategisches Wählen und Mobilisierungseffekte am Wahltag sind nicht modelliert.</p>
+<p><b>Hinweis:</b> Die Berechnung basiert auf Umfragedaten und spiegelt den Informationsstand zum Zeitpunkt der letzten
+Aktualisierung wider. Wahlüberraschungen, strategisches Wählen und Mobilisierungseffekte am Wahltag sind nicht modelliert.</p>
 </div>
 `
 ```

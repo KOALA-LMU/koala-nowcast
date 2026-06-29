@@ -35,15 +35,15 @@ jobs:
           extra-packages: knitr, rmarkdown
 
       - name: Prepare dashboard data
-        run: Rscript st-dashboard/prepare_data.R
+        run: Rscript dashboard/prepare_data.R
 
       - uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Render dashboard
-        run: quarto render st-dashboard/index.qmd --output-dir _site
+        run: quarto render dashboard/index.qmd --output-dir _site
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: st-dashboard/_site
+          path: dashboard/_site
 
       - uses: actions/deploy-pages@v4
