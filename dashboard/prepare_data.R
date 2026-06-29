@@ -43,8 +43,34 @@ prepare_election <- function(election_id) {
     filter(date == max(date)) %>%
     ungroup() %>%
     select(pollster, party, percent)
-  write_json(list(per_pollster = per_pollster, updated = updated),
-             file.path(out_dir, "per_pollster.json"), auto_unbox = TRUE)
+
+  per_pollster_coalitions <- fromJSON(file.path(results_dir, "coalProbs_grouping.json")) %>%
+    mutate(date = as.Date(date)) %>%
+    filter(pollster != "pooled") %>%
+    group_by(pollster) %>%
+    filter(date == max(date)) %>%
+    ungroup() %>%
+    mutate(probability = prob / 100) %>%
+    select(pollster, label = coal_type, probability)
+
+  per_pollster_hurdle <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
+    mutate(date = as.Date(date)) %>%
+    filter(pollster != "pooled") %>%
+    group_by(pollster) %>%
+    filter(date == max(date)) %>%
+    ungroup() %>%
+    mutate(prob_above_hurdle = prob / 100) %>%
+    select(pollster, party, prob_above_hurdle)
+
+  write_json(
+    list(
+      per_pollster            = per_pollster,
+      per_pollster_coalitions = per_pollster_coalitions,
+      per_pollster_hurdle     = per_pollster_hurdle,
+      updated                 = updated
+    ),
+    file.path(out_dir, "per_pollster.json"), auto_unbox = TRUE
+  )
 
   message(election_id, " dashboard data written to ", out_dir)
 }
