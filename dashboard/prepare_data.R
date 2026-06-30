@@ -16,10 +16,9 @@ prepare_election <- function(election_id) {
   )
   updated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
 
-  coal <- fromJSON(file.path(results_dir, "coalProbs.json")) %>%
-    filter(pollster == "pooled", date == max(date),
-           coalition %in% names(coal_labels)) %>%
-    mutate(label = coal_labels[coalition], probability = prob / 100) %>%
+  coal <- fromJSON(file.path(results_dir, "coalProbs_grouping.json")) %>%
+    filter(pollster == "pooled", date == max(date)) %>%
+    mutate(label = coal_type, probability = prob / 100) %>%
     select(label, probability)
   write_json(list(coalitions = coal, updated = updated),
              file.path(out_dir, "coalition_probabilities.json"), auto_unbox = TRUE)
@@ -75,7 +74,7 @@ prepare_election <- function(election_id) {
   message(election_id, " dashboard data written to ", out_dir)
 }
 
-for (id in c("ltw_st", "ltw_mv", "ltw_be")) {
+for (id in c("ltw_st", "ltw_mv", "ltw_be", "btw")) {
   tryCatch(
     prepare_election(id),
     error = function(e) message("Skipping ", id, ": ", conditionMessage(e))

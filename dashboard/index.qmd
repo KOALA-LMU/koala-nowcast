@@ -29,12 +29,14 @@ ojs_define(
   all_data = list(
     ST = load_election("data/st"),
     MV = load_election("data/mv"),
-    BE = load_election("data/be")
+    BE = load_election("data/be"),
+    BTW = load_election("data/btw")
   ),
   election_meta = list(
     ST = list(title = "Sachsen-Anhalt Landtagswahl 2026",         seats = 83L,  majority = 42L),
     MV = list(title = "Mecklenburg-Vorpommern Landtagswahl 2026", seats = 71L,  majority = 36L),
-    BE = list(title = "Abgeordnetenhauswahl Berlin 2026",          seats = 130L, majority = 66L)
+    BE = list(title = "Abgeordnetenhauswahl Berlin 2026",          seats = 130L, majority = 66L),
+    BTW = list(title = "Bundestagswahl 2029", seats = 630L, majority = 316L)
   ),
   party_colors = list(
     cdu = "#1c1c1b", spd = "#e3000f", afd = "#82caff",
@@ -58,13 +60,14 @@ party_order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
 # {.sidebar}
 
 ```{ojs}
-viewof election = Inputs.radio(
+viewof election = Inputs.select(
   new Map([
     ["Sachsen-Anhalt",          "ST"],
     ["Mecklenburg-Vorpommern",  "MV"],
-    ["Berlin",                  "BE"]
+    ["Berlin",                  "BE"],
+    ["Bundestagswahl",         "BTW"]
   ]),
-  { value: "ST", label: "Bundesland" }
+  { value: "ST", label: "Wahl"}
 )
 ```
 
