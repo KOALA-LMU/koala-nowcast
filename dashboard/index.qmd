@@ -223,7 +223,7 @@ html`<hr style="margin:12px 0">
 
 # Überblick
 
-## Row {height=40%}
+## Row {height=50%}
 
 #### Stimmenanteile
 
@@ -271,11 +271,11 @@ html`<hr style="margin:12px 0">
 }
 ```
 
-## Row {height=60%}
+## Row {height=50%}
 
-### Column {width=68%}
+### Column {width=60%}
 
-#### Stimmanteile
+#### Koalitionen
 
 ```{ojs}
 
@@ -283,36 +283,56 @@ html`<hr style="margin:12px 0">
   const coal = cleanCoalitions(coal_source, shares_source)
 
   return Plot.plot({
-    marginLeft: 150,
-    marginRight: 55,
+    marginLeft: 155,
+    marginRight: 85,
     height: Math.max(280, coal.length * 34 + 40),
     x: {
       label: "Koalitionswahrscheinlichkeit",
       domain: [0, 1],
+      ticks: [0, 0.5, 1],
       tickFormat: d => (d * 100).toFixed(0) + "%"
     },
-    y: { label: null },
+    y: {
+      label: null,
+      domain: coal.map(d => d.label)
+    },
     marks: [
-      Plot.barX(coal, {
+      Plot.ruleX([0], { stroke: "#aaa" }),
+      Plot.ruleX([0.5], {
+        stroke: "#999",
+        strokeDasharray: "4 3",
+        strokeWidth: 1
+      }),
+      Plot.ruleY(coal, {
+        y: "label",
+        x1: 0,
+        x2: "probability",
+        stroke: d => party_colors[d.first_party] || "#aaa",
+        strokeWidth: 3,
+        strokeOpacity: 0.75
+      }),
+      Plot.dot(coal, {
         y: "label",
         x: "probability",
-        fill: d => party_colors[d.first_party] || "#aaa"
+        fill: d => party_colors[d.first_party] || "#aaa",
+        stroke: "white",
+        strokeWidth: 1.5,
+        r: 5
       }),
       Plot.text(coal, {
         y: "label",
-        x: d => d.probability + 0.015,
+        x: d => Math.min(d.probability + 0.07, 0.98),
         text: d => (d.probability * 100).toFixed(1) + "%",
         fill: "#555",
         fontSize: 12,
-        textAnchor: "start"
-      }),
-      Plot.ruleX([0])
+        textAnchor: d => d.probability > 0.93 ? "end" : "start"
+      })
     ]
   })
 }
 ```
 
-### Column {width=32%}
+### Column {width=40%}
 
 #### Wahrscheinlichkeit des Einzugs (5%-Hürde)
 
@@ -322,30 +342,48 @@ html`<hr style="margin:12px 0">
 
   return Plot.plot({
     marginLeft: 80,
-    marginRight: 55,
+    marginRight: 80,
     height: Math.max(280, hurdles.length * 34 + 40),
     x: {
-      label: "Wahrscheinlichkeit über 5%-Hürde",
+      label: "Einzugswahrscheinlichkeit",
       domain: [0, 1],
       ticks: [0, 0.5, 1],
       tickFormat: d => (d * 100).toFixed(0) + "%"
     },
-    y: { label: null },
+    y: {
+      label: null,
+      domain: hurdles.map(d => d.label)
+    },
     marks: [
-      Plot.barX(hurdles, {
+      Plot.ruleX([0], { stroke: "#aaa" }),
+      Plot.ruleX([0.5], {
+        stroke: "#999",
+        strokeDasharray: "4 3",
+        strokeWidth: 1
+      }),
+      Plot.ruleY(hurdles, {
+        y: "label",
+        x1: 0,
+        x2: "prob_above_hurdle",
+        stroke: "#d0d0d0",
+        strokeWidth: 2
+      }),
+      Plot.dot(hurdles, {
         y: "label",
         x: "prob_above_hurdle",
-        fill: d => party_colors[d.party] || "#aaa"
+        fill: d => party_colors[d.party] || "#aaa",
+        stroke: "white",
+        strokeWidth: 1.5,
+        r: 5
       }),
       Plot.text(hurdles, {
         y: "label",
-        x: d => d.prob_above_hurdle + 0.015,
+        x: d => Math.min(d.prob_above_hurdle + 0.09, 0.98),
         text: d => (d.prob_above_hurdle * 100).toFixed(1) + "%",
         fill: "#555",
         fontSize: 12,
-        textAnchor: "start"
-      }),
-      Plot.ruleX([0])
+        textAnchor: d => d.prob_above_hurdle > 0.9 ? "end" : "start"
+      })
     ]
   })
 }
