@@ -31,7 +31,8 @@ prepare_election <- function(election_id) {
 
   hurdle <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
     filter(pollster == "pooled", date == max(date)) %>%
-    mutate(prob_above_hurdle = prob / 100) %>%
+    group_by(party) %>%
+    summarise(prob_above_hurdle = mean(prob / 100), .groups = "drop") %>%
     select(party, prob_above_hurdle)
   write_json(list(hurdle = hurdle, updated = updated),
              file.path(out_dir, "hurdle_probabilities.json"), auto_unbox = TRUE)
@@ -57,8 +58,8 @@ prepare_election <- function(election_id) {
     filter(pollster != "pooled") %>%
     group_by(pollster) %>%
     filter(date == max(date)) %>%
-    ungroup() %>%
-    mutate(prob_above_hurdle = prob / 100) %>%
+    group_by(pollster, party) %>%
+    summarise(prob_above_hurdle = mean(prob / 100), .groups = "drop") %>%
     select(pollster, party, prob_above_hurdle)
 
   write_json(
