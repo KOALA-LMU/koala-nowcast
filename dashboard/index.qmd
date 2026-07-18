@@ -389,6 +389,10 @@ html`<hr style="margin:12px 0">
 }
 ```
 
+# Koalitionswahrscheinlichkeiten
+
+
+
 # Umfragen nach Institut
 
 ## Row

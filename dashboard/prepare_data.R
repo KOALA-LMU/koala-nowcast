@@ -2,6 +2,58 @@ library(jsonlite)
 library(dplyr)
 library(yaml)
 
+coalition_density <- function(election_id, cfg, results_dir) {
+  coal_labels <- setNames(
+    vapply(cfg$coalitions, `[[`, character(1), "label"),
+    vapply(cfg$coalitions, function(c) {
+      paste(c$parties, collapse = "|")
+    }, character(1))
+  )
+
+  shares <- jsonlite::fromJSON(file.path(results_dir, "shares.json")) %>%
+    mutate(date = as.Date(date))
+
+  latest <- shares %>%
+    group_by(pollster) %>%
+    filter(date == max(date)) %>%
+    ungroup()
+
+  wanted_coals <- names(coal_labels)
+  coal_parties <- strsplit(wanted_coals, "|", fixed = TRUE)
+  non_afd_coals <- !vapply(coal_parties, function(x) {
+    "afd" %in% x && length(x) > 1
+  }, logical(1))
+  non_bsw_coals <- !vapply(coal_parties, function(x) {
+    "bsw" %in% x && length(x) > 1
+  }, logical(1))
+  wanted_coals <- wanted_coals[non_afd_coals & non_bsw_coals]
+
+  latest <- latest %>%
+    filter(coalition %in% wanted_coals)
+
+  latest <- tidyr::pivot_longer(
+    latest,
+    starts_with("coal_share"),
+    names_to = "sim",
+    values_to = "seat_share"
+  )
+
+  latest %>%
+    group_by(pollster, date, coalition) %>%
+    group_modify(function(dat, key) {
+      d <- density(dat$seat_share, from = 0, to = 1, n = 200)
+
+      tibble::tibble(
+        seat_share = d$x,
+        density = d$y,
+        prob_majority = mean(dat$seat_share >= 0.5)
+      )
+    }) %>%
+    ungroup() %>%
+    mutate(label = coal_labels[coalition]) %>%
+    dplyr::select(pollster, date, coalition, label, seat_share, density, prob_majority)
+}
+
 prepare_election <- function(election_id) {
   cfg         <- yaml::yaml.load_file(paste0("config/elections/", election_id, ".yml"))
   results_dir <- paste0("data/results/", election_id)
@@ -72,6 +124,13 @@ prepare_election <- function(election_id) {
     file.path(out_dir, "per_pollster.json"), auto_unbox = TRUE
   )
 
+  dens <- coalition_density(cfg$id, cfg, results_dir)
+  write_json(
+    list(densities = dens, updated = updated),
+    file.path(out_dir, "coalition_densities.json"),
+    auto.unbox = TRUE
+  )
+
   message(election_id, " dashboard data written to ", out_dir)
 }
 
@@ -81,3 +140,4 @@ for (id in c("ltw_st", "ltw_mv", "ltw_be", "btw")) {
     error = function(e) message("Skipping ", id, ": ", conditionMessage(e))
   )
 }
+
