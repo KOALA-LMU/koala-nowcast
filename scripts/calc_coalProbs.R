@@ -45,6 +45,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # ── Paths ────────────────────────────────────────────────────────────────────
   surveys_file <- file.path("data", "surveys", cfg$id, "polls.json")
   results_dir  <- file.path("data", "results", cfg$id)
+  results_file <- file.path(results_dir, "coalProbs.json")
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
   # ── Load surveys (flat JSON produced by scrape_election) ────────────────────
@@ -53,7 +54,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   dates_todo     <- sort(unique(surveys_byTime$date))
 
   # ── Determine which dates need (re-)computation ──────────────────────────────
-  log_file     <- file.path(results_dir, "info.log")
   pending_file <- file.path("data", "surveys", cfg$id, "pending_dates.json")
 
   if (force_newCalculation) {
@@ -63,15 +63,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     pending <- as.Date(jsonlite::fromJSON(pending_file))
     dates   <- dates_todo[dates_todo %in% pending]
     file.remove(pending_file)
-  } else if (!file.exists(log_file)) {
+  } else if (!file.exists(results_file)) {
     dates <- dates_todo
   } else {
-    info        <- readLines(log_file)
-    range_done  <- strsplit(strsplit(info, ": ")[[1]][2], ",")[[1]]
-    range_done[2] <- substring(range_done[2], 1, nchar(range_done[2]) - 1)
-    range_done  <- as.Date(range_done)
-    d           <- dates_todo[seq_len(length(dates_todo) - 1)]
-    dates       <- c(d[d < range_done[1] | d > range_done[2]], tail(dates_todo, 1))
+    # Recompute any survey date missing from the existing results, wherever it falls
+    computed_dates <- unique(as.Date(jsonlite::fromJSON(results_file)$date))
+    dates          <- dates_todo[!dates_todo %in% computed_dates]
   }
 
   # ── Per-pollster computation ─────────────────────────────────────────────────
@@ -243,8 +240,4 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   write_result(coalProbs_grouping, "coalProbs_grouping")
   write_result(biggestParty,       "biggestParty")
   write_result(passHurdle,         "passHurdle")
-
-  range_todo <- range(dates_todo)
-  writeLines(paste0("Results are already calculated for the time: ", range_todo[1], ",", range_todo[2], ")"),
-             log_file)
 }
