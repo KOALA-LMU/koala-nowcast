@@ -38,7 +38,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
     scrape_from <- oldest_date
   }
 
-  cat(sprintf("  [%s] existing data up to: %s — scraping from: %s\n",
+  message(sprintf("  [%s] existing data up to: %s — scraping from: %s\n",
               cfg$id,
               if (!is.null(existing)) as.character(max(existing$date)) else "none",
               scrape_from))
@@ -87,7 +87,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   has_new_raw    <- nrow(new_rows) > 0
   has_no_pooled  <- is.null(existing) || !any(existing$pollster == "pooled")
 
-  cat(sprintf("  [%s] new_raw=%s (%d poll(s)), no_pooled=%s\n",
+  message(sprintf("  [%s] new_raw=%s (%d poll(s)), no_pooled=%s\n",
               cfg$id, has_new_raw, nrow(new_rows), has_no_pooled))
 
   if (!has_new_raw && !has_no_pooled) {
