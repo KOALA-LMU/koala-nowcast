@@ -83,7 +83,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
                   "coalProbs_grouping" = NULL, "biggestParty" = NULL,
                   "passHurdle" = NULL))
     }
-    print(paste0("Perform new calculations for ", p, "..."))
+    print(paste0("Perform new calculations for ", cfg$name, " (", p, ")..."))
 
     calc_oneDate <- function(date_ins) {
       survey_raw <- survey_byTime %>%

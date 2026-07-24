@@ -87,6 +87,9 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   has_new_raw    <- nrow(new_rows) > 0
   has_no_pooled  <- is.null(existing) || !any(existing$pollster == "pooled")
 
+  cat(sprintf("  [%s] new_raw=%s (%d poll(s)), no_pooled=%s\n",
+              cfg$id, has_new_raw, nrow(new_rows), has_no_pooled))
+
   if (!has_new_raw && !has_no_pooled) {
     message("  No new polls.\n")
     return(invisible(FALSE))
