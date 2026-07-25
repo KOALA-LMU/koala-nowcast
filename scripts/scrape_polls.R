@@ -26,7 +26,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
       as_tibble(fromJSON(out_file)) %>%
         mutate(date = as.Date(date), start = as.Date(start), end = as.Date(end)),
       error = function(e) {
-        message(sprintf("  [%s] Could not parse existing JSON, starting fresh", cfg$id))
+        message(sprintf("[%s] Could not parse existing JSON, starting fresh", cfg$id))
         NULL
       }
     )
@@ -40,7 +40,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
     scrape_from <- oldest_date
   }
 
-  message(sprintf("  [%s] existing data up to: %s — scraping from: %s",
+  message(sprintf("[%s] existing data up to: %s — scraping from: %s",
               cfg$id,
               if (!is.null(existing)) as.character(max(existing$date)) else "none",
               scrape_from))
@@ -75,7 +75,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
 
   n_dropped <- length(unique(fresh$date)) - length(complete_dates)
   if (n_dropped > 0)
-    message(sprintf("  [%s] Dropped %d incomplete poll date(s)", cfg$id, n_dropped))
+    message(sprintf("[%s] Dropped %d incomplete poll date(s)", cfg$id, n_dropped))
 
   fresh <- filter(fresh, date %in% complete_dates)
 
@@ -89,18 +89,18 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   has_new_raw    <- nrow(new_rows) > 0
   has_no_pooled  <- is.null(existing) || !any(existing$pollster == "pooled")
 
-  message(sprintf("  [%s] new_raw=%s (%d poll(s)), no_pooled=%s",
+  message(sprintf("[%s] new_raw=%s (%d poll(s)), no_pooled=%s",
               cfg$id, has_new_raw, nrow(new_rows), has_no_pooled))
 
   if (!has_new_raw && !has_no_pooled) {
-    message(sprintf("  [%s] No new polls.", cfg$id))
+    message(sprintf("[%s] No new polls.", cfg$id))
     return(invisible(FALSE))
   }
 
   if (has_new_raw)
-    message(sprintf("  [%s] %d new poll(s) found", cfg$id, nrow(new_rows)))
+    message(sprintf("[%s] %d new poll(s) found", cfg$id, nrow(new_rows)))
   if (has_no_pooled)
-    message(sprintf("  [%s] No pooled data found, computing pooled estimates", cfg$id))
+    message(sprintf("[%s] No pooled data found, computing pooled estimates", cfg$id))
 
   # Merge existing raw polls with new rows
   raw_updated <- bind_rows(
@@ -132,7 +132,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
     arrange(desc(date), pollster)
 
   write_json(updated, out_file, pretty = TRUE, auto_unbox = TRUE)
-  message(sprintf("  [%s] Saved to %s", cfg$id, out_file))
+  message(sprintf("[%s] Saved to %s", cfg$id, out_file))
 
   invisible(TRUE)
 }
@@ -233,12 +233,12 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
     mutate(election = cfg$id)
 
   if (length(sparse_dates) > 0)
-    message(sprintf("  [%s] single-poll window (pooled = that poll) for: %s",
+    message(sprintf("[%s] single-poll window (pooled = that poll) for: %s",
                     cfg$id, paste(sort(sparse_dates), collapse = ", ")))
 
   window_desc <- if (is.null(period_extended)) sprintf("%d days", period)
                  else sprintf("%d days (extended: %d)", period, period_extended)
-  message(sprintf("  [%s] Computed pooled estimates for %d date(s) (pooling window: %s)",
+  message(sprintf("[%s] Computed pooled estimates for %d date(s) (pooling window: %s)",
                   cfg$id, length(dates), window_desc))
   pooled
 }
