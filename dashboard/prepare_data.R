@@ -77,9 +77,14 @@ prepare_election <- function(election_id) {
 
   shares <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
     filter(pollster == "pooled", date == max(date)) %>%
-    select(party, percent)
+    select(party, percent, date)
   write_json(list(party_shares = shares, updated = updated),
              file.path(out_dir, "party_shares.json"), auto_unbox = TRUE)
+
+  history <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
+    select(pollster, date, party, percent)
+  write_json(list(history = history, updated = updated),
+             file.path(out_dir, "poll_history.json"), auto_unbox = TRUE)
 
   hurdle <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
     filter(pollster == "pooled", date == max(date)) %>%
@@ -94,7 +99,7 @@ prepare_election <- function(election_id) {
     group_by(pollster) %>%
     filter(date == max(date)) %>%
     ungroup() %>%
-    select(pollster, party, percent)
+    select(pollster, party, percent, date)
 
   per_pollster_coalitions <- fromJSON(file.path(results_dir, "coalProbs_grouping.json")) %>%
     mutate(date = as.Date(date)) %>%
