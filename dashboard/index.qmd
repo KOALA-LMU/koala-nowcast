@@ -1,0 +1,459 @@
+---
+title: "KOALA Nowcast"
+subtitle: "Koalitionswahrscheinlichkeiten Landtagswahlen 2026"
+format:
+  dashboard:
+    theme: cosmo
+    nav-buttons:
+      - icon: github
+        href: https://github.com/adibender/koala
+---
+
+```{r}
+#| output: false
+library(jsonlite)
+
+load_election <- function(dir) {
+  tryCatch(
+    list(
+      coalitions    = fromJSON(file.path(dir, "coalition_probabilities.json"), simplifyVector = FALSE),
+      party_data    = fromJSON(file.path(dir, "party_shares.json"),            simplifyVector = FALSE),
+      hurdle_data   = fromJSON(file.path(dir, "hurdle_probabilities.json"),    simplifyVector = FALSE),
+      pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE)
+    ),
+    error = function(e) NULL
+  )
+}
+
+ojs_define(
+  all_data = list(
+    ST = load_election("data/st"),
+    MV = load_election("data/mv"),
+    BE = load_election("data/be"),
+    BTW = load_election("data/btw")
+  ),
+  election_meta = list(
+    ST = list(title = "Sachsen-Anhalt Landtagswahl 2026",         seats = 83L,  majority = 42L),
+    MV = list(title = "Mecklenburg-Vorpommern Landtagswahl 2026", seats = 71L,  majority = 36L),
+    BE = list(title = "Abgeordnetenhauswahl Berlin 2026",          seats = 130L, majority = 66L),
+    BTW = list(title = "Bundestagswahl 2029", seats = 630L, majority = 316L)
+  ),
+  party_colors = list(
+    cdu = "#1c1c1b", spd = "#e3000f", afd = "#82caff",
+    greens = "#46962b", fdp = "#ffed00", fw = "#005fa3",
+    left = "#be3075", bsw = "#6d1f99", others = "#aaaaaa"
+  ),
+  party_names = list(
+    cdu = "Union", spd = "SPD", afd = "AfD",
+    greens = "Grüne", fdp = "FDP", fw = "Freie Wähler",
+    left = "Linke", bsw = "BSW", others = "Sonstige"
+  )
+)
+```
+
+```{ojs}
+//| output: false
+d3 = require("d3@7")
+party_order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
+
+label_to_party = Object.fromEntries(
+  Object.entries(party_names).map(([party, label]) => [label, party])
+)
+
+party_to_label = Object.fromEntries(
+  Object.entries(label_to_party).map(([label, party]) => [party, label])
+)
+
+coalitionParties = label =>
+  label.split("-").map(label => label_to_party[label])
+
+normCoalition = label =>
+  coalitionParties(label).slice().sort().join("|")
+
+labelFromParties = parties =>
+  parties.map(party => party_to_label[party] || party).join("-")
+
+meanBy = (data, keyFn, valueFn) =>
+  Array.from(
+    d3.rollup(data, v => d3.mean(v, valueFn), keyFn),
+    ([key, value]) => ({ key, value })
+  )
+
+cleanShares = shares => {
+  return meanBy(
+    shares.filter(d => d.party !== "others"),
+    d => d.party,
+    d => d.percent
+  )
+    .map(d => ({
+      party: d.key,
+      percent: d.value,
+      label: party_names[d.key] || d.key
+    }))
+    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
+}
+
+cleanHurdles = hurdles => {
+  return meanBy(
+    hurdles.filter(d => d.party !== "others" && d.prob_above_hurdle < 0.5),
+    d => d.party,
+    d => d.prob_above_hurdle
+  )
+    .map(d => ({
+      party: d.key,
+      prob_above_hurdle: d.value,
+      label: party_names[d.key] || d.key
+    }))
+    .sort((a, b) => b.prob_above_hurdle - a.prob_above_hurdle)
+}
+
+cleanCoalitions = (coalitions, shares) => {
+  const partyVotes = Object.fromEntries(
+    cleanShares(shares).map(d => [d.party, d.percent])
+  )
+
+  const labelByVotes = parties => {
+    const ordered = parties
+      .slice()
+      .sort((a, b) => (partyVotes[b] ?? -Infinity) - (partyVotes[a] ?? -Infinity))
+
+    return labelFromParties(ordered)
+  }
+
+  const byLabel = Array.from(
+    d3.rollup(
+      coalitions,
+      v => d3.mean(v, d => d.probability),
+      d => d.label
+    ),
+    ([label, probability]) => ({
+      label,
+      probability,
+      parties: coalitionParties(label),
+      coalition_key: normCoalition(label)
+    })
+  )
+
+  return Array.from(
+    d3.group(
+      byLabel.filter(d =>
+        !d.parties.includes("bsw") &&
+        !(d.parties.includes("afd") && d.parties.length > 1)
+      ),
+      d => d.coalition_key
+    ),
+    ([coalition_key, rows]) => {
+      rows.sort((a, b) =>
+        d3.descending(a.probability, b.probability) ||
+        d3.ascending(a.label, b.label)
+      )
+
+      const probability = d3.sum(rows, d => d.probability)
+      const label = d3.max(rows, d => d.probability) > 0
+        ? rows[0].label
+        : labelByVotes(rows[0].parties)
+
+      const first_party = coalitionParties(label)[0]
+
+      return {
+        coalition_key,
+        label,
+        first_party,
+        probability
+      }
+    }
+  ).sort((a, b) => a.probability - b.probability)
+}
+```
+
+# {.sidebar}
+
+```{ojs}
+viewof election = Inputs.select(
+  new Map([
+    ["Sachsen-Anhalt",          "ST"],
+    ["Mecklenburg-Vorpommern",  "MV"],
+    ["Berlin",                  "BE"],
+    ["Bundestagswahl",         "BTW"]
+  ]),
+  { value: "ST", label: "Wahl"}
+)
+```
+
+```{ojs}
+//| output: false
+cur      = all_data[election]
+cur_meta = election_meta[election]
+updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
+  day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+})
+
+coal_source = institute === "Pooled"
+  ? cur.coalitions.coalitions
+  : cur.pollster_data.per_pollster_coalitions.filter(d => d.pollster === institute)
+
+shares_source = institute === "Pooled"
+  ? cur.party_data.party_shares
+  : cur.pollster_data.per_pollster.filter(d => d.pollster === institute)
+
+hurdle_source = institute === "Pooled"
+  ? cur.hurdle_data.hurdle
+  : cur.pollster_data.per_pollster_hurdle.filter(d => d.pollster === institute)
+```
+
+```{ojs}
+html`<hr style="margin:12px 0">`
+```
+
+```{ojs}
+viewof institute = Inputs.select(
+  ["Pooled", ...Array.from(new Set(cur.pollster_data.per_pollster.map(d => d.pollster))).sort()],
+  { value: "Pooled", label: "Institut" }
+)
+```
+
+```{ojs}
+html`<hr style="margin:12px 0">
+<div style="font-size:0.8em;color:#666;line-height:1.6">
+  <b>${cur_meta.title}</b><br>
+  ${cur_meta.seats} Sitze &nbsp;·&nbsp; Mehrheit ≥ ${cur_meta.majority}<br>
+  Aktualisiert: ${updated}
+</div>`
+```
+
+# Überblick
+
+## Row {height=50%}
+
+#### Stimmenanteile
+
+```{ojs}
+{
+  const shares = cleanShares(shares_source)
+  const maxY = Math.max(35, d3.max(shares, d => d.percent) + 5)
+
+  return Plot.plot({
+    marginBottom: 55,
+    marginLeft: 55,
+    marginRight: 25,
+    height: 310,
+    x: {
+      label: null,
+      domain: shares.map(d => d.label)
+    },
+    y: {
+      label: "Stimmenanteil (%)",
+      domain: [0, maxY],
+      tickFormat: d => d + "%"
+    },
+    marks: [
+      Plot.barY(shares, {
+        x: "label",
+        y: "percent",
+        fill: d => party_colors[d.party] || "#aaa"
+      }),
+      Plot.ruleY([5], {
+        stroke: "#555",
+        strokeDasharray: "4 3",
+        strokeWidth: 1.2
+      }),
+      Plot.text(shares, {
+        x: "label",
+        y: d => d.percent + 1,
+        text: d => d.percent.toFixed(1) + "%",
+        fill: "#555",
+        fontSize: 12,
+        textAnchor: "middle"
+      }),
+      Plot.ruleY([0])
+    ]
+  })
+}
+```
+
+## Row {height=50%}
+
+### Column {width=60%}
+
+#### Koalitionen
+
+```{ojs}
+
+{
+  const coal = cleanCoalitions(coal_source, shares_source)
+
+  return Plot.plot({
+    marginLeft: 155,
+    marginRight: 85,
+    height: Math.max(280, coal.length * 34 + 40),
+    x: {
+      label: "Koalitionswahrscheinlichkeit",
+      domain: [0, 1],
+      ticks: [0, 0.5, 1],
+      tickFormat: d => (d * 100).toFixed(0) + "%"
+    },
+    y: {
+      label: null,
+      domain: coal.map(d => d.label)
+    },
+    marks: [
+      Plot.ruleX([0], { stroke: "#aaa" }),
+      Plot.ruleX([0.5], {
+        stroke: "#999",
+        strokeDasharray: "4 3",
+        strokeWidth: 1
+      }),
+      Plot.ruleY(coal, {
+        y: "label",
+        x1: 0,
+        x2: "probability",
+        stroke: d => party_colors[d.first_party] || "#aaa",
+        strokeWidth: 3,
+        strokeOpacity: 0.75
+      }),
+      Plot.dot(coal, {
+        y: "label",
+        x: "probability",
+        fill: d => party_colors[d.first_party] || "#aaa",
+        stroke: "white",
+        strokeWidth: 1.5,
+        r: 5
+      }),
+      Plot.text(coal, {
+        y: "label",
+        x: d => Math.min(d.probability + 0.07, 0.98),
+        text: d => (d.probability * 100).toFixed(1) + "%",
+        fill: "#555",
+        fontSize: 12,
+        textAnchor: d => d.probability > 0.93 ? "end" : "start"
+      })
+    ]
+  })
+}
+```
+
+### Column {width=40%}
+
+#### Wahrscheinlichkeit des Einzugs (5%-Hürde)
+
+```{ojs}
+{
+  const hurdles = cleanHurdles(hurdle_source)
+
+  return Plot.plot({
+    marginLeft: 80,
+    marginRight: 80,
+    height: Math.max(280, hurdles.length * 34 + 40),
+    x: {
+      label: "Einzugswahrscheinlichkeit",
+      domain: [0, 1],
+      ticks: [0, 0.5, 1],
+      tickFormat: d => (d * 100).toFixed(0) + "%"
+    },
+    y: {
+      label: null,
+      domain: hurdles.map(d => d.label)
+    },
+    marks: [
+      Plot.ruleX([0], { stroke: "#aaa" }),
+      Plot.ruleX([0.5], {
+        stroke: "#999",
+        strokeDasharray: "4 3",
+        strokeWidth: 1
+      }),
+      Plot.ruleY(hurdles, {
+        y: "label",
+        x1: 0,
+        x2: "prob_above_hurdle",
+        stroke: "#d0d0d0",
+        strokeWidth: 2
+      }),
+      Plot.dot(hurdles, {
+        y: "label",
+        x: "prob_above_hurdle",
+        fill: d => party_colors[d.party] || "#aaa",
+        stroke: "white",
+        strokeWidth: 1.5,
+        r: 5
+      }),
+      Plot.text(hurdles, {
+        y: "label",
+        x: d => Math.min(d.prob_above_hurdle + 0.09, 0.98),
+        text: d => (d.prob_above_hurdle * 100).toFixed(1) + "%",
+        fill: "#555",
+        fontSize: 12,
+        textAnchor: d => d.prob_above_hurdle > 0.9 ? "end" : "start"
+      })
+    ]
+  })
+}
+```
+
+# Koalitionswahrscheinlichkeiten
+
+
+
+# Umfragen nach Institut
+
+## Row
+
+```{ojs}
+{
+  const pp = cur.pollster_data.per_pollster
+    .filter(d => d.party !== "others")
+    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
+
+  return Plot.plot({
+    marginLeft: 100,
+    height: 400,
+    fy: { label: null },
+    x:  { label: "Stimmenanteil (%)", domain: [0, 50] },
+    marks: [
+      Plot.barX(pp, {
+        fy: "pollster",
+        y: d => party_names[d.party] || d.party,
+        x: "percent",
+        fill: d => party_colors[d.party] || "#aaa"
+      }),
+      Plot.text(pp.filter(d => d.percent >= 7), {
+        fy: "pollster",
+        y: d => party_names[d.party] || d.party,
+        x: d => d.percent / 2,
+        text: d => d.percent.toFixed(0) + "%",
+        fill: d => d.party === "fdp" ? "#555" : "white",
+        fontSize: 11, fontWeight: "bold", textAnchor: "middle"
+      }),
+      Plot.ruleX([5], { stroke: "#c0392b", strokeDasharray: "3 3", strokeWidth: 1.5 }),
+      Plot.ruleX([0])
+    ]
+  })
+}
+```
+
+# Methodik
+
+## Row
+
+```{ojs}
+html`
+<div style="max-width:700px;line-height:1.7;font-size:0.95em">
+<h3>Methodik</h3>
+<p>Die Koalitionswahrscheinlichkeiten werden mit dem R-Paket
+<a href="https://github.com/adibender/coalitions" target="_blank"><code>coalitions</code></a>
+berechnet (Bender &amp; Bauer, 2018).</p>
+<h4>Datenbasis</h4>
+<p>Umfragedaten der letzten 14 Tage von <a href="https://www.wahlrecht.de" target="_blank">wahlrecht.de</a>
+werden gepooled.</p>
+<h4>Berechnung</h4>
+<ol>
+  <li><b>Pooling:</b> Mehrere Umfragen werden gewichtet gemittelt.</li>
+  <li><b>Monte-Carlo-Simulation:</b> 10.000 Wahlausgänge werden aus der Dirichlet-Posterior-Verteilung gezogen.</li>
+  <li><b>Sitzverteilung:</b> Für jeden simulierten Ausgang wird die Sitzverteilung nach dem Hare-Niemeyer-Verfahren berechnet
+  (${cur_meta.seats} Sitze, 5%-Hürde).</li>
+  <li><b>Koalitionswahrscheinlichkeit:</b> Anteil der Simulationen, in denen eine Koalition ≥ ${cur_meta.majority} Sitze erreicht.</li>
+</ol>
+<p><b>Hinweis:</b> Die Berechnung basiert auf Umfragedaten und spiegelt den Informationsstand zum Zeitpunkt der letzten
+Aktualisierung wider. Wahlüberraschungen, strategisches Wählen und Mobilisierungseffekte am Wahltag sind nicht modelliert.</p>
+</div>
+`
+```
