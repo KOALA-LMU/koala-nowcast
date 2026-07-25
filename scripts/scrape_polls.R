@@ -1,8 +1,10 @@
-library(coalitions)
-library(yaml)
-library(dplyr)
-library(tidyr)
-library(jsonlite)
+suppressPackageStartupMessages({
+  library(coalitions)
+  library(yaml)
+  library(dplyr)
+  library(tidyr)
+  library(jsonlite)
+})
 source("scripts/scrape_btw.R")
 
 scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
@@ -24,7 +26,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
       as_tibble(fromJSON(out_file)) %>%
         mutate(date = as.Date(date), start = as.Date(start), end = as.Date(end)),
       error = function(e) {
-        message("  Could not parse existing JSON, starting fresh\n")
+        message(sprintf("  [%s] Could not parse existing JSON, starting fresh\n", cfg$id))
         NULL
       }
     )
@@ -73,7 +75,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
 
   n_dropped <- length(unique(fresh$date)) - length(complete_dates)
   if (n_dropped > 0)
-    message(sprintf("  Dropped %d incomplete poll date(s)\n", n_dropped))
+    message(sprintf("  [%s] Dropped %d incomplete poll date(s)\n", cfg$id, n_dropped))
 
   fresh <- filter(fresh, date %in% complete_dates)
 
@@ -91,14 +93,14 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
               cfg$id, has_new_raw, nrow(new_rows), has_no_pooled))
 
   if (!has_new_raw && !has_no_pooled) {
-    message("  No new polls.\n")
+    message(sprintf("  [%s] No new polls.\n", cfg$id))
     return(invisible(FALSE))
   }
 
   if (has_new_raw)
-    message(sprintf("  %d new poll(s) found\n", nrow(new_rows)))
+    message(sprintf("  [%s] %d new poll(s) found\n", cfg$id, nrow(new_rows)))
   if (has_no_pooled)
-    message("  No pooled data found, computing pooled estimates\n")
+    message(sprintf("  [%s] No pooled data found, computing pooled estimates\n", cfg$id))
 
   # Merge existing raw polls with new rows
   raw_updated <- bind_rows(
@@ -130,7 +132,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
     arrange(desc(date), pollster)
 
   write_json(updated, out_file, pretty = TRUE, auto_unbox = TRUE)
-  message(sprintf("  Saved to %s\n", out_file))
+  message(sprintf("  [%s] Saved to %s\n", cfg$id, out_file))
 
   invisible(TRUE)
 }
@@ -206,18 +208,34 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
   if (!is.null(from_date))
     dates <- dates[dates >= from_date]
 
+  # pool_surveys() warns once per party when a date's pooling window holds only a
+  # single poll. Catch those per date so we log which dates were sparse (one line
+  # per date) instead of one identical warning per party.
+  sparse_dates <- character()
   pooled <- lapply(dates, function(d) {
-    pool_surveys(
-      surveys        = surveys_nested,
-      last_date      = d,
-      pollsters      = pollsters,
-      period         = period,
-      period_extended = if (is.null(period_extended)) NA else period_extended
+    withCallingHandlers(
+      pool_surveys(
+        surveys        = surveys_nested,
+        last_date      = d,
+        pollsters      = pollsters,
+        period         = period,
+        period_extended = if (is.null(period_extended)) NA else period_extended
+      ),
+      warning = function(w) {
+        if (grepl("Only one survey/pollster", conditionMessage(w))) {
+          sparse_dates <<- union(sparse_dates, as.character(d))
+          invokeRestart("muffleWarning")
+        }
+      }
     )
   }) %>%
     bind_rows() %>%
     mutate(election = cfg$id)
 
-  message(sprintf("  Computed pooled estimates for %d date(s)\n", length(dates)))
+  if (length(sparse_dates) > 0)
+    message(sprintf("  [%s] single-poll window (pooled = that poll) for: %s\n",
+                    cfg$id, paste(sort(sparse_dates), collapse = ", ")))
+
+  message(sprintf("  [%s] Computed pooled estimates for %d date(s)\n", cfg$id, length(dates)))
   pooled
 }

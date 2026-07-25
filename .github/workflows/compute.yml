@@ -58,7 +58,7 @@ jobs:
           FORCE_ALL: ${{ steps.check_results.outputs.has_results == 'false' }}
         run: |
           Rscript -e '
-            library(coalitions); library(dplyr); library(tidyr); library(yaml); library(jsonlite)
+            suppressPackageStartupMessages({ library(coalitions); library(dplyr); library(tidyr); library(yaml); library(jsonlite) })
             source("scripts/calc_coalProbs_helpers.R")
             source("scripts/calc_coalProbs.R")
             source("scripts/pending_configs.R")
