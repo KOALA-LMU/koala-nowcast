@@ -1,6 +1,6 @@
 ---
-title: "KOALA Nowcast"
-subtitle: "Koalitionswahrscheinlichkeiten Landtagswahlen 2026"
+title: "KOALA"
+subtitle: "Koalitionswahrscheinlichkeitsrechner LMU"
 format:
   dashboard:
     theme: cosmo
@@ -8,6 +8,26 @@ format:
       - icon: github
         href: https://github.com/adibender/koala
 ---
+
+```{=html}
+<style>
+.card-body,
+.card-body .html-fill-item,
+.card-body .cell,
+.card-body .cell-output-display {
+  justify-content: flex-start !important;
+  align-content: flex-start !important;
+}
+
+.card-body figure > h3 {
+  font-size: 0.8rem !important;
+}
+
+.card-body svg [aria-label="tick"] text {
+  font-size: 12px;
+}
+</style>
+```
 
 ```{r}
 #| output: false
@@ -19,7 +39,8 @@ load_election <- function(dir) {
       coalitions    = fromJSON(file.path(dir, "coalition_probabilities.json"), simplifyVector = FALSE),
       party_data    = fromJSON(file.path(dir, "party_shares.json"),            simplifyVector = FALSE),
       hurdle_data   = fromJSON(file.path(dir, "hurdle_probabilities.json"),    simplifyVector = FALSE),
-      pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE)
+      pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE),
+      history_data  = fromJSON(file.path(dir, "poll_history.json"),            simplifyVector = FALSE)
     ),
     error = function(e) NULL
   )
@@ -199,6 +220,12 @@ shares_source = institute === "Pooled"
 hurdle_source = institute === "Pooled"
   ? cur.hurdle_data.hurdle
   : cur.pollster_data.per_pollster_hurdle.filter(d => d.pollster === institute)
+
+history_pooled = cur.history_data.history.filter(d => d.pollster === "pooled")
+
+history_raw = institute === "Pooled"
+  ? cur.history_data.history.filter(d => d.pollster !== "pooled")
+  : cur.history_data.history.filter(d => d.pollster === institute)
 ```
 
 ```{ojs}
@@ -243,6 +270,7 @@ html`<hr style="margin:12px 0">
     },
     y: {
       label: "Stimmenanteil (%)",
+      grid: true,
       domain: [0, maxY],
       tickFormat: d => d + "%"
     },
@@ -393,38 +421,289 @@ html`<hr style="margin:12px 0">
 
 
 
-# Umfragen nach Institut
+# Deskriptive Analyse
 
-## Row
+## Row {height=680px}
+
+### Column {width=65%}
+
+#### Verlauf
+
+```{ojs}
+viewof hoveredRow = {
+  const presentParties = new Set(
+    [...history_raw, ...history_pooled]
+      .filter(d => d.party !== "others")
+      .map(d => d.party)
+  )
+  const partyIds = party_order.filter(p => presentParties.has(p))
+  const labels   = partyIds.map(p => party_to_label[p] || p)
+  const colors   = partyIds.map(p => party_colors[p] || "#aaa")
+
+  const allRaw = history_raw
+    .filter(d => d.party !== "others")
+    .map(d => ({ date: new Date(d.date), party: d.party, label: party_to_label[d.party] || d.party, percent: d.percent }))
+  const allPooled = history_pooled
+    .filter(d => d.party !== "others")
+    .map(d => ({ date: new Date(d.date), label: party_to_label[d.party] || d.party, percent: d.percent }))
+    .sort((a, b) => a.date - b.date)
+
+  const maxDate = d3.max([...allRaw, ...allPooled], d => d.date)
+  const cutoff  = d3.utcDay.offset(maxDate, -99)
+
+  const raw    = allRaw.filter(d => d.date >= cutoff)
+  const pooled = allPooled.filter(d => d.date >= cutoff)
+
+  const yMax = Math.max(30, d3.max(pooled, d => d.percent) + 5)
+
+  // pooled series, one row per date/party id (including "others") — used for the
+  // crosshair + bar chart when showing the pooled trend
+  const byDate = d3.rollup(
+    history_pooled.filter(d => new Date(d.date) >= cutoff),
+    v => Object.fromEntries(v.map(d => [d.party, d.percent])),
+    d => +new Date(d.date)
+  )
+  const wide = Array.from(byDate, ([t, vals]) => ({ date: new Date(+t), ...vals }))
+    .sort((a, b) => a.date - b.date)
+
+  // single-institute series, one row per date the institute actually published a
+  // poll — used instead of `wide` when a specific institute is selected, so the
+  // crosshair only ever jumps between that institute's real poll dates
+  const byDateRaw = d3.rollup(
+    raw,
+    v => Object.fromEntries(v.map(d => [d.party, d.percent])),
+    d => +d.date
+  )
+  const wideRaw = Array.from(byDateRaw, ([t, vals]) => ({ date: new Date(+t), ...vals }))
+    .sort((a, b) => a.date - b.date)
+
+  const showLine   = institute === "Pooled"
+  const wideActive = showLine || wideRaw.length === 0 ? wide : wideRaw
+  const lastRow    = wideActive.at(-1) ?? wide.at(-1)
+
+  const plot = Plot.plot({
+    title: "Umfrageergebnisse über die Zeit",
+    subtitle: showLine
+      ? "Punkte: einzelne Umfragen aller Institute · Linie: gepoolte Umfrage"
+      : `Punkte: einzelne Umfragen (${institute})`,
+    style: { fontSize: "14px" },
+    marginBottom: 40,
+    marginLeft: 55,
+    marginRight: 110,
+    height: 460,
+    x: {
+      type: "utc",
+      label: null,
+      interval: "day",
+      ticks: "month",
+      tickFormat: d => {
+        const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
+          "Juli", "August", "September", "Oktober", "November", "Dezember"]
+        return `${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`
+      }
+    },
+    y: {
+      label: "Anteil in %",
+      grid: true,
+      domain: [0, yMax],
+      tickFormat: d => d + "%"
+    },
+    color: {
+      domain: labels,
+      range: colors
+    },
+    marks: [
+      Plot.rect([{}], {
+        x1: cutoff, x2: maxDate, y1: 0, y2: 5,
+        fill: "#888",
+        fillOpacity: 0.15
+      }),
+      Plot.ruleY([5], {
+        stroke: "#555",
+        strokeDasharray: "4 3",
+        strokeWidth: 1.2
+      }),
+      Plot.dot(raw, {
+        x: "date",
+        y: "percent",
+        fill: "label",
+        fillOpacity: 0.3,
+        r: 3
+      }),
+      ...(showLine ? [
+        Plot.line(pooled.filter(d => d.label === party_to_label.fdp), {
+          x: "date",
+          y: "percent",
+          stroke: "#999",
+          strokeWidth: 4
+        }),
+        Plot.line(pooled, {
+          x: "date",
+          y: "percent",
+          stroke: "label",
+          z: "label",
+          strokeWidth: 2
+        })
+      ] : []),
+      Plot.ruleY([0])
+    ]
+  })
+
+  // custom overlay, synced to the plot's own scales: a dot + label per party
+  // that tracks the crosshair, defaulting to the last date when not hovering
+  const svg   = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
+  const xScale = plot.scale("x")
+  const yScale = plot.scale("y")
+  const minGap = yMax * 0.045
+
+  const overlay = d3.select(svg).append("g").style("pointer-events", "none")
+  const crosshair = overlay.append("line")
+    .attr("stroke", "#999").attr("stroke-width", 1)
+    .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(yMax))
+  const items = partyIds.map((partyId, i) => {
+    const g    = overlay.append("g")
+    const dot  = g.append("circle").attr("r", 4).attr("fill", colors[i])
+    const text = g.append("text").attr("dx", 8).attr("dy", "0.32em")
+      .attr("fill", colors[i]).attr("font-size", 13).attr("font-weight", "bold")
+      .attr("paint-order", "stroke")
+      .attr("stroke", partyId === "fdp" ? "#999" : "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
+    return { partyId, label: labels[i], dot, text }
+  })
+  const dateLabel = overlay.append("text")
+    .attr("text-anchor", "middle").attr("font-size", 15).attr("font-weight", "bold").attr("fill", "#333")
+    .attr("paint-order", "stroke")
+    .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
+
+  // the raw single-poll scatter is only useful as background context; hide it
+  // while actively hovering so the crosshair labels stay easy to read
+  const rawDotsLayer = svg.querySelector('[aria-label="dot"]')
+  if (rawDotsLayer) rawDotsLayer.style.transition = "opacity 120ms"
+
+  const position = row => {
+    const present = items
+      .map(it => ({ ...it, percent: row[it.partyId] }))
+      .filter(it => it.percent != null)
+      .sort((a, b) => a.percent - b.percent)
+
+    const labelY = []
+    present.forEach((it, i) => {
+      let y = it.percent
+      if (i > 0 && y - labelY[i - 1] < minGap) y = labelY[i - 1] + minGap
+      labelY.push(y)
+    })
+
+    const px = xScale.apply(row.date)
+    crosshair.attr("x1", px).attr("x2", px)
+    items.forEach(it => {
+      const match = present.find(p => p.partyId === it.partyId)
+      const visible = Boolean(match)
+      it.dot.style("display", visible ? null : "none")
+      it.text.style("display", visible ? null : "none")
+      if (!visible) return
+      const i = present.indexOf(match)
+      it.dot.attr("cx", px).attr("cy", yScale.apply(match.percent))
+      it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
+        .text(`${it.label} ${match.percent.toFixed(1)}%`)
+    })
+
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 32)
+      .text(d3.utcFormat("%d.%m.%Y")(row.date))
+  }
+
+  // find the nearest point in wideActive ourselves (rather than relying on
+  // Plot's own pointer transform) so sparse single-institute series — where
+  // gaps between real poll dates can be large — never lose track and fall
+  // back to the latest date while the pointer is still over an earlier point
+  const nearestRow = px => {
+    const target = xScale.invert(px)
+    let best = wideActive[0]
+    let bestDist = Infinity
+    for (const row of wideActive) {
+      const dist = Math.abs(row.date - target)
+      if (dist < bestDist) { bestDist = dist; best = row }
+    }
+    return best
+  }
+
+  const setValue = row => {
+    plot.value = row
+    plot.dispatchEvent(new Event("input"))
+  }
+
+  position(lastRow)
+  setValue(lastRow)
+
+  d3.select(svg)
+    .on("pointermove", event => {
+      const [px] = d3.pointer(event, svg)
+      const row = nearestRow(px)
+      position(row)
+      setValue(row)
+      if (rawDotsLayer && showLine) rawDotsLayer.style.opacity = 0
+    })
+    .on("pointerleave", () => {
+      position(lastRow)
+      setValue(lastRow)
+      if (rawDotsLayer && showLine) rawDotsLayer.style.opacity = 1
+    })
+
+  return plot
+}
+```
+
+### Column {width=35%}
+
+#### Stimmenanteile
 
 ```{ojs}
 {
-  const pp = cur.pollster_data.per_pollster
-    .filter(d => d.party !== "others")
-    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
+  const shares = party_order
+    .filter(p => hoveredRow[p] != null)
+    .map(p => ({ party: p, percent: hoveredRow[p], label: party_names[p] || p }))
+  const maxY = Math.max(35, d3.max(shares, d => d.percent) + 5)
+
+  const hoveredDate = hoveredRow.date.toLocaleDateString("de-DE", {
+    day: "2-digit", month: "long", year: "numeric"
+  })
 
   return Plot.plot({
-    marginLeft: 100,
-    height: 400,
-    fy: { label: null },
-    x:  { label: "Stimmenanteil (%)", domain: [0, 50] },
+    title: `Umfrage vom ${hoveredDate} (gepoolt)`,
+    subtitle: " ",
+    style: { fontSize: "14px" },
+    marginBottom: 40,
+    marginLeft: 55,
+    marginRight: 25,
+    height: 460,
+    x: {
+      label: null,
+      domain: shares.map(d => d.label)
+    },
+    y: {
+      label: "Stimmenanteil (%)",
+      grid: true,
+      domain: [0, maxY],
+      tickFormat: d => d + "%"
+    },
     marks: [
-      Plot.barX(pp, {
-        fy: "pollster",
-        y: d => party_names[d.party] || d.party,
-        x: "percent",
+      Plot.barY(shares, {
+        x: "label",
+        y: "percent",
         fill: d => party_colors[d.party] || "#aaa"
       }),
-      Plot.text(pp.filter(d => d.percent >= 7), {
-        fy: "pollster",
-        y: d => party_names[d.party] || d.party,
-        x: d => d.percent / 2,
-        text: d => d.percent.toFixed(0) + "%",
-        fill: d => d.party === "fdp" ? "#555" : "white",
-        fontSize: 11, fontWeight: "bold", textAnchor: "middle"
+      Plot.ruleY([5], {
+        stroke: "#555",
+        strokeDasharray: "4 3",
+        strokeWidth: 1.2
       }),
-      Plot.ruleX([5], { stroke: "#c0392b", strokeDasharray: "3 3", strokeWidth: 1.5 }),
-      Plot.ruleX([0])
+      Plot.text(shares, {
+        x: "label",
+        y: d => d.percent + 1,
+        text: d => d.percent.toFixed(1) + "%",
+        fill: "#555",
+        fontSize: 12,
+        textAnchor: "middle"
+      }),
+      Plot.ruleY([0])
     ]
   })
 }
