@@ -15,7 +15,7 @@ parliament:
 
 pooling:
   period: 14
-  period_extended: 28
+  period_extended: 100
 
 parties:
   - id: cdu

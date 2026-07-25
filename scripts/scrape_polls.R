@@ -1,13 +1,15 @@
-library(coalitions)
-library(yaml)
-library(dplyr)
-library(tidyr)
-library(jsonlite)
+suppressPackageStartupMessages({
+  library(coalitions)
+  library(yaml)
+  library(dplyr)
+  library(tidyr)
+  library(jsonlite)
+})
 source("scripts/scrape_btw.R")
 
 scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   cfg <- read_yaml(config_path)
-  message(sprintf("Scraping polls for %s...\n", cfg$name))
+  message(sprintf("\n[%s] Scraping polls for %s...", cfg$id, cfg$name))
 
   parties <- sapply(cfg$parties, `[[`, "id")
   parties_required <- sapply(cfg$parties, function(p) if (isTRUE(p$required)) p$id else NULL) |>
@@ -24,7 +26,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
       as_tibble(fromJSON(out_file)) %>%
         mutate(date = as.Date(date), start = as.Date(start), end = as.Date(end)),
       error = function(e) {
-        message("  Could not parse existing JSON, starting fresh\n")
+        message(sprintf("[%s] Could not parse existing JSON, starting fresh", cfg$id))
         NULL
       }
     )
@@ -38,7 +40,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
     scrape_from <- oldest_date
   }
 
-  cat(sprintf("  [%s] existing data up to: %s — scraping from: %s\n",
+  message(sprintf("[%s] existing data up to: %s — scraping from: %s",
               cfg$id,
               if (!is.null(existing)) as.character(max(existing$date)) else "none",
               scrape_from))
@@ -73,7 +75,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
 
   n_dropped <- length(unique(fresh$date)) - length(complete_dates)
   if (n_dropped > 0)
-    message(sprintf("  Dropped %d incomplete poll date(s)\n", n_dropped))
+    message(sprintf("[%s] Dropped %d incomplete poll date(s)", cfg$id, n_dropped))
 
   fresh <- filter(fresh, date %in% complete_dates)
 
@@ -87,15 +89,18 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
   has_new_raw    <- nrow(new_rows) > 0
   has_no_pooled  <- is.null(existing) || !any(existing$pollster == "pooled")
 
+  message(sprintf("[%s] new_raw=%s (%d poll(s)), no_pooled=%s",
+              cfg$id, has_new_raw, nrow(new_rows), has_no_pooled))
+
   if (!has_new_raw && !has_no_pooled) {
-    message("  No new polls.\n")
+    message(sprintf("[%s] No new polls.", cfg$id))
     return(invisible(FALSE))
   }
 
   if (has_new_raw)
-    message(sprintf("  %d new poll(s) found\n", nrow(new_rows)))
+    message(sprintf("[%s] %d new poll(s) found", cfg$id, nrow(new_rows)))
   if (has_no_pooled)
-    message("  No pooled data found, computing pooled estimates\n")
+    message(sprintf("[%s] No pooled data found, computing pooled estimates", cfg$id))
 
   # Merge existing raw polls with new rows
   raw_updated <- bind_rows(
@@ -127,7 +132,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
     arrange(desc(date), pollster)
 
   write_json(updated, out_file, pretty = TRUE, auto_unbox = TRUE)
-  message(sprintf("  Saved to %s\n", out_file))
+  message(sprintf("[%s] Saved to %s", cfg$id, out_file))
 
   invisible(TRUE)
 }
@@ -203,18 +208,37 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
   if (!is.null(from_date))
     dates <- dates[dates >= from_date]
 
+  # pool_surveys() emits a message() (not a warning) once per party when a date's
+  # pooling window holds only a single poll. Catch those per date so we log which
+  # dates were sparse (one line per date) instead of one identical message per party.
+  sparse_dates <- character()
   pooled <- lapply(dates, function(d) {
-    pool_surveys(
-      surveys        = surveys_nested,
-      last_date      = d,
-      pollsters      = pollsters,
-      period         = period,
-      period_extended = if (is.null(period_extended)) NA else period_extended
+    withCallingHandlers(
+      pool_surveys(
+        surveys        = surveys_nested,
+        last_date      = d,
+        pollsters      = pollsters,
+        period         = period,
+        period_extended = if (is.null(period_extended)) NA else period_extended
+      ),
+      message = function(m) {
+        if (grepl("Only one survey/pollster", conditionMessage(m))) {
+          sparse_dates <<- union(sparse_dates, as.character(d))
+          invokeRestart("muffleMessage")
+        }
+      }
     )
   }) %>%
     bind_rows() %>%
     mutate(election = cfg$id)
 
-  message(sprintf("  Computed pooled estimates for %d date(s)\n", length(dates)))
+  if (length(sparse_dates) > 0)
+    message(sprintf("[%s] single-poll window (pooled = that poll) for: %s",
+                    cfg$id, paste(sort(sparse_dates), collapse = ", ")))
+
+  window_desc <- if (is.null(period_extended)) sprintf("%d days", period)
+                 else sprintf("%d days (extended: %d)", period, period_extended)
+  message(sprintf("[%s] Computed pooled estimates for %d date(s) (pooling window: %s)",
+                  cfg$id, length(dates), window_desc))
   pooled
 }
