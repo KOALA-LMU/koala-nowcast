@@ -208,9 +208,9 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
   if (!is.null(from_date))
     dates <- dates[dates >= from_date]
 
-  # pool_surveys() warns once per party when a date's pooling window holds only a
-  # single poll. Catch those per date so we log which dates were sparse (one line
-  # per date) instead of one identical warning per party.
+  # pool_surveys() emits a message() (not a warning) once per party when a date's
+  # pooling window holds only a single poll. Catch those per date so we log which
+  # dates were sparse (one line per date) instead of one identical message per party.
   sparse_dates <- character()
   pooled <- lapply(dates, function(d) {
     withCallingHandlers(
@@ -221,10 +221,10 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
         period         = period,
         period_extended = if (is.null(period_extended)) NA else period_extended
       ),
-      warning = function(w) {
-        if (grepl("Only one survey/pollster", conditionMessage(w))) {
+      message = function(m) {
+        if (grepl("Only one survey/pollster", conditionMessage(m))) {
           sparse_dates <<- union(sparse_dates, as.character(d))
-          invokeRestart("muffleWarning")
+          invokeRestart("muffleMessage")
         }
       }
     )
