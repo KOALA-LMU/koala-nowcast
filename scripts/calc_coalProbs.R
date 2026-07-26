@@ -216,12 +216,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     jsonlite::fromJSON(file.path(results_dir, paste0(name, ".json"))) %>% dplyr::mutate(date = as.Date(date))
   }
   if (!identical(dates, dates_todo)) {
-    coalProbs          <- bind_rows(coalProbs,          read_result("coalProbs"))
-    sharesSim          <- bind_rows(sharesSim,          read_result("sharesSim"))
-    shares             <- bind_rows(shares,             read_result("shares"))
-    coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping"))
-    biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty"))
-    passHurdle         <- bind_rows(passHurdle,         read_result("passHurdle"))
+    coalProbs          <- bind_rows(coalProbs,          read_result("coalProbs")          %>% filter(!date %in% dates))
+    sharesSim          <- bind_rows(sharesSim,          read_result("sharesSim")          %>% filter(!date %in% dates))
+    shares             <- bind_rows(shares,             read_result("shares")             %>% filter(!date %in% dates))
+    coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping") %>% filter(!date %in% dates))
+    biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty")       %>% filter(!date %in% dates))
+    passHurdle         <- bind_rows(passHurdle,         read_result("passHurdle")         %>% filter(!date %in% dates))
   }
 
   # ── Sort final output by date, then pollster ─────────────────────────────────
