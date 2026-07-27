@@ -131,3 +131,60 @@ calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest
   return(list("coalProbs" = res_maj,
               "shares_perSimulation" = res_shares))
 }
+
+#' Dynamically derive which coalitions to expose, based on current pooled vote shares
+#'
+#' Enumerates every party subset up to \code{max_size}, keeps only those whose
+#' combined pooled vote share clears \code{min_combined_pct}, and for each
+#' surviving subset exposes one "who leads" ordering per member party whose own
+#' pooled vote share is at least \code{leader_flip_ratio} of the subset's
+#' biggest-polling member (the top member itself always qualifies trivially).
+#' Used in place of a hand-authored \code{coalitions:} YAML list so the exposed
+#' set tracks current polling instead of a fixed snapshot.
+#'
+#' @param parties_cfg the \code{parties} list from an election YAML (list of list(id=,label=,color=,...))
+#' @param pooled_shares named numeric vector: party id -> current pooled vote share (percent)
+#' @param max_size maximum coalition size to consider
+#' @param min_combined_pct minimum combined pooled vote share (in percent) for a coalition to be computed at all.
+#' Deliberately looser than the dashboard's own display threshold (33%, see leadershipVariants() in
+#' dashboard/index.qmd) so the underlying data stays available even for combinations the site currently hides.
+#' @param leader_flip_ratio minimum ratio (candidate leader's share / subset's top share) to expose that leader ordering
+#' @export
+derive_dynamic_coalitions <- function(parties_cfg, pooled_shares, max_size = 4,
+                                       min_combined_pct = 25, leader_flip_ratio = 0.5) {
+  ids    <- sapply(parties_cfg, `[[`, "id")
+  labels <- setNames(sapply(parties_cfg, `[[`, "label"), ids)
+  colors <- setNames(sapply(parties_cfg, `[[`, "color"), ids)
+  ids    <- ids[ids != "others"]
+
+  share_of <- function(p) {
+    v <- pooled_shares[[p]]
+    if (is.null(v) || is.na(v)) 0 else v
+  }
+
+  out <- list()
+  for (size in seq_len(min(max_size, length(ids)))) {
+    for (combo in combn(ids, size, simplify = FALSE)) {
+      combined_pct <- sum(vapply(combo, share_of, numeric(1)))
+      if (combined_pct < min_combined_pct) next
+
+      if (size == 1) {
+        p <- combo[[1]]
+        out[[length(out) + 1]] <- list(parties = list(p), label = labels[[p]], color = colors[[p]])
+        next
+      }
+
+      top_pct <- max(vapply(combo, share_of, numeric(1)))
+      for (leader in combo) {
+        if (share_of(leader) < leader_flip_ratio * top_pct) next
+        ordering <- c(leader, combo[combo != leader])
+        out[[length(out) + 1]] <- list(
+          parties = as.list(ordering),
+          label   = paste(labels[ordering], collapse = "-"),
+          color   = colors[[leader]]
+        )
+      }
+    }
+  }
+  out
+}

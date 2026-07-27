@@ -23,10 +23,34 @@ format:
   font-size: 0.8rem !important;
 }
 
+/* Cards built from multiple ojs cells (via ::: {.card} fences) get one
+   .cell.card-body wrapper per cell, stacked as flex siblings that each grow
+   to an equal share of the card's height by default. Shrink every cell to
+   its own content height instead, so leftover space collapses to the
+   bottom of the card rather than sitting as a gap between cells. */
+.zeitverlauf-card > .cell.card-body {
+  flex: 0 0 auto !important;
+}
+
 .card-body svg [aria-label="tick"] text {
   font-size: 12px;
 }
 </style>
+```
+
+```{r}
+#| output: false
+# Render environments (notably CI runners) can start R under the "C" locale,
+# which has no UTF-8 codeset. Under that locale, R's own encoding-conversion
+# machinery (enc2utf8(), and thus jsonlite::toJSON()/ojs_define()) cannot
+# convert non-ASCII literals typed in this file (e.g. "Grüne") and silently
+# corrupts them. Force a UTF-8 locale before anything else runs. This has to
+# sit in its own chunk: R parses a whole chunk's source text upfront, so a
+# locale change can't retroactively fix how literals *later in the same
+# chunk* already got parsed — it only affects chunks parsed after it runs.
+for (loc in c("en_US.UTF-8", "C.UTF-8", "en_US.utf8")) {
+  if (tryCatch(Sys.setlocale("LC_CTYPE", loc), error = function(e) "") != "") break
+}
 ```
 
 ```{r}
@@ -40,7 +64,8 @@ load_election <- function(dir) {
       party_data    = fromJSON(file.path(dir, "party_shares.json"),            simplifyVector = FALSE),
       hurdle_data   = fromJSON(file.path(dir, "hurdle_probabilities.json"),    simplifyVector = FALSE),
       pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE),
-      history_data  = fromJSON(file.path(dir, "poll_history.json"),            simplifyVector = FALSE)
+      history_data  = fromJSON(file.path(dir, "poll_history.json"),            simplifyVector = FALSE),
+      coal_history_data = fromJSON(file.path(dir, "coalition_history.json"),   simplifyVector = FALSE)
     ),
     error = function(e) NULL
   )
@@ -93,6 +118,18 @@ normCoalition = label =>
 
 labelFromParties = parties =>
   parties.map(party => party_to_label[party] || party).join("-")
+
+// Coalitions that are mathematically possible but politically off the table —
+// no party governs with AfD, and Linke is ruled out by FDP, CDU and BSW alike.
+excludedPairs = [
+  ["left", "fdp"],
+  ["left", "cdu"],
+  ["left", "bsw"]
+]
+
+isViableCoalition = parties =>
+  !(parties.includes("afd") && parties.length > 1) &&
+  !excludedPairs.some(([a, b]) => parties.includes(a) && parties.includes(b))
 
 meanBy = (data, keyFn, valueFn) =>
   Array.from(
@@ -157,10 +194,7 @@ cleanCoalitions = (coalitions, shares) => {
 
   return Array.from(
     d3.group(
-      byLabel.filter(d =>
-        !d.parties.includes("bsw") &&
-        !(d.parties.includes("afd") && d.parties.length > 1)
-      ),
+      byLabel.filter(d => isViableCoalition(d.parties)),
       d => d.coalition_key
     ),
     ([coalition_key, rows]) => {
@@ -175,15 +209,79 @@ cleanCoalitions = (coalitions, shares) => {
         : labelByVotes(rows[0].parties)
 
       const first_party = coalitionParties(label)[0]
+      const vote_share  = d3.sum(rows[0].parties, p => partyVotes[p] ?? 0)
 
       return {
         coalition_key,
         label,
         first_party,
-        probability
+        probability,
+        vote_share
       }
     }
   ).sort((a, b) => a.probability - b.probability)
+}
+
+// Per-label view: unlike cleanCoalitions() (which merges every "who leads"
+// ordering of a coalition into a single summed line), this keeps each
+// ordering — e.g. "Grüne-SPD-Linke" vs. "Linke-SPD-Grüne" — as its own
+// distinguishable option, so near-tied leadership scenarios stay visible
+// instead of one silently winning the label and hiding the other.
+leadershipVariants = (coalitions, shares, pooledShares) => {
+  const partyVotes  = Object.fromEntries(cleanShares(shares).map(d => [d.party, d.percent]))
+  const pooledVotes = Object.fromEntries(cleanShares(pooledShares).map(d => [d.party, d.percent]))
+
+  const byLabel = Array.from(
+    d3.rollup(coalitions, v => d3.mean(v, d => d.probability), d => d.label),
+    ([label, probability]) => ({ label, probability, parties: coalitionParties(label) })
+  )
+
+  // The R side (derive_dynamic_coalitions() in scripts/calc_coalProbs_helpers.R)
+  // deliberately computes more broadly (25% combined) than the site displays,
+  // so this 33% cutoff is the real display-layer decision, not a mirror of it.
+  return byLabel
+    .filter(d => isViableCoalition(d.parties))
+    // only expose a coalition if it currently polls at least 33% combined,
+    // based on the recent pooled estimate (not whichever institute is selected)
+    .filter(d => d3.sum(d.parties, p => pooledVotes[p] ?? 0) >= 33)
+    // among a coalition's "who leads" orderings, only expose an alternative
+    // leader if it has at least 50% of the pooled vote share of the group's
+    // biggest-polling member — otherwise it's not a plausible leadership swap
+    .filter(d => {
+      const maxMemberVote = d3.max(d.parties, p => pooledVotes[p] ?? 0)
+      const leaderVote     = pooledVotes[d.parties[0]] ?? 0
+      return leaderVote >= 0.5 * maxMemberVote
+    })
+    .map(d => ({
+      label: d.label,
+      probability: d.probability,
+      first_party: d.parties[0],
+      vote_share: d3.sum(d.parties, p => partyVotes[p] ?? 0)
+    }))
+}
+
+cleanCoalitionHistory = rows => {
+  const filtered = rows.filter(d => isViableCoalition(coalitionParties(d.label)))
+
+  // collapse exact (date, label) duplicates by averaging — a pooled result
+  // can occasionally get recomputed more than once for the same poll date —
+  // mirroring the dedupe step in cleanCoalitions(). Each label (i.e. each
+  // "who leads" ordering) stays its own series, matching leadershipVariants().
+  const byDateLabel = d3.rollup(
+    filtered,
+    v => d3.mean(v, d => d.probability),
+    d => d.date,
+    d => d.label
+  )
+
+  return Array.from(byDateLabel, ([date, byLabel]) =>
+    Array.from(byLabel, ([label, probability]) => ({
+      label,
+      first_party: coalitionParties(label)[0],
+      date: new Date(date),
+      probability
+    }))
+  ).flat()
 }
 ```
 
@@ -197,7 +295,7 @@ viewof election = Inputs.select(
     ["Berlin",                  "BE"],
     ["Bundestagswahl",         "BTW"]
   ]),
-  { value: "ST", label: "Wahl"}
+  { value: "BTW", label: "Wahl"}
 )
 ```
 
@@ -226,6 +324,13 @@ history_pooled = cur.history_data.history.filter(d => d.pollster === "pooled")
 history_raw = institute === "Pooled"
   ? cur.history_data.history.filter(d => d.pollster !== "pooled")
   : cur.history_data.history.filter(d => d.pollster === institute)
+
+overview_coalitions = cleanCoalitions(coal_source, shares_source)
+leading_variants    = leadershipVariants(coal_source, shares_source, cur.party_data.party_shares)
+
+coal_history_source = institute === "Pooled"
+  ? cur.coal_history_data.coalitions_history.filter(d => d.pollster === "pooled")
+  : cur.coal_history_data.coalitions_history.filter(d => d.pollster === institute)
 ```
 
 ```{ojs}
@@ -308,7 +413,7 @@ html`<hr style="margin:12px 0">
 ```{ojs}
 
 {
-  const coal = cleanCoalitions(coal_source, shares_source)
+  const coal = overview_coalitions
 
   return Plot.plot({
     marginLeft: 155,
@@ -420,6 +525,234 @@ html`<hr style="margin:12px 0">
 # Koalitionswahrscheinlichkeiten
 
 
+
+# Zeitverlauf
+
+## Row
+
+::: {.card title="Zeitverlauf bzgl. Koalitionen" .zeitverlauf-card}
+
+```{ojs}
+viewof selectedCoalitions = {
+  // one button per leading-party variant (not per coalition_key), so e.g.
+  // "Grüne-SPD-Linke" and "Linke-SPD-Grüne" stay separately selectable
+  // instead of collapsing into whichever narrowly has the higher probability
+  const options = leading_variants.slice().sort((a, b) =>
+    d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
+  )
+  const active  = new Set(options.length ? [options[0].label] : [])
+
+  const form = html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+    <span style="font-size:0.85em;color:#666">Betrachtete Koalitionen</span>
+  </div>`
+
+  const style = (btn, color, isActive) => {
+    btn.style.background = isActive ? color : "white"
+    btn.style.color      = isActive ? "white" : color
+  }
+
+  for (const d of options) {
+    const color = party_colors[d.first_party] || "#aaa"
+    const btn = html`<button type="button" style="
+      border: 1.5px solid ${color};
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.8em;
+      cursor: pointer;
+      transition: background 100ms, color 100ms;
+    ">${d.label}</button>`
+
+    style(btn, color, active.has(d.label))
+
+    btn.onclick = () => {
+      if (active.has(d.label)) {
+        active.delete(d.label)
+      } else {
+        active.add(d.label)
+      }
+      style(btn, color, active.has(d.label))
+      form.value = Array.from(active)
+      form.dispatchEvent(new Event("input"))
+    }
+
+    form.append(btn)
+  }
+
+  form.value = Array.from(active)
+  return form
+}
+```
+
+```{ojs}
+viewof hoveredCoalitionRow = {
+  const rows   = cleanCoalitionHistory(coal_history_source)
+  const active = rows.filter(d => selectedCoalitions.includes(d.label))
+
+  const colorByKey = Object.fromEntries(leading_variants.map(d => [d.label, party_colors[d.first_party] || "#aaa"]))
+
+  const selectedLabels = selectedCoalitions
+  const selectedColors = selectedCoalitions.map(k => colorByKey[k] || "#aaa")
+  const showLine       = institute === "Pooled"
+
+  // one row per date, one column per selected coalition — used for the
+  // crosshair, which tracks the nearest date across all selected lines at once
+  const byDate = d3.rollup(
+    active,
+    v => Object.fromEntries(v.map(d => [d.label, d.probability])),
+    d => +d.date
+  )
+  const wide = Array.from(byDate, ([t, vals]) => ({ date: new Date(+t), ...vals }))
+    .sort((a, b) => a.date - b.date)
+  const lastRow = wide.at(-1)
+
+  const plot = Plot.plot({
+    title: "Koalitionswahrscheinlichkeit über die Zeit",
+    style: { fontSize: "14px" },
+    marginTop: 40,
+    marginBottom: 40,
+    marginLeft: 55,
+    marginRight: 110,
+    height: 460,
+    x: {
+      type: "utc",
+      label: null,
+      interval: "day",
+      ticks: "month",
+      tickFormat: d => {
+        const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
+          "Juli", "August", "September", "Oktober", "November", "Dezember"]
+        return `${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`
+      }
+    },
+    y: {
+      label: "Wahrscheinlichkeit",
+      grid: true,
+      domain: [0, 1],
+      tickFormat: d => (d * 100) + "%"
+    },
+    color: {
+      domain: selectedLabels,
+      range: selectedColors
+    },
+    marks: [
+      Plot.ruleY([0]),
+      ...(showLine ? [
+        Plot.line(active, {
+          x: "date",
+          y: "probability",
+          stroke: "label",
+          z: "label",
+          strokeWidth: 2
+        })
+      ] : []),
+      Plot.dot(active, {
+        x: "date",
+        y: "probability",
+        fill: "label",
+        fillOpacity: showLine ? 0.3 : 1,
+        stroke: "white",
+        strokeWidth: 1,
+        r: showLine ? 3 : 4
+      })
+    ]
+  })
+
+  if (!lastRow) return plot
+
+  // custom overlay, synced to the plot's own scales: a dot + label per selected
+  // coalition that tracks the crosshair, defaulting to the last date when not hovering
+  const svg    = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
+  const xScale = plot.scale("x")
+  const yScale = plot.scale("y")
+  const minGap = 0.045
+
+  const overlay = d3.select(svg).append("g").style("pointer-events", "none")
+  const crosshair = overlay.append("line")
+    .attr("stroke", "#999").attr("stroke-width", 1)
+    .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(1))
+  const items = selectedCoalitions.map(label => {
+    const g    = overlay.append("g")
+    const dot  = g.append("circle").attr("r", 4).attr("fill", colorByKey[label] || "#aaa")
+    const text = g.append("text").attr("dx", 8).attr("dy", "0.32em")
+      .attr("fill", colorByKey[label] || "#aaa").attr("font-size", 13).attr("font-weight", "bold")
+      .attr("paint-order", "stroke")
+      .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
+    return { key: label, label, dot, text }
+  })
+  const dateLabel = overlay.append("text")
+    .attr("text-anchor", "middle").attr("font-size", 15).attr("font-weight", "bold").attr("fill", "#333")
+    .attr("paint-order", "stroke")
+    .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
+
+  const position = row => {
+    const present = items
+      .map(it => ({ ...it, probability: row[it.key] }))
+      .filter(it => it.probability != null)
+      .sort((a, b) => a.probability - b.probability)
+
+    const labelY = []
+    present.forEach((it, i) => {
+      let y = it.probability
+      if (i > 0 && y - labelY[i - 1] < minGap) y = labelY[i - 1] + minGap
+      labelY.push(y)
+    })
+
+    const px = xScale.apply(row.date)
+    crosshair.attr("x1", px).attr("x2", px)
+    items.forEach(it => {
+      const match = present.find(p => p.key === it.key)
+      const visible = Boolean(match)
+      it.dot.style("display", visible ? null : "none")
+      it.text.style("display", visible ? null : "none")
+      if (!visible) return
+      const i = present.indexOf(match)
+      it.dot.attr("cx", px).attr("cy", yScale.apply(match.probability))
+      it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
+        .text(`${it.label} ${(match.probability * 100).toFixed(1)}%`)
+    })
+
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 32)
+      .text(d3.utcFormat("%d.%m.%Y")(row.date))
+  }
+
+  // find the nearest point ourselves (rather than relying on Plot's own
+  // pointer transform) so sparse series never lose track of the crosshair
+  const nearestRow = px => {
+    const target = xScale.invert(px)
+    let best = wide[0]
+    let bestDist = Infinity
+    for (const row of wide) {
+      const dist = Math.abs(row.date - target)
+      if (dist < bestDist) { bestDist = dist; best = row }
+    }
+    return best
+  }
+
+  const setValue = row => {
+    plot.value = row
+    plot.dispatchEvent(new Event("input"))
+  }
+
+  position(lastRow)
+  setValue(lastRow)
+
+  d3.select(svg)
+    .on("pointermove", event => {
+      const [px] = d3.pointer(event, svg)
+      const row = nearestRow(px)
+      position(row)
+      setValue(row)
+    })
+    .on("pointerleave", () => {
+      position(lastRow)
+      setValue(lastRow)
+    })
+
+  return plot
+}
+```
+
+:::
 
 # Deskriptive Analyse
 

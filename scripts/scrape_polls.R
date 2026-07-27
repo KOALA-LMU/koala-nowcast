@@ -7,7 +7,7 @@ suppressPackageStartupMessages({
 })
 source("scripts/scrape_btw.R")
 
-scrape_election <- function(config_path, oldest_date = as.Date("2026-04-01")) {
+scrape_election <- function(config_path, oldest_date = as.Date("2026-07-01")) {
   cfg <- read_yaml(config_path)
   message(sprintf("\n[%s] Scraping polls for %s...", cfg$id, cfg$name))
 

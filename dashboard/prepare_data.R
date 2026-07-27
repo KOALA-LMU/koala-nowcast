@@ -1,6 +1,7 @@
 library(jsonlite)
 library(dplyr)
 library(yaml)
+source("scripts/calc_coalProbs_helpers.R")
 
 coalition_density <- function(election_id, cfg, results_dir) {
   coal_labels <- setNames(
@@ -62,6 +63,16 @@ prepare_election <- function(election_id) {
 
   dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
+  # If the YAML has no coalitions: list at all, derive it dynamically from the
+  # current pooled vote shares (mirrors calc_coalProbs.R, so the labels this
+  # script expects to find in coalProbs_grouping.json match what was computed).
+  if (is.null(cfg$coalitions) || length(cfg$coalitions) == 0) {
+    polls          <- fromJSON(file.path(surveys_dir, "polls.json")) %>% mutate(date = as.Date(date))
+    pooled_latest  <- polls %>% filter(pollster == "pooled", date == max(date))
+    pooled_shares  <- setNames(pooled_latest$percent, pooled_latest$party)
+    cfg$coalitions <- derive_dynamic_coalitions(cfg$parties, pooled_shares)
+  }
+
   coal_labels <- setNames(
     sapply(cfg$coalitions, `[[`, "label"),
     sapply(cfg$coalitions, function(c) paste(c$parties, collapse = "|"))
@@ -85,6 +96,12 @@ prepare_election <- function(election_id) {
     select(pollster, date, party, percent)
   write_json(list(history = history, updated = updated),
              file.path(out_dir, "poll_history.json"), auto_unbox = TRUE)
+
+  coal_history <- fromJSON(file.path(results_dir, "coalProbs_grouping.json")) %>%
+    mutate(date = as.Date(date), probability = prob / 100) %>%
+    select(pollster, date, label = coal_type, probability)
+  write_json(list(coalitions_history = coal_history, updated = updated),
+             file.path(out_dir, "coalition_history.json"), auto_unbox = TRUE)
 
   hurdle <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
     filter(pollster == "pooled", date == max(date)) %>%
