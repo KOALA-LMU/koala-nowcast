@@ -222,12 +222,51 @@ cleanCoalitions = (coalitions, shares) => {
   ).sort((a, b) => a.probability - b.probability)
 }
 
+// Per-label view: unlike cleanCoalitions() (which merges every "who leads"
+// ordering of a coalition into a single summed line), this keeps each
+// ordering — e.g. "Grüne-SPD-Linke" vs. "Linke-SPD-Grüne" — as its own
+// distinguishable option, so near-tied leadership scenarios stay visible
+// instead of one silently winning the label and hiding the other.
+leadershipVariants = (coalitions, shares, pooledShares) => {
+  const partyVotes  = Object.fromEntries(cleanShares(shares).map(d => [d.party, d.percent]))
+  const pooledVotes = Object.fromEntries(cleanShares(pooledShares).map(d => [d.party, d.percent]))
+
+  const byLabel = Array.from(
+    d3.rollup(coalitions, v => d3.mean(v, d => d.probability), d => d.label),
+    ([label, probability]) => ({ label, probability, parties: coalitionParties(label) })
+  )
+
+  // The R side (derive_dynamic_coalitions() in scripts/calc_coalProbs_helpers.R)
+  // deliberately computes more broadly (25% combined) than the site displays,
+  // so this 33% cutoff is the real display-layer decision, not a mirror of it.
+  return byLabel
+    .filter(d => isViableCoalition(d.parties))
+    // only expose a coalition if it currently polls at least 33% combined,
+    // based on the recent pooled estimate (not whichever institute is selected)
+    .filter(d => d3.sum(d.parties, p => pooledVotes[p] ?? 0) >= 33)
+    // among a coalition's "who leads" orderings, only expose an alternative
+    // leader if it has at least 50% of the pooled vote share of the group's
+    // biggest-polling member — otherwise it's not a plausible leadership swap
+    .filter(d => {
+      const maxMemberVote = d3.max(d.parties, p => pooledVotes[p] ?? 0)
+      const leaderVote     = pooledVotes[d.parties[0]] ?? 0
+      return leaderVote >= 0.5 * maxMemberVote
+    })
+    .map(d => ({
+      label: d.label,
+      probability: d.probability,
+      first_party: d.parties[0],
+      vote_share: d3.sum(d.parties, p => partyVotes[p] ?? 0)
+    }))
+}
+
 cleanCoalitionHistory = rows => {
   const filtered = rows.filter(d => isViableCoalition(coalitionParties(d.label)))
 
-  // first collapse exact (date, label) duplicates by averaging — a pooled
-  // result can occasionally get recomputed more than once for the same poll
-  // date — mirroring the dedupe step in cleanCoalitions()
+  // collapse exact (date, label) duplicates by averaging — a pooled result
+  // can occasionally get recomputed more than once for the same poll date —
+  // mirroring the dedupe step in cleanCoalitions(). Each label (i.e. each
+  // "who leads" ordering) stays its own series, matching leadershipVariants().
   const byDateLabel = d3.rollup(
     filtered,
     v => d3.mean(v, d => d.probability),
@@ -235,20 +274,14 @@ cleanCoalitionHistory = rows => {
     d => d.label
   )
 
-  // then sum across the different party orderings of the same coalition
-  // (mutually exclusive "who leads" outcomes) into one row per coalition_key/date
-  return Array.from(byDateLabel, ([date, byLabel]) => {
-    const byKey = d3.rollup(
-      Array.from(byLabel, ([label, probability]) => ({ coalition_key: normCoalition(label), probability })),
-      v => d3.sum(v, d => d.probability),
-      d => d.coalition_key
-    )
-    return Array.from(byKey, ([coalition_key, probability]) => ({
-      coalition_key,
+  return Array.from(byDateLabel, ([date, byLabel]) =>
+    Array.from(byLabel, ([label, probability]) => ({
+      label,
+      first_party: coalitionParties(label)[0],
       date: new Date(date),
       probability
     }))
-  }).flat()
+  ).flat()
 }
 ```
 
@@ -293,6 +326,7 @@ history_raw = institute === "Pooled"
   : cur.history_data.history.filter(d => d.pollster === institute)
 
 overview_coalitions = cleanCoalitions(coal_source, shares_source)
+leading_variants    = leadershipVariants(coal_source, shares_source, cur.party_data.party_shares)
 
 coal_history_source = institute === "Pooled"
   ? cur.coal_history_data.coalitions_history.filter(d => d.pollster === "pooled")
@@ -500,10 +534,13 @@ html`<hr style="margin:12px 0">
 
 ```{ojs}
 viewof selectedCoalitions = {
-  const options = overview_coalitions.slice().sort((a, b) =>
+  // one button per leading-party variant (not per coalition_key), so e.g.
+  // "Grüne-SPD-Linke" and "Linke-SPD-Grüne" stay separately selectable
+  // instead of collapsing into whichever narrowly has the higher probability
+  const options = leading_variants.slice().sort((a, b) =>
     d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
   )
-  const active  = new Set(options.length ? [options[0].coalition_key] : [])
+  const active  = new Set(options.length ? [options[0].label] : [])
 
   const form = html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
     <span style="font-size:0.85em;color:#666">Betrachtete Koalitionen</span>
@@ -525,15 +562,15 @@ viewof selectedCoalitions = {
       transition: background 100ms, color 100ms;
     ">${d.label}</button>`
 
-    style(btn, color, active.has(d.coalition_key))
+    style(btn, color, active.has(d.label))
 
     btn.onclick = () => {
-      if (active.has(d.coalition_key)) {
-        active.delete(d.coalition_key)
+      if (active.has(d.label)) {
+        active.delete(d.label)
       } else {
-        active.add(d.coalition_key)
+        active.add(d.label)
       }
-      style(btn, color, active.has(d.coalition_key))
+      style(btn, color, active.has(d.label))
       form.value = Array.from(active)
       form.dispatchEvent(new Event("input"))
     }
@@ -549,12 +586,11 @@ viewof selectedCoalitions = {
 ```{ojs}
 viewof hoveredCoalitionRow = {
   const rows   = cleanCoalitionHistory(coal_history_source)
-  const active = rows.filter(d => selectedCoalitions.includes(d.coalition_key))
+  const active = rows.filter(d => selectedCoalitions.includes(d.label))
 
-  const labelByKey = Object.fromEntries(overview_coalitions.map(d => [d.coalition_key, d.label]))
-  const colorByKey = Object.fromEntries(overview_coalitions.map(d => [d.coalition_key, party_colors[d.first_party] || "#aaa"]))
+  const colorByKey = Object.fromEntries(leading_variants.map(d => [d.label, party_colors[d.first_party] || "#aaa"]))
 
-  const selectedLabels = selectedCoalitions.map(k => labelByKey[k]).filter(Boolean)
+  const selectedLabels = selectedCoalitions
   const selectedColors = selectedCoalitions.map(k => colorByKey[k] || "#aaa")
   const showLine       = institute === "Pooled"
 
@@ -562,7 +598,7 @@ viewof hoveredCoalitionRow = {
   // crosshair, which tracks the nearest date across all selected lines at once
   const byDate = d3.rollup(
     active,
-    v => Object.fromEntries(v.map(d => [d.coalition_key, d.probability])),
+    v => Object.fromEntries(v.map(d => [d.label, d.probability])),
     d => +d.date
   )
   const wide = Array.from(byDate, ([t, vals]) => ({ date: new Date(+t), ...vals }))
@@ -604,15 +640,15 @@ viewof hoveredCoalitionRow = {
         Plot.line(active, {
           x: "date",
           y: "probability",
-          stroke: d => labelByKey[d.coalition_key],
-          z: "coalition_key",
+          stroke: "label",
+          z: "label",
           strokeWidth: 2
         })
       ] : []),
       Plot.dot(active, {
         x: "date",
         y: "probability",
-        fill: d => labelByKey[d.coalition_key],
+        fill: "label",
         fillOpacity: showLine ? 0.3 : 1,
         stroke: "white",
         strokeWidth: 1,
@@ -634,14 +670,14 @@ viewof hoveredCoalitionRow = {
   const crosshair = overlay.append("line")
     .attr("stroke", "#999").attr("stroke-width", 1)
     .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(1))
-  const items = selectedCoalitions.map(key => {
+  const items = selectedCoalitions.map(label => {
     const g    = overlay.append("g")
-    const dot  = g.append("circle").attr("r", 4).attr("fill", colorByKey[key] || "#aaa")
+    const dot  = g.append("circle").attr("r", 4).attr("fill", colorByKey[label] || "#aaa")
     const text = g.append("text").attr("dx", 8).attr("dy", "0.32em")
-      .attr("fill", colorByKey[key] || "#aaa").attr("font-size", 13).attr("font-weight", "bold")
+      .attr("fill", colorByKey[label] || "#aaa").attr("font-size", 13).attr("font-weight", "bold")
       .attr("paint-order", "stroke")
       .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
-    return { key, label: labelByKey[key], dot, text }
+    return { key: label, label, dot, text }
   })
   const dateLabel = overlay.append("text")
     .attr("text-anchor", "middle").attr("font-size", 15).attr("font-weight", "bold").attr("fill", "#333")
