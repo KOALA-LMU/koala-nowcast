@@ -245,12 +245,12 @@ leadershipVariants = (coalitions, shares, pooledShares) => {
     // based on the recent pooled estimate (not whichever institute is selected)
     .filter(d => d3.sum(d.parties, p => pooledVotes[p] ?? 0) >= 33)
     // among a coalition's "who leads" orderings, only expose an alternative
-    // leader if it has at least 50% of the pooled vote share of the group's
+    // leader if it has at least 75% of the pooled vote share of the group's
     // biggest-polling member — otherwise it's not a plausible leadership swap
     .filter(d => {
       const maxMemberVote = d3.max(d.parties, p => pooledVotes[p] ?? 0)
       const leaderVote     = pooledVotes[d.parties[0]] ?? 0
-      return leaderVote >= 0.5 * maxMemberVote
+      return leaderVote >= 0.75 * maxMemberVote
     })
     .map(d => ({
       label: d.label,
