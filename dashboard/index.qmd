@@ -19,6 +19,14 @@ format:
   align-content: flex-start !important;
 }
 
+.card-body {
+  padding-top: 0.5rem !important;
+}
+
+.card-body figure > h2 {
+  font-size: 1rem !important;
+}
+
 .card-body figure > h3 {
   font-size: 0.8rem !important;
 }
@@ -93,6 +101,16 @@ ojs_define(
     cdu = "Union", spd = "SPD", afd = "AfD",
     greens = "Grüne", fdp = "FDP", fw = "Freie Wähler",
     left = "Linke", bsw = "BSW", others = "Sonstige"
+  ),
+  pollster_names = list(
+    allensbach = "Institut für Demoskopie Allensbach",
+    civey      = "Civey",
+    emnid      = "Verian (Emnid)",
+    forsa      = "Forsa",
+    fgw        = "Forschungsgruppe Wahlen",
+    gms        = "GMS",
+    infratest  = "infratest dimap",
+    insa       = "INSA"
   )
 )
 ```
@@ -340,7 +358,11 @@ html`<hr style="margin:12px 0">`
 ```{ojs}
 viewof institute = Inputs.select(
   ["Pooled", ...Array.from(new Set(cur.pollster_data.per_pollster.map(d => d.pollster))).sort()],
-  { value: "Pooled", label: "Institut" }
+  {
+    value: "Pooled",
+    label: "Institut",
+    format: d => d === "Pooled" ? "Gepoolte Umfrage" : (pollster_names[d] ?? d)
+  }
 )
 ```
 
@@ -528,60 +550,9 @@ html`<hr style="margin:12px 0">
 
 # Zeitverlauf
 
-## Row
+## Row {height=580px}
 
-::: {.card title="Zeitverlauf bzgl. Koalitionen" .zeitverlauf-card}
-
-```{ojs}
-viewof selectedCoalitions = {
-  // one button per leading-party variant (not per coalition_key), so e.g.
-  // "Grüne-SPD-Linke" and "Linke-SPD-Grüne" stay separately selectable
-  // instead of collapsing into whichever narrowly has the higher probability
-  const options = leading_variants.slice().sort((a, b) =>
-    d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
-  )
-  const active  = new Set(options.length ? [options[0].label] : [])
-
-  const form = html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-    <span style="font-size:0.85em;color:#666">Betrachtete Koalitionen</span>
-  </div>`
-
-  const style = (btn, color, isActive) => {
-    btn.style.background = isActive ? color : "white"
-    btn.style.color      = isActive ? "white" : color
-  }
-
-  for (const d of options) {
-    const color = party_colors[d.first_party] || "#aaa"
-    const btn = html`<button type="button" style="
-      border: 1.5px solid ${color};
-      border-radius: 999px;
-      padding: 4px 12px;
-      font-size: 0.8em;
-      cursor: pointer;
-      transition: background 100ms, color 100ms;
-    ">${d.label}</button>`
-
-    style(btn, color, active.has(d.label))
-
-    btn.onclick = () => {
-      if (active.has(d.label)) {
-        active.delete(d.label)
-      } else {
-        active.add(d.label)
-      }
-      style(btn, color, active.has(d.label))
-      form.value = Array.from(active)
-      form.dispatchEvent(new Event("input"))
-    }
-
-    form.append(btn)
-  }
-
-  form.value = Array.from(active)
-  return form
-}
-```
+::: {.card .zeitverlauf-card}
 
 ```{ojs}
 viewof hoveredCoalitionRow = {
@@ -609,7 +580,7 @@ viewof hoveredCoalitionRow = {
     title: "Koalitionswahrscheinlichkeit über die Zeit",
     style: { fontSize: "14px" },
     marginTop: 40,
-    marginBottom: 40,
+    marginBottom: 55,
     marginLeft: 55,
     marginRight: 110,
     height: 460,
@@ -618,6 +589,7 @@ viewof hoveredCoalitionRow = {
       label: null,
       interval: "day",
       ticks: "month",
+      tickPadding: 12,
       tickFormat: d => {
         const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
           "Juli", "August", "September", "Oktober", "November", "Dezember"]
@@ -711,7 +683,7 @@ viewof hoveredCoalitionRow = {
         .text(`${it.label} ${(match.probability * 100).toFixed(1)}%`)
     })
 
-    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 32)
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 47)
       .text(d3.utcFormat("%d.%m.%Y")(row.date))
   }
 
@@ -752,11 +724,86 @@ viewof hoveredCoalitionRow = {
 }
 ```
 
+```{ojs}
+viewof selectedCoalitions = {
+  // one button per leading-party variant (not per coalition_key), so e.g.
+  // "Grüne-SPD-Linke" and "Linke-SPD-Grüne" stay separately selectable
+  // instead of collapsing into whichever narrowly has the higher probability
+  const options = leading_variants.slice().sort((a, b) =>
+    d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
+  )
+  const active  = new Set(options.length ? [options[0].label] : [])
+
+  const form = html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+    <span style="font-size:0.85em;color:#666">Betrachtete Koalitionen</span>
+  </div>`
+
+  const style = (btn, color, isActive) => {
+    btn.style.background = isActive ? color : "white"
+    btn.style.color      = isActive ? "white" : color
+  }
+
+  const buttons = []
+
+  const deselectColor = "#888"
+  const deselectBtn = html`<button type="button" style="
+    border: 1.5px solid ${deselectColor};
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.8em;
+    cursor: pointer;
+    color: ${deselectColor};
+    background: white;
+    transition: background 100ms, color 100ms;
+  ">Alle abwählen</button>`
+
+  deselectBtn.onclick = () => {
+    active.clear()
+    for (const { btn, color, label } of buttons) style(btn, color, false)
+    form.value = Array.from(active)
+    form.dispatchEvent(new Event("input"))
+  }
+
+  form.append(deselectBtn)
+
+  for (const d of options) {
+    const color = party_colors[d.first_party] || "#aaa"
+    const btn = html`<button type="button" style="
+      border: 1.5px solid ${color};
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.8em;
+      cursor: pointer;
+      transition: background 100ms, color 100ms;
+    ">${d.label}</button>`
+
+    style(btn, color, active.has(d.label))
+    buttons.push({ btn, color, label: d.label })
+
+    btn.onclick = () => {
+      if (active.has(d.label)) {
+        active.delete(d.label)
+      } else {
+        active.add(d.label)
+      }
+      style(btn, color, active.has(d.label))
+      form.value = Array.from(active)
+      form.dispatchEvent(new Event("input"))
+    }
+
+    form.append(btn)
+  }
+
+  form.value = Array.from(active)
+  return form
+}
+```
+
 :::
 
 # Deskriptive Analyse
 
-## Row {height=680px}
+## Row {height=580px}
 
 ### Column {width=65%}
 
@@ -818,9 +865,9 @@ viewof hoveredRow = {
     title: "Umfrageergebnisse über die Zeit",
     subtitle: showLine
       ? "Punkte: einzelne Umfragen aller Institute · Linie: gepoolte Umfrage"
-      : `Punkte: einzelne Umfragen (${institute})`,
+      : `Punkte: einzelne Umfragen (${pollster_names[institute] ?? institute})`,
     style: { fontSize: "14px" },
-    marginBottom: 40,
+    marginBottom: 55,
     marginLeft: 55,
     marginRight: 110,
     height: 460,
@@ -836,7 +883,7 @@ viewof hoveredRow = {
       }
     },
     y: {
-      label: "Anteil in %",
+      label: "Stimmenanteil (%)",
       grid: true,
       domain: [0, yMax],
       tickFormat: d => d + "%"
@@ -939,7 +986,7 @@ viewof hoveredRow = {
         .text(`${it.label} ${match.percent.toFixed(1)}%`)
     })
 
-    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 32)
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 47)
       .text(d3.utcFormat("%d.%m.%Y")(row.date))
   }
 
@@ -990,7 +1037,7 @@ viewof hoveredRow = {
 
 ```{ojs}
 {
-  const shares = party_order
+  const shares = [...party_order, "others"]
     .filter(p => hoveredRow[p] != null)
     .map(p => ({ party: p, percent: hoveredRow[p], label: party_names[p] || p }))
   const maxY = Math.max(35, d3.max(shares, d => d.percent) + 5)
@@ -998,9 +1045,10 @@ viewof hoveredRow = {
   const hoveredDate = hoveredRow.date.toLocaleDateString("de-DE", {
     day: "2-digit", month: "long", year: "numeric"
   })
+  const instituteLabel = institute === "Pooled" ? "Gepoolte Umfrage" : (pollster_names[institute] ?? institute)
 
   return Plot.plot({
-    title: `Umfrage vom ${hoveredDate} (gepoolt)`,
+    title: `Umfrage vom ${hoveredDate} (${instituteLabel})`,
     subtitle: " ",
     style: { fontSize: "14px" },
     marginBottom: 40,
