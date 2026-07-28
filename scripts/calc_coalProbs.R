@@ -107,7 +107,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
       survey <- survey %>%
         mutate(percent = ifelse(is.na(percent), 0, percent),
-               votes   = ifelse(is.na(votes),   0, votes))
+               votes   = ifelse(is.na(votes),   0, votes)) %>%
+        # coalitions::sls() re-sorts parties alphabetically internally and returns
+        # seat counts with no names attached; coalitions::get_seats() then reattaches
+        # them positionally to survey's original row order. Pre-sorting here so that
+        # order already matches what sls() assumes avoids that mislabeling.
+        arrange(party)
 
       dirichlet.draws    <- coalitions::draw_from_posterior(survey = survey, nsim = nsim, correction = correction)
       # Drop "others" before seat allocation so majorities are computed over the
