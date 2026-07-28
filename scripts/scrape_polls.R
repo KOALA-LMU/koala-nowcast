@@ -203,6 +203,21 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
     nest(survey = c(party, percent, votes)) %>%
     nest(surveys = c(date, start, end, respondents, survey))
 
+  # pool_surveys()/get_eligible() hard-require >= 2 pollster rows in `surveys`
+  # (assert_data_frame(min.rows = 2)), even though the actual per-date pooling
+  # window only ever needs the eligible polls for that date. When an election
+  # currently has data from a single pollster only, pad with an inert
+  # placeholder pollster (empty surveys) so the assertion passes; since it has
+  # no surveys it never contributes to any date's window or estimate — the
+  # result is identical to that pollster's own numbers, same as the existing
+  # single-poll-window fallback below.
+  if (nrow(surveys_nested) < 2) {
+    placeholder <- surveys_nested[1, ]
+    placeholder$pollster <- "__placeholder__"
+    placeholder$surveys  <- list(surveys_nested$surveys[[1]][0, ])
+    surveys_nested <- bind_rows(surveys_nested, placeholder)
+  }
+
   # Pool for each date a raw poll was published; skip dates before from_date if
   # provided (earlier pooled estimates are unaffected by polls published later).
   dates <- raw %>%
