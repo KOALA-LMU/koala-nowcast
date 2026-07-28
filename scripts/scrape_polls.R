@@ -89,8 +89,13 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-07-01")) {
   has_new_raw    <- nrow(new_rows) > 0
   has_no_pooled  <- is.null(existing) || !any(existing$pollster == "pooled")
 
+  # new_rows has one row per (pollster, date, party); count/report distinct
+  # polls (pollster+date pairs) rather than raw row count.
+  new_polls      <- distinct(new_rows, pollster, date)
+  new_poll_dates <- sort(unique(new_polls$date))
+
   message(sprintf("[%s] new_raw=%s (%d poll(s)), no_pooled=%s",
-              cfg$id, has_new_raw, nrow(new_rows), has_no_pooled))
+              cfg$id, has_new_raw, nrow(new_polls), has_no_pooled))
 
   if (!has_new_raw && !has_no_pooled) {
     message(sprintf("[%s] No new polls.", cfg$id))
@@ -98,7 +103,8 @@ scrape_election <- function(config_path, oldest_date = as.Date("2026-07-01")) {
   }
 
   if (has_new_raw)
-    message(sprintf("[%s] %d new poll(s) found", cfg$id, nrow(new_rows)))
+    message(sprintf("[%s] %d new poll(s) found: %s", cfg$id, nrow(new_polls),
+                    paste(new_poll_dates, collapse = ", ")))
   if (has_no_pooled)
     message(sprintf("[%s] No pooled data found, computing pooled estimates", cfg$id))
 
