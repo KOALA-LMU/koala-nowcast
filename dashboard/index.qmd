@@ -44,6 +44,44 @@ format:
   font-size: 12px;
 }
 </style>
+
+<script>
+// Plot writes its size into <svg width height> and emits no viewBox, so CSS alone
+// can only crop a chart, never scale it — the fit rules in the stylesheet above do
+// nothing until the viewBox exists. Adding one (0 0 width height, i.e. exactly the
+// size Plot laid the chart out at) leaves the chart pixel-identical while it fits
+// and scales it down proportionally once the card is too short.
+//
+// The crosshair overlays keep working on a scaled chart: they position via
+// plot.scale(...) in user-space coordinates, which the viewBox maps, and read the
+// pointer via d3.pointer(event, svg), which inverts the live screen CTM.
+//
+// OJS renders cells asynchronously and re-renders them whenever an input changes,
+// so charts appear long after DOMContentLoaded — hence an observer instead of a
+// one-shot pass. Elements that already carry a viewBox (Bootstrap icons) are left
+// untouched.
+(() => {
+  const addViewBox = svg => {
+    if (svg.hasAttribute("viewBox")) return
+    const w = svg.getAttribute("width")
+    const h = svg.getAttribute("height")
+    if (!w || !h) return
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`)
+  }
+
+  const scan = node => {
+    if (node.nodeType !== Node.ELEMENT_NODE) return
+    if (node.matches("svg[width][height]")) addViewBox(node)
+    node.querySelectorAll("svg[width][height]").forEach(addViewBox)
+  }
+
+  new MutationObserver(records => {
+    for (const record of records) record.addedNodes.forEach(scan)
+  }).observe(document.documentElement, { childList: true, subtree: true })
+
+  document.addEventListener("DOMContentLoaded", () => scan(document.body))
+})()
+</script>
 ```
 
 ```{r}
@@ -475,15 +513,24 @@ plotCoalitionDensity = (rows, height = 260) => {
 # {.sidebar}
 
 ```{ojs}
-viewof election = Inputs.select(
-  new Map([
-    ["Sachsen-Anhalt",          "ST"],
-    ["Mecklenburg-Vorpommern",  "MV"],
-    ["Berlin",                  "BE"],
-    ["Bundestagswahl",         "BTW"]
-  ]),
-  { value: "ST", label: "Wahl"}
-)
+viewof election = {
+  const input = Inputs.select(
+    new Map([
+      ["Bundestagswahl",         "BTW"],
+      ["Berlin",                  "BE"],
+      ["Mecklenburg-Vorpommern",  "MV"],
+      ["Sachsen-Anhalt",          "ST"]
+    ]),
+    { value: "BTW", label: "Wahl"}
+  )
+
+  // Separate the Bundestagswahl from the Landtagswahlen. An <hr> is not part of
+  // select.options, so the option indices Inputs.select maps values by stay intact.
+  const select = input.querySelector("select")
+  select.insertBefore(document.createElement("hr"), select.options[1])
+
+  return input
+}
 ```
 
 ```{ojs}
@@ -525,14 +572,26 @@ html`<hr style="margin:12px 0">`
 ```
 
 ```{ojs}
-viewof institute = Inputs.select(
-  ["Pooled", ...Array.from(new Set(cur.pollster_data.per_pollster.map(d => d.pollster))).sort()],
-  {
-    value: "Pooled",
-    label: "Institut",
-    format: d => d === "Pooled" ? "Gepoolte Umfrage" : (pollster_names[d] ?? d)
-  }
-)
+viewof institute = {
+  const label = d => d === "Pooled" ? "Gepoolte Umfrage" : (pollster_names[d] ?? d)
+
+  // sorted by the displayed name, not by the internal id — e.g. "allensbach" is
+  // shown as "Institut für Demoskopie Allensbach" and belongs under I, not A
+  const pollsters = Array.from(new Set(cur.pollster_data.per_pollster.map(d => d.pollster)))
+    .sort((a, b) => label(a).localeCompare(label(b), "de", { sensitivity: "base" }))
+
+  const input = Inputs.select(
+    ["Pooled", ...pollsters],
+    { value: "Pooled", label: "Institut", format: label }
+  )
+
+  // Separate the pooled estimate from the individual institutes. An <hr> is not part
+  // of select.options, so the option indices Inputs.select maps values by stay intact.
+  const select = input.querySelector("select")
+  select.insertBefore(document.createElement("hr"), select.options[1])
+
+  return input
+}
 ```
 
 ```{ojs}
@@ -778,7 +837,7 @@ html`<hr style="margin:12px 0">
 
 # Zeitverlauf
 
-## Row {height=580px}
+## Row {height=700px}
 
 ::: {.card .zeitverlauf-card}
 
@@ -816,13 +875,10 @@ viewof hoveredCoalitionRow = {
       type: "utc",
       label: null,
       interval: "day",
-      ticks: "month",
+      ticks: "year",
       tickPadding: 12,
-      tickFormat: d => {
-        const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
-          "Juli", "August", "September", "Oktober", "November", "Dezember"]
-        return `${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`
-      }
+      // one tick per year, anchored on 1.1. (d3.utcYear ticks land on January 1 UTC)
+      tickFormat: d => d.getUTCFullYear()
     },
     y: {
       label: "Wahrscheinlichkeit",
@@ -870,10 +926,15 @@ viewof hoveredCoalitionRow = {
   const crosshair = overlay.append("line")
     .attr("stroke", "#999").attr("stroke-width", 1)
     .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(1))
+  // dots and labels go into two separate layers, appended in that order, so every
+  // label paints above every dot. With one group per coalition instead, SVG paint
+  // order puts a later coalition's dot on top of an earlier one's text wherever the
+  // crosshair bunches them together.
+  const dotLayer   = overlay.append("g")
+  const labelLayer = overlay.append("g")
   const items = selectedCoalitions.map(label => {
-    const g    = overlay.append("g")
-    const dot  = g.append("circle").attr("r", 4).attr("fill", colorByKey[label] || "#aaa")
-    const text = g.append("text").attr("dx", 8).attr("dy", "0.32em")
+    const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", colorByKey[label] || "#aaa")
+    const text = labelLayer.append("text").attr("dx", 8).attr("dy", "0.32em")
       .attr("fill", colorByKey[label] || "#aaa").attr("font-size", 13).attr("font-weight", "bold")
       .attr("paint-order", "stroke")
       .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
@@ -983,7 +1044,7 @@ viewof selectedCoalitions = {
     color: ${deselectColor};
     background: white;
     transition: background 100ms, color 100ms;
-  ">Alle abwählen</button>`
+  ">Auswahl entfernen</button>`
 
   deselectBtn.onclick = () => {
     active.clear()
@@ -1031,7 +1092,7 @@ viewof selectedCoalitions = {
 
 # Deskriptive Analyse
 
-## Row {height=580px}
+## Row {height=700px}
 
 ### Column {width=65%}
 
@@ -1039,6 +1100,9 @@ viewof selectedCoalitions = {
 
 ```{ojs}
 viewof hoveredRow = {
+  // "others" is deliberately left out of the trend lines and the crosshair labels —
+  // Sonstige never enters a coalition, so it would only add noise here. It is still
+  // shown in the Stimmenanteile bars, which report the full vote split.
   const presentParties = new Set(
     [...history_raw, ...history_pooled]
       .filter(d => d.party !== "others")
@@ -1076,11 +1140,13 @@ viewof hoveredRow = {
 
   // single-institute series, one row per date the institute actually published a
   // poll — used instead of `wide` when a specific institute is selected, so the
-  // crosshair only ever jumps between that institute's real poll dates
+  // crosshair only ever jumps between that institute's real poll dates. Built from
+  // history_raw rather than `raw` so it keeps "others" (like `wide` above does):
+  // Sonstige is dropped from the trend lines, but the bars report the full split.
   const byDateRaw = d3.rollup(
-    raw,
+    history_raw.filter(d => new Date(d.date) >= cutoff),
     v => Object.fromEntries(v.map(d => [d.party, d.percent])),
-    d => +d.date
+    d => +new Date(d.date)
   )
   const wideRaw = Array.from(byDateRaw, ([t, vals]) => ({ date: new Date(+t), ...vals }))
     .sort((a, b) => a.date - b.date)
@@ -1103,12 +1169,9 @@ viewof hoveredRow = {
       type: "utc",
       label: null,
       interval: "day",
-      ticks: "month",
-      tickFormat: d => {
-        const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
-          "Juli", "August", "September", "Oktober", "November", "Dezember"]
-        return `${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`
-      }
+      ticks: "year",
+      // one tick per year, anchored on 1.1. (d3.utcYear ticks land on January 1 UTC)
+      tickFormat: d => d.getUTCFullYear()
     },
     y: {
       label: "Stimmenanteil (%)",
@@ -1168,10 +1231,13 @@ viewof hoveredRow = {
   const crosshair = overlay.append("line")
     .attr("stroke", "#999").attr("stroke-width", 1)
     .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(yMax))
+  // dots and labels go into two separate layers, appended in that order, so every
+  // label paints above every dot (see the same split in the Zeitverlauf overlay)
+  const dotLayer   = overlay.append("g")
+  const labelLayer = overlay.append("g")
   const items = partyIds.map((partyId, i) => {
-    const g    = overlay.append("g")
-    const dot  = g.append("circle").attr("r", 4).attr("fill", colors[i])
-    const text = g.append("text").attr("dx", 8).attr("dy", "0.32em")
+    const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", colors[i])
+    const text = labelLayer.append("text").attr("dx", 8).attr("dy", "0.32em")
       .attr("fill", colors[i]).attr("font-size", 13).attr("font-weight", "bold")
       .attr("paint-order", "stroke")
       .attr("stroke", partyId === "fdp" ? "#999" : "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
