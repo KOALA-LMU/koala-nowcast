@@ -776,41 +776,6 @@ html`<hr style="margin:12px 0">
 }
 ```
 
-
-# Umfragen nach Institut
-
-## Row
-
-```{ojs}
-{
-  const pp = cur.pollster_data.per_pollster
-    .filter(d => d.party !== "others")
-    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
-
-  return Plot.plot({
-    marginLeft: 100,
-    height: 400,
-    fy: { label: null },
-    x:  { label: "Stimmenanteil (%)", domain: [0, 50] },
-    marks: [
-      Plot.barX(pp, {
-        fy: "pollster",
-        y: d => party_names[d.party] || d.party,
-        x: "percent",
-        fill: d => party_colors[d.party] || "#aaa"
-      }),
-      Plot.text(pp.filter(d => d.percent >= 7), {
-        fy: "pollster",
-        y: d => party_names[d.party] || d.party,
-        x: d => d.percent / 2,
-        text: d => d.percent.toFixed(0) + "%",
-        fill: d => d.party === "fdp" ? "#555" : "white",
-        fontSize: 11, fontWeight: "bold", textAnchor: "middle"
-      }),
-      Plot.ruleX([5], { stroke: "#c0392b", strokeDasharray: "3 3", strokeWidth: 1.5 }),
-      Plot.ruleX([0])
-
-
 # Zeitverlauf
 
 ## Row {height=580px}
