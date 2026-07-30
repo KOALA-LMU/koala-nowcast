@@ -72,6 +72,8 @@ load_election <- function(dir) {
       party_data    = fromJSON(file.path(dir, "party_shares.json"),            simplifyVector = FALSE),
       hurdle_data   = fromJSON(file.path(dir, "hurdle_probabilities.json"),    simplifyVector = FALSE),
       pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE),
+      history_data  = fromJSON(file.path(dir, "poll_history.json"),            simplifyVector = FALSE),
+      coal_history_data = fromJSON(file.path(dir, "coalition_history.json"),   simplifyVector = FALSE),
       density_data  = fromJSON(file.path(dir, "coalition_densities.json"),     simplifyVector = FALSE)
     ),
     error = function(e) NULL
@@ -237,6 +239,66 @@ cleanCoalitions = (coalitions, shares) => {
       }
     }
   ).sort((a, b) => a.probability - b.probability)
+}
+
+// Per-label view: unlike cleanCoalitions() (which merges every "who leads"
+// ordering of a coalition into a single summed line), this keeps each
+// ordering — e.g. "Grüne-SPD-Linke" vs. "Linke-SPD-Grüne" — as its own
+// distinguishable option, so near-tied leadership scenarios stay visible
+// instead of one silently winning the label and hiding the other.
+leadershipVariants = (coalitions, shares, pooledShares) => {
+  const partyVotes  = Object.fromEntries(cleanShares(shares).map(d => [d.party, d.percent]))
+  const pooledVotes = Object.fromEntries(cleanShares(pooledShares).map(d => [d.party, d.percent]))
+
+  const byLabel = Array.from(
+    d3.rollup(coalitions, v => d3.mean(v, d => d.probability), d => d.label),
+    ([label, probability]) => ({ label, probability, parties: coalitionParties(label) })
+  )
+
+  // The R side (derive_dynamic_coalitions() in scripts/calc_coalProbs_helpers.R)
+  // deliberately computes more broadly (25% combined) than the site displays,
+  // so this 33% cutoff is the real display-layer decision, not a mirror of it.
+  return byLabel
+    .filter(d => isViableCoalition(d.parties))
+    // only expose a coalition if it currently polls at least 33% combined,
+    // based on the recent pooled estimate (not whichever institute is selected)
+    .filter(d => d3.sum(d.parties, p => pooledVotes[p] ?? 0) >= 33)
+    // among a coalition's "who leads" orderings, only expose an alternative
+    // leader if it has at least 75% of the pooled vote share of the group's
+    // biggest-polling member — otherwise it's not a plausible leadership swap
+    .filter(d => {
+      const maxMemberVote = d3.max(d.parties, p => pooledVotes[p] ?? 0)
+      const leaderVote     = pooledVotes[d.parties[0]] ?? 0
+      return leaderVote >= 0.75 * maxMemberVote
+    })
+    .map(d => ({
+      label: d.label,
+      probability: d.probability,
+      first_party: d.parties[0],
+      vote_share: d3.sum(d.parties, p => partyVotes[p] ?? 0)
+    }))
+}
+
+cleanCoalitionHistory = rows => {
+  const filtered = rows.filter(d => isViableCoalition(coalitionParties(d.label)))
+
+  // Collapse exact (date, label) duplicates by averaging. A pooled result can
+  // occasionally get recomputed more than once for the same poll date.
+  const byDateLabel = d3.rollup(
+    filtered,
+    v => d3.mean(v, d => d.probability),
+    d => d.date,
+    d => d.label
+  )
+
+  return Array.from(byDateLabel, ([date, byLabel]) =>
+    Array.from(byLabel, ([label, probability]) => ({
+      label,
+      first_party: coalitionParties(label)[0],
+      date: new Date(date),
+      probability
+    }))
+  ).flat()
 }
 
 densityRows = densityData => {

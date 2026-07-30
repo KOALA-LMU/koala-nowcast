@@ -4,6 +4,9 @@ library(yaml)
 source("scripts/calc_coalProbs_helpers.R")
 
 coalition_density <- function(election_id, cfg, results_dir) {
+  parl_seats     <- cfg$parliament$seats
+  majority_seats <- floor(parl_seats / 2) + 1
+
   coal_labels <- setNames(
     vapply(cfg$coalitions, `[[`, character(1), "label"),
     vapply(cfg$coalitions, function(c) {
@@ -97,10 +100,6 @@ prepare_election <- function(election_id) {
 
   shares <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
     filter(pollster == "pooled", date == max(date)) %>%
-    select(party, percent)
-  write_json(list(party_shares = shares, updated = updated),
-             file.path(out_dir, "party_shares.json"), auto_unbox = TRUE)
-
     select(party, percent, date)
   write_json(list(party_shares = shares, updated = updated),
              file.path(out_dir, "party_shares.json"), auto_unbox = TRUE)
@@ -175,4 +174,3 @@ for (id in c("ltw_st", "ltw_mv", "ltw_be", "btw")) {
     error = function(e) message("Skipping ", id, ": ", conditionMessage(e))
   )
 }
-
