@@ -3,6 +3,9 @@ library(dplyr)
 library(yaml)
 
 coalition_density <- function(election_id, cfg, results_dir) {
+  parl_seats <- cfg$parliament$seats
+  majority_seats <- cfg$parliament$majority
+
   coal_labels <- setNames(
     vapply(cfg$coalitions, `[[`, character(1), "label"),
     vapply(cfg$coalitions, function(c) {
@@ -41,17 +44,26 @@ coalition_density <- function(election_id, cfg, results_dir) {
   latest %>%
     group_by(pollster, date, coalition) %>%
     group_modify(function(dat, key) {
-      d <- density(dat$seat_share, from = 0, to = 1, n = 200)
+      d <- suppressWarnings(density(dat$seat_share, from = 0, to = 1, n = 512, bw = "bcv"))
+      q <- quantile(dat$seat_share, probs = c(0.025, 0.975), na.rm = TRUE)
+      seats <- dat$seat_share * parl_seats
 
       tibble::tibble(
         seat_share = d$x,
         density = d$y,
-        prob_majority = mean(dat$seat_share >= 0.5)
+        prob_majority = mean(seats >= majority_seats),
+        ci_lower = q[[1]],
+        ci_upper = q[[2]],
+        ci_lower_seats = ceiling(q[[1]] * parl_seats),
+        ci_upper_seats = floor(q[[2]] * parl_seats)
       )
     }) %>%
     ungroup() %>%
     mutate(label = coal_labels[coalition]) %>%
-    dplyr::select(pollster, date, coalition, label, seat_share, density, prob_majority)
+    dplyr::select(
+      pollster, date, coalition, label, seat_share, density, prob_majority,
+      ci_lower, ci_upper, ci_lower_seats, ci_upper_seats
+    )
 }
 
 prepare_election <- function(election_id) {
@@ -140,4 +152,3 @@ for (id in c("ltw_st", "ltw_mv", "ltw_be", "btw")) {
     error = function(e) message("Skipping ", id, ": ", conditionMessage(e))
   )
 }
-

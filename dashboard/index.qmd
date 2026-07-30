@@ -19,7 +19,8 @@ load_election <- function(dir) {
       coalitions    = fromJSON(file.path(dir, "coalition_probabilities.json"), simplifyVector = FALSE),
       party_data    = fromJSON(file.path(dir, "party_shares.json"),            simplifyVector = FALSE),
       hurdle_data   = fromJSON(file.path(dir, "hurdle_probabilities.json"),    simplifyVector = FALSE),
-      pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE)
+      pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE),
+      density_data  = fromJSON(file.path(dir, "coalition_densities.json"),     simplifyVector = FALSE)
     ),
     error = function(e) NULL
   )
@@ -164,6 +165,176 @@ cleanCoalitions = (coalitions, shares) => {
     }
   ).sort((a, b) => a.probability - b.probability)
 }
+
+densityRows = densityData => {
+  const densities = densityData?.densities ?? []
+  if (Array.isArray(densities)) return densities
+
+  const columns = Object.keys(densities)
+  if (columns.length === 0) return []
+
+  const n = densities[columns[0]]?.length ?? 0
+  return d3.range(n).map(i =>
+    Object.fromEntries(columns.map(column => [column, densities[column][i]]))
+  )
+}
+
+densityValue = function normalizeDensityValue(value) {
+  if (Array.isArray(value)) return normalizeDensityValue(value[0])
+  if (value && typeof value === "object" && 0 in value) return normalizeDensityValue(value[0])
+  if (value && typeof value === "object" && "value" in value) return normalizeDensityValue(value.value)
+  if (value && typeof value === "object" && Object.keys(value).length === 1) {
+    return normalizeDensityValue(value[Object.keys(value)[0]])
+  }
+  return +value
+}
+
+densitySource = (data, selectedInstitute) => {
+  const pollster = selectedInstitute === "Pooled" ? "pooled" : selectedInstitute
+  const densities = densityRows(data?.density_data)
+  const latestDate = d3.max(
+    densities.filter(d => d.pollster === pollster),
+    d => new Date(d.date)
+  )
+
+  return densities.filter(d =>
+    d.pollster === pollster &&
+    +new Date(d.date) === +latestDate
+  )
+}
+
+coalitionDensityOptions = (data, selectedInstitute) => {
+  const densities = densitySource(data, selectedInstitute)
+  return new Map(
+    Array.from(
+      d3.rollup(densities, rows => rows[0].label, d => d.coalition),
+      ([coalition, label]) => [label, coalition]
+    ).sort((a, b) => d3.ascending(a[0], b[0]))
+  )
+}
+
+normalizeDensityCurve = rows => {
+  const dat = rows
+    .map(d => ({
+      ...d,
+      seat_share: densityValue(d.seat_share),
+      density: Math.max(0, densityValue(d.density))
+    }))
+    .filter(d => Number.isFinite(d.seat_share) && Number.isFinite(d.density))
+    .sort((a, b) => d3.ascending(a.seat_share, b.seat_share))
+
+  return dat
+}
+
+plotCoalitionDensity = (rows, height = 260) => {
+  const dat = normalizeDensityCurve(rows)
+  const label = rows[0]?.label ?? ""
+
+  if (dat.length < 2 || !Number.isFinite(d3.max(dat, d => d.density))) {
+    return html`<div style="font-weight:700">${label}</div>`
+  }
+
+  const probMajority = densityValue(rows[0]?.prob_majority)
+  const ciLower = densityValue(rows[0]?.ci_lower)
+  const ciUpper = densityValue(rows[0]?.ci_upper)
+  const ciLowerSeats = densityValue(rows[0]?.ci_lower_seats)
+  const ciUpperSeats = densityValue(rows[0]?.ci_upper_seats)
+  const maxDensity = d3.max(dat, d => d.density)
+  const threshold = 0.5
+  const leadingParty = label.split("-")[0] ?? label
+  const hasInterval = Number.isFinite(ciLower) && Number.isFinite(ciUpper)
+  const hasSeatInterval = Number.isFinite(ciLowerSeats) && Number.isFinite(ciUpperSeats)
+  const probabilityLabel = probMajority < 0.001
+    ? "<0,1%"
+    : `${(probMajority * 100).toFixed(1).replace(".", ",")}%`
+  const intervalLabel = hasSeatInterval
+    ? `${ciLowerSeats.toFixed(0)} - ${ciUpperSeats.toFixed(0)}`
+    : ""
+
+  const plot = Plot.plot({
+    height,
+    width: Math.max(900, window.innerWidth - 430),
+    marginTop: 56,
+    marginRight: 42,
+    marginBottom: 42,
+    marginLeft: 42,
+    x: {
+      label: null,
+      domain: [0, 1],
+      ticks: [0, 0.25, 0.5, 0.75, 1],
+      tickFormat: d => `${(d * 100).toFixed(0)}%`,
+      axis: "top"
+    },
+    y: {
+      label: null,
+      domain: [-0.12 * maxDensity, maxDensity],
+      axis: null
+    },
+    marks: [
+      Plot.ruleX([0, 0.25, 0.5, 0.75, 1], {
+        stroke: "#bdbdbd",
+        strokeDasharray: "5 6",
+        strokeWidth: 1.4
+      }),
+      Plot.areaY(dat.filter(d => d.seat_share <= threshold), {
+        x: "seat_share",
+        y1: 0,
+        y2: "density",
+        fill: "#d1d0ce",
+        fillOpacity: 0.95
+      }),
+      Plot.areaY(dat.filter(d => d.seat_share >= threshold), {
+        x: "seat_share",
+        y1: 0,
+        y2: "density",
+        fill: "#0072b6",
+        fillOpacity: 0.95
+      }),
+      Plot.lineY(dat, {
+        x: "seat_share",
+        y: "density",
+        stroke: "#777",
+        strokeWidth: 1
+      }),
+      Plot.ruleY([0], {
+        stroke: "#bdbdbd",
+        strokeWidth: 5
+      }),
+      ...(hasInterval ? [
+        Plot.ruleY([{ y: -0.085 * maxDensity, x1: ciLower, x2: ciUpper }], {
+          y: "y",
+          x1: "x1",
+          x2: "x2",
+          stroke: "#f39c12",
+          strokeWidth: 5
+        })
+      ] : [])
+    ]
+  })
+
+  return html`
+    <div>
+      <div style="text-align:center;font-size:1.08rem;line-height:1.2;margin:10px 0 22px 0;position:relative;z-index:1">
+        Anteil der Sitze im Parlament
+      </div>
+      ${plot}
+      <div style="font-size:0.95rem;line-height:1.7;margin-top:18px">
+        <p style="font-size:1.05rem;margin:0 0 8px 0">Für <b>${label}</b>...</p>
+        ${hasSeatInterval ? html`
+          <p style="margin:0 0 4px 34px">
+            ... liegt die letztendliche Sitzanzahl mit 95% Wahrscheinlichkeit im Intervall
+            <b style="color:#f39c12;font-size:1.1rem">${intervalLabel}</b>.
+          </p>
+        ` : ""}
+        <p style="margin:0 0 4px 34px">
+          ... besteht eine Wahrscheinlichkeit von
+          <b style="color:#2b6cb0;font-size:1.1rem">${probabilityLabel}</b>, dass die Koalition die Mehrheit der Sitze
+          <b>unter Führung der ${leadingParty}</b> erreicht.
+        </p>
+      </div>
+    </div>
+  `
+}
 ```
 
 # {.sidebar}
@@ -187,18 +358,6 @@ cur_meta = election_meta[election]
 updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
   day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
 })
-
-coal_source = institute === "Pooled"
-  ? cur.coalitions.coalitions
-  : cur.pollster_data.per_pollster_coalitions.filter(d => d.pollster === institute)
-
-shares_source = institute === "Pooled"
-  ? cur.party_data.party_shares
-  : cur.pollster_data.per_pollster.filter(d => d.pollster === institute)
-
-hurdle_source = institute === "Pooled"
-  ? cur.hurdle_data.hurdle
-  : cur.pollster_data.per_pollster_hurdle.filter(d => d.pollster === institute)
 ```
 
 ```{ojs}
@@ -210,6 +369,21 @@ viewof institute = Inputs.select(
   ["Pooled", ...Array.from(new Set(cur.pollster_data.per_pollster.map(d => d.pollster))).sort()],
   { value: "Pooled", label: "Institut" }
 )
+```
+
+```{ojs}
+//| output: false
+coal_source = institute === "Pooled"
+  ? cur.coalitions.coalitions
+  : cur.pollster_data.per_pollster_coalitions.filter(d => d.pollster === institute)
+
+shares_source = institute === "Pooled"
+  ? cur.party_data.party_shares
+  : cur.pollster_data.per_pollster.filter(d => d.pollster === institute)
+
+hurdle_source = institute === "Pooled"
+  ? cur.hurdle_data.hurdle
+  : cur.pollster_data.per_pollster_hurdle.filter(d => d.pollster === institute)
 ```
 
 ```{ojs}
@@ -230,7 +404,7 @@ html`<hr style="margin:12px 0">
 ```{ojs}
 {
   const shares = cleanShares(shares_source)
-  const maxY = Math.max(35, d3.max(shares, d => d.percent) + 5)
+  const maxY = Math.max(35, d3.max(shares, d => d.percent) + 7)
 
   return Plot.plot({
     marginBottom: 55,
@@ -259,10 +433,11 @@ html`<hr style="margin:12px 0">
       }),
       Plot.text(shares, {
         x: "label",
-        y: d => d.percent + 1,
+        y: d => d.percent + 2,
         text: d => d.percent.toFixed(1) + "%",
         fill: "#555",
         fontSize: 12,
+        dy: -2,
         textAnchor: "middle"
       }),
       Plot.ruleY([0])
@@ -321,10 +496,11 @@ html`<hr style="margin:12px 0">
       }),
       Plot.text(coal, {
         y: "label",
-        x: d => Math.min(d.probability + 0.07, 0.98),
+        x: d => d.probability > 0.9 ? 0.985 : d.probability + 0.07,
         text: d => (d.probability * 100).toFixed(1) + "%",
         fill: "#555",
         fontSize: 12,
+        dy: -8,
         textAnchor: d => d.probability > 0.93 ? "end" : "start"
       })
     ]
@@ -378,10 +554,11 @@ html`<hr style="margin:12px 0">
       }),
       Plot.text(hurdles, {
         y: "label",
-        x: d => Math.min(d.prob_above_hurdle + 0.09, 0.98),
+        x: d => d.prob_above_hurdle > 0.9 ? 0.985 : d.prob_above_hurdle + 0.09,
         text: d => (d.prob_above_hurdle * 100).toFixed(1) + "%",
         fill: "#555",
         fontSize: 12,
+        dy: -8,
         textAnchor: d => d.prob_above_hurdle > 0.9 ? "end" : "start"
       })
     ]
@@ -391,6 +568,64 @@ html`<hr style="margin:12px 0">
 
 # Koalitionswahrscheinlichkeiten
 
+## Row {height=100%}
+
+```{ojs}
+{
+  const source = densitySource(cur, institute)
+  const options = Array.from(coalitionDensityOptions(cur, institute), ([label, value]) => ({ label, value }))
+
+  const container = html`<div style="
+    box-sizing:border-box;
+    min-height:calc(100vh - 170px);
+    padding:4px 10px 0 10px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+  "></div>`
+  const controls = html`<div style="
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0 0 4px 0;
+    max-width:420px;
+  "></div>`
+  const label = html`<label style="
+    margin:0;
+    font-size:0.9rem;
+    font-weight:700;
+    white-space:nowrap;
+  ">Betrachtete Koalition</label>`
+  const select = html`<select style="
+    width:220px;
+    max-width:220px;
+    height:30px;
+    padding:2px 6px;
+    font-size:0.9rem;
+  "></select>`
+  const plotArea = html`<div></div>`
+
+  for (const option of options) {
+    select.append(html`<option value=${option.value}>${option.label}</option>`)
+  }
+
+  const draw = () => {
+    const rows = source.filter(d => d.coalition === select.value)
+    plotArea.replaceChildren(
+      rows.length
+        ? plotCoalitionDensity(rows, 380)
+        : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Koalition gefunden.</div>`
+    )
+  }
+
+  select.onchange = draw
+  controls.append(label, select)
+  container.append(controls, plotArea)
+  draw()
+
+  return container
+}
+```
 
 
 # Umfragen nach Institut
