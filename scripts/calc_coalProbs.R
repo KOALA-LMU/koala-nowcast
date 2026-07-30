@@ -80,6 +80,17 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     dates          <- dates_todo[!dates_todo %in% computed_dates]
   }
 
+  # ── Parallelisation strategy ─────────────────────────────────────────────────
+  # `cores` is spent on the date loop rather than on calc_allCoalProbs(): the
+  # per-date cost is dominated by draw_from_posterior() + get_seats(), both
+  # single-threaded, so the coalition-level split can only shave off part of the
+  # work while the date-level split scales the whole thing. calc_allCoalProbs()
+  # therefore runs sequentially inside each worker — nested forking would
+  # oversubscribe the machine. mclapply() has no parallel path on Windows, so fall
+  # back to the coalition-level split there.
+  dates_in_parallel <- cores > 1 && Sys.info()[["sysname"]] != "Windows"
+  cores_coals       <- if (dates_in_parallel) 1 else cores
+
   # ── Per-pollster computation ─────────────────────────────────────────────────
   results <- lapply(pollsters, function(p) {
     survey_byTime <- surveys_byTime %>% filter(pollster == p)
@@ -114,7 +125,31 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
         # order already matches what sls() assumes avoids that mislabeling.
         arrange(party)
 
-      dirichlet.draws    <- coalitions::draw_from_posterior(survey = survey, nsim = nsim, correction = correction)
+      # Parties that did not exist yet at this date reach this point at percent = 0
+      # (filled in by the right_join above). Handing a 0% party to
+      # draw_from_posterior(correction = ...) is harmful: the correction jitters every
+      # share by up to +-correction, so a party at 0 draws a negative share in roughly
+      # half the simulations and the coalitions package silently discards those whole
+      # draws — halving the effective sample. Such parties are dropped from this date
+      # only: they carry no row at all in this date's results (rather than a
+      # misleading 0) and reappear on every date where they are polled.
+      parties_ins    <- parties[parties %in% survey$party[survey$percent > 0]]
+      parties_absent <- setdiff(parties, parties_ins)
+      if (length(parties_absent) > 0) {
+        survey <- survey %>% filter(percent > 0)
+        message(sprintf("[%s] %s: no support for %s — excluded for this date",
+                        cfg$id, date_ins, paste(parties_absent, collapse = ", ")))
+      }
+
+      # Seed explicitly per (pollster, date): draw_from_posterior() defaults to
+      # seed = as.numeric(now()), which set.seed() truncates to whole seconds, so
+      # workers starting in the same second would draw from the same stream. Deriving
+      # it from the pollster and date instead keeps each date independent (and makes
+      # a re-run reproducible).
+      seed_ins <- sum(utf8ToInt(p)) * 100003L + as.integer(as.Date(date_ins))
+
+      dirichlet.draws    <- coalitions::draw_from_posterior(survey = survey, nsim = nsim,
+                                                            correction = correction, seed = seed_ins)
       # Drop "others" before seat allocation so majorities are computed over the
       # explicitly modelled parties only (matching the parties vector).
       dirichlet.draws    <- dirichlet.draws[, colnames(dirichlet.draws) != "others", drop = FALSE]
@@ -122,13 +157,21 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
                                                   survey = survey %>% filter(party != "others"),
                                                   distrib.fun = distrib_fun, n_seats = parl_seats)
 
-      res_all   <- calc_allCoalProbs(seat.distributions, parties, dirichlet.draws,
-                                     strongest_party_coals = strongest_party_coals, cores = cores)
+      # Strongest-party coalitions naming a party that is absent at this date have no
+      # simulated shares to look up, so restrict them to the parties in the simulation.
+      spc_ins <- if (is.null(strongest_party_coals)) NULL else {
+        keep <- sapply(strongest_party_coals,
+                       function(x) all(strsplit(x, "\\|")[[1]] %in% parties_ins))
+        if (any(keep)) strongest_party_coals[keep] else NULL
+      }
+
+      res_all   <- calc_allCoalProbs(seat.distributions, parties_ins, dirichlet.draws,
+                                     strongest_party_coals = spc_ins, cores = cores_coals)
       coalProbs <- res_all$coalProbs
       allShares <- res_all$shares_perSimulation
 
       # ── Filter to realistic coalitions ──────────────────────────────────────
-      realistic_norms <- c(sapply(parties, norm_coal), sapply(coals, norm_coal))
+      realistic_norms <- c(sapply(parties_ins, norm_coal), sapply(coals, norm_coal))
       is_realistic    <- sapply(allShares$coalition, function(x) norm_coal(x) %in% realistic_norms)
       shares          <- allShares[is_realistic, ]
 
@@ -158,9 +201,13 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
         bind_rows(lapply(seq_along(cfg$analyses$biggest_party), function(i) {
           p_vec        <- intersect(cfg$analyses$biggest_party[[i]]$parties, colnames(dirichlet.draws))
           biggestParty <- p_vec[apply(dirichlet.draws[, p_vec, drop = FALSE], 1, which.max)]
+          # Normalise by the draws actually retained, not by nsim: draw_from_posterior()
+          # drops draws that came out negative, so nrow() can be lower. Parties absent
+          # at this date are not in p_vec and get no row for this date.
           data.frame("index" = paste0("biggestParty", i),
                      "party" = p_vec,
-                     "prob"  = sapply(p_vec, function(x) sum(biggestParty == x) / nsim, USE.NAMES = FALSE),
+                     "prob"  = sapply(p_vec, function(x) sum(biggestParty == x) / nrow(dirichlet.draws),
+                                      USE.NAMES = FALSE),
                      stringsAsFactors = FALSE)
         }))
       } else {
@@ -168,9 +215,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       }
 
       # ── Hurdle probabilities ─────────────────────────────────────────────────
-      partyShares    <- allShares[allShares$coalition %in% parties, colnames(allShares) != "coalition"]
-      res_passHurdle <- data.frame("party" = parties,
-                                   "prob"  = rowMeans(partyShares > hurdle))
+      # Parties excluded above simply have no row for this date
+      partyShares    <- allShares[allShares$coalition %in% parties_ins, ]
+      res_passHurdle <- data.frame(
+        "party" = partyShares$coalition,
+        "prob"  = rowMeans(partyShares[, colnames(partyShares) != "coalition"] > hurdle)
+      )
 
       # ── Attach pollster/date, subsample simulations, return ─────────────────
       coalProbs        <- coalProbs        %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
@@ -193,7 +243,18 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
            "passHurdle" = res_passHurdle)
     }
 
-    results  <- lapply(dates_ins, calc_oneDate)
+    results <- if (dates_in_parallel) {
+      # mclapply() returns a "try-error" per failed element instead of aborting, so
+      # surface the first failure rather than writing silently incomplete results.
+      out    <- parallel::mclapply(dates_ins, calc_oneDate, mc.cores = cores)
+      failed <- vapply(out, inherits, logical(1), "try-error")
+      if (any(failed))
+        stop(sprintf("[%s] %d of %d date(s) failed, first error: %s", cfg$id,
+                     sum(failed), length(out), conditionMessage(attr(out[[which(failed)[1]]], "condition"))))
+      out
+    } else {
+      lapply(dates_ins, calc_oneDate)
+    }
     results[sapply(results, is.null)] <- NULL
 
     list(

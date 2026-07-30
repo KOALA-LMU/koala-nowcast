@@ -1,5 +1,9 @@
+suppressPackageStartupMessages({
+  library("parallel")
+})
+
 #' Compute probabilities for all theoretically possible coalitions
-#' 
+#'
 #' Function which computes the coalition probabilities for all possible combinations
 #' of parties in the parties vector. Also the function checks for each simulation if
 #' a coalition has a majority AND no subset coalition of it already has a majority.
