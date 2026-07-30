@@ -1,5 +1,7 @@
-library("dplyr")
-library("coalitions")
+suppressPackageStartupMessages({
+  library("dplyr")
+  library("coalitions")
+})
 
 scrape_btw <- function() {
   lookup <- coalitions:::.pollster_df

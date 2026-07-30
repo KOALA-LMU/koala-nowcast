@@ -2,6 +2,10 @@ name: Deploy Website
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Scrape, Pool and Compute"]
+    types:
+      - completed
 
 permissions:
   pages: write

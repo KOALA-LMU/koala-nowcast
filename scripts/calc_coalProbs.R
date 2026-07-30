@@ -23,12 +23,32 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   parties      <- parties_all[parties_all != "others"]
   party_labels <- setNames(sapply(cfg$parties, `[[`, "label"), parties_all)
 
-  coals       <- sapply(cfg$coalitions, function(c) paste(c$parties, collapse = "|"))
-  coal_labels <- setNames(sapply(cfg$coalitions, `[[`, "label"), coals)
-
   parl_seats  <- cfg$parliament$seats
   hurdle      <- cfg$parliament$hurdle
   distrib_fun <- get(cfg$parliament$seat_allocation, envir = asNamespace("coalitions"))
+
+  # ── Paths ────────────────────────────────────────────────────────────────────
+  surveys_file <- file.path("data", "surveys", cfg$id, "polls.json")
+  results_dir  <- file.path("data", "results", cfg$id)
+  results_file <- file.path(results_dir, "coalProbs.json")
+  dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
+
+  # ── Load surveys (flat JSON produced by scrape_election) ────────────────────
+  surveys_byTime <- jsonlite::fromJSON(surveys_file) %>% mutate(date = as.Date(date))
+  pollsters      <- sort(unique(surveys_byTime$pollster))
+  dates_todo     <- sort(unique(surveys_byTime$date))
+
+  # If the YAML has no coalitions: list at all, derive it dynamically from the
+  # current pooled vote shares instead of relying on a fixed, hand-authored set
+  # (see derive_dynamic_coalitions() in calc_coalProbs_helpers.R).
+  if (is.null(cfg$coalitions) || length(cfg$coalitions) == 0) {
+    pooled_latest <- surveys_byTime %>% filter(pollster == "pooled") %>% filter(date == max(date))
+    pooled_shares <- setNames(pooled_latest$percent, pooled_latest$party)
+    cfg$coalitions <- derive_dynamic_coalitions(cfg$parties, pooled_shares)
+  }
+
+  coals       <- sapply(cfg$coalitions, function(c) paste(c$parties, collapse = "|"))
+  coal_labels <- setNames(sapply(cfg$coalitions, `[[`, "label"), coals)
 
   # Normalise a coalition name by sorting its parties alphabetically
   norm_coal <- function(c) paste(sort(strsplit(c, "\\|")[[1]]), collapse = "|")
@@ -42,18 +62,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     strongest_party_coals <- NULL
   }
 
-  # ── Paths ────────────────────────────────────────────────────────────────────
-  surveys_file <- file.path("data", "surveys", cfg$id, "polls.json")
-  results_dir  <- file.path("data", "results", cfg$id)
-  dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
-
-  # ── Load surveys (flat JSON produced by scrape_election) ────────────────────
-  surveys_byTime <- jsonlite::fromJSON(surveys_file) %>% mutate(date = as.Date(date))
-  pollsters      <- sort(unique(surveys_byTime$pollster))
-  dates_todo     <- sort(unique(surveys_byTime$date))
-
   # ── Determine which dates need (re-)computation ──────────────────────────────
-  log_file     <- file.path(results_dir, "info.log")
   pending_file <- file.path("data", "surveys", cfg$id, "pending_dates.json")
 
   if (force_newCalculation) {
@@ -63,15 +72,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     pending <- as.Date(jsonlite::fromJSON(pending_file))
     dates   <- dates_todo[dates_todo %in% pending]
     file.remove(pending_file)
-  } else if (!file.exists(log_file)) {
+  } else if (!file.exists(results_file)) {
     dates <- dates_todo
   } else {
-    info        <- readLines(log_file)
-    range_done  <- strsplit(strsplit(info, ": ")[[1]][2], ",")[[1]]
-    range_done[2] <- substring(range_done[2], 1, nchar(range_done[2]) - 1)
-    range_done  <- as.Date(range_done)
-    d           <- dates_todo[seq_len(length(dates_todo) - 1)]
-    dates       <- c(d[d < range_done[1] | d > range_done[2]], tail(dates_todo, 1))
+    # Recompute any survey date missing from the existing results, wherever it falls
+    computed_dates <- unique(as.Date(jsonlite::fromJSON(results_file)$date))
+    dates          <- dates_todo[!dates_todo %in% computed_dates]
   }
 
   # ── Per-pollster computation ─────────────────────────────────────────────────
@@ -83,7 +89,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
                   "coalProbs_grouping" = NULL, "biggestParty" = NULL,
                   "passHurdle" = NULL))
     }
-    print(paste0("Perform new calculations for ", p, "..."))
+    print(paste0("Perform new calculations for ", cfg$name, " (", p, ")..."))
 
     calc_oneDate <- function(date_ins) {
       survey_raw <- survey_byTime %>%
@@ -101,7 +107,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
       survey <- survey %>%
         mutate(percent = ifelse(is.na(percent), 0, percent),
-               votes   = ifelse(is.na(votes),   0, votes))
+               votes   = ifelse(is.na(votes),   0, votes)) %>%
+        # coalitions::sls() re-sorts parties alphabetically internally and returns
+        # seat counts with no names attached; coalitions::get_seats() then reattaches
+        # them positionally to survey's original row order. Pre-sorting here so that
+        # order already matches what sls() assumes avoids that mislabeling.
+        arrange(party)
 
       dirichlet.draws    <- coalitions::draw_from_posterior(survey = survey, nsim = nsim, correction = correction)
       # Drop "others" before seat allocation so majorities are computed over the
@@ -219,12 +230,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     jsonlite::fromJSON(file.path(results_dir, paste0(name, ".json"))) %>% dplyr::mutate(date = as.Date(date))
   }
   if (!identical(dates, dates_todo)) {
-    coalProbs          <- bind_rows(coalProbs,          read_result("coalProbs"))
-    sharesSim          <- bind_rows(sharesSim,          read_result("sharesSim"))
-    shares             <- bind_rows(shares,             read_result("shares"))
-    coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping"))
-    biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty"))
-    passHurdle         <- bind_rows(passHurdle,         read_result("passHurdle"))
+    coalProbs          <- bind_rows(coalProbs,          read_result("coalProbs")          %>% filter(!date %in% dates))
+    sharesSim          <- bind_rows(sharesSim,          read_result("sharesSim")          %>% filter(!date %in% dates))
+    shares             <- bind_rows(shares,             read_result("shares")             %>% filter(!date %in% dates))
+    coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping") %>% filter(!date %in% dates))
+    biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty")       %>% filter(!date %in% dates))
+    passHurdle         <- bind_rows(passHurdle,         read_result("passHurdle")         %>% filter(!date %in% dates))
   }
 
   # ── Sort final output by date, then pollster ─────────────────────────────────
@@ -243,8 +254,4 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   write_result(coalProbs_grouping, "coalProbs_grouping")
   write_result(biggestParty,       "biggestParty")
   write_result(passHurdle,         "passHurdle")
-
-  range_todo <- range(dates_todo)
-  writeLines(paste0("Results are already calculated for the time: ", range_todo[1], ",", range_todo[2], ")"),
-             log_file)
 }
