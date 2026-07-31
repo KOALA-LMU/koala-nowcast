@@ -837,7 +837,7 @@ html`<hr style="margin:12px 0">
 
 # Zeitverlauf
 
-## Row {height=700px}
+## Row {height=750px}
 
 ::: {.card .zeitverlauf-card}
 
@@ -960,6 +960,21 @@ viewof hoveredCoalitionRow = {
 
     const px = xScale.apply(row.date)
     crosshair.attr("x1", px).attr("x2", px)
+
+    // keep labels inside the SVG at the right-hand end of the series, where the
+    // chart rests when nobody is hovering: a long coalition name drawn to the
+    // right of the crosshair there runs past the edge of the SVG and paints over
+    // whatever sits beside the chart. Flip those to the left instead, and clamp
+    // the date label to the frame the same way.
+    // getComputedTextLength() reports 0 while the plot is still detached, hence
+    // the character-count fallback; position() re-runs on hover once attached.
+    const svgWidth = +svg.getAttribute("width") || svg.getBoundingClientRect().width
+    const pad = 4
+    const widthOf = node => {
+      const w = node.getComputedTextLength ? node.getComputedTextLength() : 0
+      return w || node.textContent.length * 7.2
+    }
+
     items.forEach(it => {
       const match = present.find(p => p.key === it.key)
       const visible = Boolean(match)
@@ -970,10 +985,16 @@ viewof hoveredCoalitionRow = {
       it.dot.attr("cx", px).attr("cy", yScale.apply(match.probability))
       it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
         .text(`${it.label} ${(match.probability * 100).toFixed(1)}%`)
+      const w = widthOf(it.text.node())
+      const flip = px + 8 + w > svgWidth - pad && px - 8 - w >= pad
+      it.text.attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
     })
 
     dateLabel.attr("x", px).attr("y", yScale.apply(0) + 47)
       .text(d3.utcFormat("%d.%m.%Y")(row.date))
+    const dateWidth = widthOf(dateLabel.node())
+    dateLabel.attr("x", Math.max(pad + dateWidth / 2,
+                                 Math.min(svgWidth - pad - dateWidth / 2, px)))
   }
 
   // find the nearest point ourselves (rather than relying on Plot's own
@@ -1092,7 +1113,7 @@ viewof selectedCoalitions = {
 
 # Deskriptive Analyse
 
-## Row {height=700px}
+## Row {height=670px}
 
 ### Column {width=65%}
 
@@ -1161,6 +1182,11 @@ viewof hoveredRow = {
       ? "Punkte: einzelne Umfragen aller Institute · Linie: gepoolte Umfrage"
       : `Punkte: einzelne Umfragen (${pollster_names[institute] ?? institute})`,
     style: { fontSize: "14px" },
+    // Plot pins the y-axis label near the top of the SVG while the frame starts
+    // at marginTop, so the gap between the label and the topmost tick is
+    // marginTop - 3.5. At the default 20 the label almost touches "30%"; 40
+    // matches the Zeitverlauf chart and gives it room.
+    marginTop: 40,
     marginBottom: 55,
     marginLeft: 55,
     marginRight: 110,
@@ -1268,6 +1294,18 @@ viewof hoveredRow = {
 
     const px = xScale.apply(row.date)
     crosshair.attr("x1", px).attr("x2", px)
+
+    // keep labels inside the SVG at the right-hand end of the series — see the
+    // same flip in the Zeitverlauf overlay. Party labels are short enough that
+    // the longest ("Sonstige 12.3%") only just clears the right margin, so this
+    // is mostly insurance against a longer label or a font change.
+    const svgWidth = +svg.getAttribute("width") || svg.getBoundingClientRect().width
+    const pad = 4
+    const widthOf = node => {
+      const w = node.getComputedTextLength ? node.getComputedTextLength() : 0
+      return w || node.textContent.length * 7.2
+    }
+
     items.forEach(it => {
       const match = present.find(p => p.partyId === it.partyId)
       const visible = Boolean(match)
@@ -1278,10 +1316,16 @@ viewof hoveredRow = {
       it.dot.attr("cx", px).attr("cy", yScale.apply(match.percent))
       it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
         .text(`${it.label} ${match.percent.toFixed(1)}%`)
+      const w = widthOf(it.text.node())
+      const flip = px + 8 + w > svgWidth - pad && px - 8 - w >= pad
+      it.text.attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
     })
 
     dateLabel.attr("x", px).attr("y", yScale.apply(0) + 47)
       .text(d3.utcFormat("%d.%m.%Y")(row.date))
+    const dateWidth = widthOf(dateLabel.node())
+    dateLabel.attr("x", Math.max(pad + dateWidth / 2,
+                                 Math.min(svgWidth - pad - dateWidth / 2, px)))
   }
 
   // find the nearest point in wideActive ourselves (rather than relying on
