@@ -253,12 +253,14 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     ungroup()
 
   write_result <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, pretty = TRUE)
-  write_result(coalProbs,          "coalProbs")
-  # Written unprettified and rounded: these are Monte Carlo estimates, so the
-  # default 15 significant digits is noise at a large size cost.
-  jsonlite::write_json(shares_out, file.path(results_dir, "shares.json"),
-                       auto_unbox = TRUE, digits = 4)
-  write_result(coalProbs_grouping, "coalProbs_grouping")
-  write_result(biggestParty,       "biggestParty")
-  write_result(passHurdle,         "passHurdle")
+  # The two files that dominate on-disk size are written unprettified and rounded:
+  # these are Monte Carlo estimates, so the default 15 significant digits is noise
+  # at a large size cost. Only jsonlite::fromJSON ever reads them back.
+  write_compact <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, digits = 4)
+
+  write_compact(coalProbs,          "coalProbs")
+  write_compact(shares_out,         "shares")
+  write_result(coalProbs_grouping,  "coalProbs_grouping")
+  write_result(biggestParty,        "biggestParty")
+  write_result(passHurdle,          "passHurdle")
 }

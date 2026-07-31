@@ -9,8 +9,8 @@ jobs:
   compute:
     runs-on: ubuntu-latest
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
       # Supabase signs against the project's real region; "auto" fails here.
       AWS_DEFAULT_REGION: eu-central-1
       SUPABASE_ENDPOINT: https://agmqujupclwlttjwfnaq.storage.supabase.co/storage/v1/s3
@@ -20,6 +20,11 @@ jobs:
 
       - name: Ensure local directories exist
         run: mkdir -p data/surveys data/results
+
+      # Supabase's endpoint carries a path (/storage/v1/s3), so virtual-hosted
+      # addressing would resolve to a bucket subdomain that does not exist.
+      - name: Use path-style S3 addressing
+        run: aws configure set default.s3.addressing_style path
 
       - name: Download existing data from Supabase Storage
         run: |
