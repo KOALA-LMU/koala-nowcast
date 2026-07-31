@@ -9,10 +9,11 @@ jobs:
   compute:
     runs-on: ubuntu-latest
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: auto
-      R2_ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_SECRET_ACCESS_KEY }}
+      # Supabase signs against the project's real region; "auto" fails here.
+      AWS_DEFAULT_REGION: eu-central-1
+      SUPABASE_ENDPOINT: https://agmqujupclwlttjwfnaq.storage.supabase.co/storage/v1/s3
 
     steps:
       - uses: actions/checkout@v4
@@ -20,12 +21,12 @@ jobs:
       - name: Ensure local directories exist
         run: mkdir -p data/surveys data/results
 
-      - name: Download existing data from R2
+      - name: Download existing data from Supabase Storage
         run: |
-          aws s3 sync s3://koala-bucket/surveys data/surveys/ \
-            --endpoint-url "$R2_ENDPOINT" --no-progress
-          aws s3 sync s3://koala-bucket/results data/results/ \
-            --endpoint-url "$R2_ENDPOINT" --no-progress
+          aws s3 sync s3://koala-data/surveys data/surveys/ \
+            --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
+          aws s3 sync s3://koala-data/results data/results/ \
+            --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
 
       - name: Check if results exist
         id: check_results
@@ -67,10 +68,10 @@ jobs:
             invisible(lapply(todo, calc_coalProbs))
           '
 
-      - name: Upload data to R2
+      - name: Upload data to Supabase Storage
         if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false'
         run: |
-          aws s3 sync data/surveys/ s3://koala-bucket/surveys \
-            --endpoint-url "$R2_ENDPOINT" --delete --no-progress
-          aws s3 sync data/results/ s3://koala-bucket/results \
-            --endpoint-url "$R2_ENDPOINT" --delete --no-progress
+          aws s3 sync data/surveys/ s3://koala-data/surveys \
+            --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
+          aws s3 sync data/results/ s3://koala-data/results \
+            --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
