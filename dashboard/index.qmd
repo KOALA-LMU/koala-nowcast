@@ -126,10 +126,34 @@ ojs_define(
     BTW = load_election("data/btw")
   ),
   election_meta = list(
-    ST = list(title = "Sachsen-Anhalt Landtagswahl 2026",         seats = 83L,  majority = 42L),
-    MV = list(title = "Mecklenburg-Vorpommern Landtagswahl 2026", seats = 71L,  majority = 36L),
-    BE = list(title = "Abgeordnetenhauswahl Berlin 2026",          seats = 130L, majority = 66L),
-    BTW = list(title = "Bundestagswahl 2029", seats = 630L, majority = 316L)
+    ST = list(
+      title = "Sachsen-Anhalt Landtagswahl 2026",
+      seats = 83L,
+      majority = 42L,
+      last_election = "6. Juni 2021",
+      next_election = "6. September 2026"
+    ),
+    MV = list(
+      title = "Mecklenburg-Vorpommern Landtagswahl 2026",
+      seats = 71L,
+      majority = 36L,
+      last_election = "26. September 2021",
+      next_election = "20. September 2026"
+    ),
+    BE = list(
+      title = "Abgeordnetenhauswahl Berlin 2026",
+      seats = 130L,
+      majority = 66L,
+      last_election = "12. Februar 2023",
+      next_election = "20. September 2026"
+    ),
+    BTW = list(
+      title = "Bundestagswahl 2029",
+      seats = 630L,
+      majority = 316L,
+      last_election = "23. Februar 2025",
+      next_election = "26. Januar bis 25. März 2029, Termin offen"
+    )
   ),
   party_colors = list(
     cdu = "#1c1c1b", spd = "#e3000f", afd = "#82caff",
@@ -513,6 +537,50 @@ plotCoalitionDensity = (rows, height = 260) => {
 # {.sidebar}
 
 ```{ojs}
+html`<details style="
+  margin-top:24px;
+  color:#555;
+  font-size:0.86em;
+  line-height:1.35;
+">
+  <summary style="
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    color:#2b6cb0;
+    font-weight:700;
+    list-style:none;
+  ">
+    <span style="
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:1.5px solid #2b6cb0;
+      font-size:0.78em;
+      line-height:1;
+    ">i</span>
+    Roadmap der Seite
+  </summary>
+  <div style="
+    margin:7px 0 0 0;
+    padding:8px 10px;
+    border-left:3px solid #2b6cb0;
+    background:#f7f9fc;
+  ">
+    <div><b>Überblick:</b> aktuelle Stimmenanteile, Koalitionschancen und Hürdenwahrscheinlichkeiten.</div>
+    <div style="margin-top:5px"><b>Koalitionswahrscheinlichkeiten:</b> Verteilung möglicher Sitzanteile ausgewählter Koalitionen.</div>
+    <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Koalitionswahrscheinlichkeiten über die Zeit.</div>
+    <div style="margin-top:5px"><b>Deskriptive Analyse:</b> Umfragen, gepoolte Schätzung und Parteienwerte im Verlauf.</div>
+    <div style="margin-top:5px"><b>Methodik:</b> Erklärung der statistischen Methoden.</div>
+  </div>
+</details>`
+```
+
+```{ojs}
 viewof election = {
   const input = Inputs.select(
     new Map([
@@ -521,7 +589,7 @@ viewof election = {
       ["Mecklenburg-Vorpommern",  "MV"],
       ["Sachsen-Anhalt",          "ST"]
     ]),
-    { value: "BTW", label: "Wahl"}
+    { value: "BTW", label: "Wahl auswählen"}
   )
 
   // Separate the Bundestagswahl from the Landtagswahlen. An <hr> is not part of
@@ -568,6 +636,49 @@ coal_history_source = institute === "Pooled"
 ```
 
 ```{ojs}
+html`<details style="
+  margin:8px 0 14px 0;
+  color:#555;
+  font-size:0.86em;
+  line-height:1.35;
+">
+  <summary style="
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    color:#2b6cb0;
+    font-weight:700;
+    list-style:none;
+  ">
+    <span style="
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:1.5px solid #2b6cb0;
+      font-size:0.78em;
+      line-height:1;
+    ">i</span>
+    Infos zur Wahl
+  </summary>
+  <div style="
+    margin:7px 0 0 0;
+    padding:8px 10px;
+    border-left:3px solid #2b6cb0;
+    background:#f7f9fc;
+  ">
+    <div><b>${cur_meta.title}</b></div>
+    <div style="margin-top:4px">${cur_meta.seats} Sitze, Mehrheit ab ${cur_meta.majority} Sitzen.</div>
+    <div style="margin-top:4px">Letzte Wahl: ${cur_meta.last_election}</div>
+    <div style="margin-top:4px">Nächste Wahl: ${cur_meta.next_election}</div>
+  </div>
+</details>`
+```
+
+```{ojs}
 html`<hr style="margin:12px 0">`
 ```
 
@@ -582,7 +693,7 @@ viewof institute = {
 
   const input = Inputs.select(
     ["Pooled", ...pollsters],
-    { value: "Pooled", label: "Institut", format: label }
+    { value: "Pooled", label: "Umfragebasis auswählen", format: label }
   )
 
   // Separate the pooled estimate from the individual institutes. An <hr> is not part
@@ -595,11 +706,57 @@ viewof institute = {
 ```
 
 ```{ojs}
-html`<hr style="margin:12px 0">
-<div style="font-size:0.8em;color:#666;line-height:1.6">
-  <b>${cur_meta.title}</b><br>
-  ${cur_meta.seats} Sitze &nbsp;·&nbsp; Mehrheit ≥ ${cur_meta.majority}<br>
-  Aktualisiert: ${updated}
+html`<details style="
+  margin:8px 0 0 0;
+  color:#555;
+  font-size:0.86em;
+  line-height:1.35;
+">
+  <summary style="
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    color:#2b6cb0;
+    font-weight:700;
+    list-style:none;
+  ">
+    <span style="
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:1.5px solid #2b6cb0;
+      font-size:0.78em;
+      line-height:1;
+    ">i</span>
+    Was bedeutet Umfragebasis?
+  </summary>
+  <div style="
+    margin:7px 0 0 0;
+    padding:8px 10px;
+    border-left:3px solid #2b6cb0;
+    background:#f7f9fc;
+  ">
+    <div>Einzelne Institute zeigen jeweils die aktuellste verfügbare Umfrage dieses Instituts.</div>
+    <div style="margin-top:4px">Die gepoolte Umfrage fasst mehrere aktuelle Umfragen zu einer gemeinsamen Schätzung zusammen.</div>
+  </div>
+</details>`
+```
+
+```{ojs}
+html`<div style="
+  margin:14px 0 0 0;
+  padding-top:10px;
+  border-top:1px solid #e5e7eb;
+  color:#666;
+  font-size:0.78em;
+  line-height:1.35;
+">
+  Zuletzt aktualisiert:<br>
+  <b>${updated}</b>
 </div>`
 ```
 
@@ -632,7 +789,9 @@ html`<hr style="margin:12px 0">
       Plot.barY(shares, {
         x: "label",
         y: "percent",
-        fill: d => party_colors[d.party] || "#aaa"
+        fill: d => party_colors[d.party] || "#aaa",
+        insetLeft: 8,
+        insetRight: 8
       }),
       Plot.ruleY([5], {
         stroke: "#555",
@@ -663,9 +822,12 @@ html`<hr style="margin:12px 0">
 ```{ojs}
 
 {
-  const coal = cleanCoalitions(coal_source, shares_source)
+  const coal = leading_variants.slice().sort((a, b) =>
+    d3.ascending(a.probability, b.probability) || d3.ascending(a.vote_share, b.vote_share)
+  )
 
   return Plot.plot({
+    subtitle: "Wahrscheinlichkeit, dass die Koalition eine Mehrheit der Sitze erreicht.",
     marginLeft: 155,
     marginRight: 85,
     height: Math.max(280, coal.length * 34 + 40),
@@ -694,14 +856,6 @@ html`<hr style="margin:12px 0">
         strokeWidth: 3,
         strokeOpacity: 0.75
       }),
-      Plot.dot(coal, {
-        y: "label",
-        x: "probability",
-        fill: d => party_colors[d.first_party] || "#aaa",
-        stroke: "white",
-        strokeWidth: 1.5,
-        r: 5
-      }),
       Plot.text(coal, {
         y: "label",
         x: d => d.probability > 0.9 ? 0.985 : d.probability + 0.07,
@@ -725,6 +879,7 @@ html`<hr style="margin:12px 0">
   const hurdles = cleanHurdles(hurdle_source)
 
   return Plot.plot({
+    subtitle: "Wahrscheinlichkeit des Parlamentseinzugs.",
     marginLeft: 80,
     marginRight: 80,
     height: Math.max(280, hurdles.length * 34 + 40),
@@ -749,16 +904,9 @@ html`<hr style="margin:12px 0">
         y: "label",
         x1: 0,
         x2: "prob_above_hurdle",
-        stroke: "#d0d0d0",
-        strokeWidth: 2
-      }),
-      Plot.dot(hurdles, {
-        y: "label",
-        x: "prob_above_hurdle",
-        fill: d => party_colors[d.party] || "#aaa",
-        stroke: "white",
-        strokeWidth: 1.5,
-        r: 5
+        stroke: d => party_colors[d.party] || "#aaa",
+        strokeWidth: 3,
+        strokeOpacity: 0.75
       }),
       Plot.text(hurdles, {
         y: "label",
@@ -781,7 +929,19 @@ html`<hr style="margin:12px 0">
 ```{ojs}
 {
   const source = densitySource(cur, institute)
-  const options = Array.from(coalitionDensityOptions(cur, institute), ([label, value]) => ({ label, value }))
+  const densityByLabel = new Map(
+    Array.from(
+      d3.rollup(source, rows => rows[0].coalition, d => d.label),
+      ([label, value]) => [label, value]
+    )
+  )
+  const options = leading_variants
+    .slice()
+    .sort((a, b) =>
+      d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
+    )
+    .map(d => ({ label: d.label, value: densityByLabel.get(d.label) }))
+    .filter(d => d.value != null)
 
   const container = html`<div style="
     box-sizing:border-box;
