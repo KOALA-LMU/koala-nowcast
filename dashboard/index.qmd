@@ -85,6 +85,7 @@ format:
 ```
 
 ```{r}
+#| label: setup-locale
 #| output: false
 # Render environments (notably CI runners) can start R under the "C" locale,
 # which has no UTF-8 codeset. Under that locale, R's own encoding-conversion
@@ -100,6 +101,7 @@ for (loc in c("en_US.UTF-8", "C.UTF-8", "en_US.utf8")) {
 ```
 
 ```{r}
+#| label: load-dashboard-data
 #| output: false
 library(jsonlite)
 
@@ -179,6 +181,7 @@ ojs_define(
 ```
 
 ```{ojs}
+//| label: ojs-setup
 //| output: false
 d3 = require("d3@7")
 party_order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
@@ -552,6 +555,7 @@ plotCoalitionDensity = (rows, height = 260) => {
 # {.sidebar}
 
 ```{ojs}
+//| label: sidebar-roadmap
 html`<details style="
   margin-top:24px;
   color:#555;
@@ -596,6 +600,7 @@ html`<details style="
 ```
 
 ```{ojs}
+//| label: input-election
 viewof election = {
   const input = Inputs.select(
     new Map([
@@ -617,6 +622,7 @@ viewof election = {
 ```
 
 ```{ojs}
+//| label: derive-current-election
 //| output: false
 cur      = all_data[election]
 cur_meta = election_meta[election]
@@ -651,6 +657,7 @@ coal_history_source = institute === "Pooled"
 ```
 
 ```{ojs}
+//| label: sidebar-election-info
 html`<details style="
   margin:8px 0 14px 0;
   color:#555;
@@ -694,10 +701,12 @@ html`<details style="
 ```
 
 ```{ojs}
+//| label: sidebar-divider
 html`<hr style="margin:12px 0">`
 ```
 
 ```{ojs}
+//| label: input-institute
 viewof institute = {
   const label = d => d === "Pooled" ? "Gepoolte Umfrage" : (pollster_names[d] ?? d)
 
@@ -721,6 +730,7 @@ viewof institute = {
 ```
 
 ```{ojs}
+//| label: sidebar-pollbase-info
 html`<details style="
   margin:8px 0 0 0;
   color:#555;
@@ -762,6 +772,7 @@ html`<details style="
 ```
 
 ```{ojs}
+//| label: sidebar-last-updated
 html`<div style="
   margin:14px 0 0 0;
   padding-top:10px;
@@ -782,6 +793,7 @@ html`<div style="
 #### Stimmenanteile
 
 ```{ojs}
+//| label: chart-vote-shares
 {
   const shares = cleanShares(shares_source)
   const maxY = Math.max(35, d3.max(shares, d => d.percent) + 7)
@@ -835,6 +847,7 @@ html`<div style="
 #### Koalitionen
 
 ```{ojs}
+//| label: chart-coalition-probabilities
 
 {
   const coal = leading_variants.slice().sort((a, b) =>
@@ -890,6 +903,7 @@ html`<div style="
 #### Wahrscheinlichkeit des Einzugs (5%-Hürde)
 
 ```{ojs}
+//| label: chart-hurdle-probabilities
 {
   const hurdles = cleanHurdles(hurdle_source)
 
@@ -942,6 +956,7 @@ html`<div style="
 ## Row {height=100%}
 
 ```{ojs}
+//| label: chart-coalition-densities
 {
   const source = densitySource(cur, institute)
   const densityByLabel = new Map(
@@ -1017,15 +1032,25 @@ html`<div style="
 ::: {.card .zeitverlauf-card}
 
 ```{ojs}
+//| label: chart-coalition-history
 viewof hoveredCoalitionRow = {
   const rows   = cleanCoalitionHistory(coal_history_source)
-  const active = rows.filter(d => selectedCoalitions.includes(d.label))
+  // sorted by date so Plot.line connects the points in chronological order
+  const active = rows
+    .filter(d => selectedCoalitions.includes(d.label))
+    .sort((a, b) => a.date - b.date)
 
   const colorByKey = Object.fromEntries(leading_variants.map(d => [d.label, party_colors[d.first_party] || "#aaa"]))
 
   const selectedLabels = selectedCoalitions
   const selectedColors = selectedCoalitions.map(k => colorByKey[k] || "#aaa")
-  const showLine       = institute === "Pooled"
+
+  // The series are drawn as lines only — the dots turned the dense pooled series
+  // (one point per poll date) into a scatter. A line needs two points to render
+  // anything, though, so coalitions with a single observation (some institutes
+  // have polled a state exactly once) still get a dot, or they would vanish.
+  const countByLabel = d3.rollup(active, v => v.length, d => d.label)
+  const singletons   = active.filter(d => countByLabel.get(d.label) === 1)
 
   // one row per date, one column per selected coalition — used for the
   // crosshair, which tracks the nearest date across all selected lines at once
@@ -1067,23 +1092,20 @@ viewof hoveredCoalitionRow = {
     },
     marks: [
       Plot.ruleY([0]),
-      ...(showLine ? [
-        Plot.line(active, {
-          x: "date",
-          y: "probability",
-          stroke: "label",
-          z: "label",
-          strokeWidth: 2
-        })
-      ] : []),
-      Plot.dot(active, {
+      Plot.line(active, {
+        x: "date",
+        y: "probability",
+        stroke: "label",
+        z: "label",
+        strokeWidth: 2
+      }),
+      Plot.dot(singletons, {
         x: "date",
         y: "probability",
         fill: "label",
-        fillOpacity: showLine ? 0.3 : 1,
         stroke: "white",
         strokeWidth: 1,
-        r: showLine ? 3 : 4
+        r: 4
       })
     ]
   })
@@ -1193,6 +1215,9 @@ viewof hoveredCoalitionRow = {
   position(lastRow)
   setValue(lastRow)
 
+  // No pointerleave reset: once a date has been hovered the crosshair stays
+  // there, so a value can be read off after moving the pointer away. The most
+  // recent date is only the initial state, set by the position() call above.
   d3.select(svg)
     .on("pointermove", event => {
       const [px] = d3.pointer(event, svg)
@@ -1200,16 +1225,13 @@ viewof hoveredCoalitionRow = {
       position(row)
       setValue(row)
     })
-    .on("pointerleave", () => {
-      position(lastRow)
-      setValue(lastRow)
-    })
 
   return plot
 }
 ```
 
 ```{ojs}
+//| label: input-coalition-selection
 viewof selectedCoalitions = {
   // one button per leading-party variant (not per coalition_key), so e.g.
   // "Grüne-SPD-Linke" and "Linke-SPD-Grüne" stay separately selectable
@@ -1295,6 +1317,7 @@ viewof selectedCoalitions = {
 #### Verlauf
 
 ```{ojs}
+//| label: chart-poll-trend
 viewof hoveredRow = {
   // "others" is deliberately left out of the trend lines and the crosshair labels —
   // Sonstige never enters a coalition, so it would only add noise here. It is still
@@ -1393,12 +1416,14 @@ viewof hoveredRow = {
         strokeDasharray: "4 3",
         strokeWidth: 1.2
       }),
+      // individual polls are background context only — kept faint so the
+      // pooled trend lines stay legible where the scatter is dense
       Plot.dot(raw, {
         x: "date",
         y: "percent",
         fill: "label",
-        fillOpacity: 0.3,
-        r: 3
+        fillOpacity: 0.15,
+        r: 2.5
       }),
       ...(showLine ? [
         Plot.line(pooled.filter(d => d.label === party_to_label.fdp), {
@@ -1533,8 +1558,8 @@ viewof hoveredRow = {
       if (rawDotsLayer && showLine) rawDotsLayer.style.opacity = 0
     })
     .on("pointerleave", () => {
-      position(lastRow)
-      setValue(lastRow)
+      // the crosshair deliberately stays on the last hovered date (see the
+      // Zeitverlauf overlay); only the background scatter is restored
       if (rawDotsLayer && showLine) rawDotsLayer.style.opacity = 1
     })
 
@@ -1547,6 +1572,7 @@ viewof hoveredRow = {
 #### Stimmenanteile
 
 ```{ojs}
+//| label: chart-poll-trend-shares
 {
   const shares = [...party_order, "others"]
     .filter(p => hoveredRow[p] != null)
@@ -1606,6 +1632,7 @@ viewof hoveredRow = {
 ## Row
 
 ```{ojs}
+//| label: text-methodik
 html`
 <div style="max-width:700px;line-height:1.7;font-size:0.95em">
 <h3>Methodik</h3>
