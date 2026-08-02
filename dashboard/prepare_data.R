@@ -5,7 +5,6 @@ source("scripts/calc_coalProbs_helpers.R")
 
 coalition_density <- function(election_id, cfg, results_dir) {
   parl_seats     <- cfg$parliament$seats
-  majority_seats <- floor(parl_seats / 2) + 1
 
   coal_labels <- setNames(
     vapply(cfg$coalitions, `[[`, character(1), "label"),
@@ -22,37 +21,126 @@ coalition_density <- function(election_id, cfg, results_dir) {
     filter(date == max(date)) %>%
     ungroup()
 
+  party_ids <- vapply(cfg$parties, `[[`, character(1), "id")
+  party_presence <- latest %>%
+    filter(coalition %in% party_ids) %>%
+    tidyr::pivot_longer(
+      starts_with("coal_share"),
+      names_to = "sim",
+      values_to = "party_seat_share"
+    ) %>%
+    transmute(
+      pollster,
+      date,
+      sim,
+      party = coalition,
+      party_present = party_seat_share > 0
+    )
+
+  latest_long <- latest %>%
+    tidyr::pivot_longer(
+      starts_with("coal_share"),
+      names_to = "sim",
+      values_to = "seat_share"
+    )
+
   wanted_coals <- names(coal_labels)
   coal_parties <- strsplit(wanted_coals, "|", fixed = TRUE)
   non_afd_coals <- !vapply(coal_parties, function(x) {
     "afd" %in% x && length(x) > 1
   }, logical(1))
-  non_bsw_coals <- !vapply(coal_parties, function(x) {
-    "bsw" %in% x && length(x) > 1
-  }, logical(1))
-  wanted_coals <- wanted_coals[non_afd_coals & non_bsw_coals]
+  wanted_coals <- wanted_coals[non_afd_coals]
 
-  latest <- latest %>%
+  latest_long <- latest_long %>%
     filter(coalition %in% wanted_coals)
 
-  latest <- tidyr::pivot_longer(
-    latest,
-    starts_with("coal_share"),
-    names_to = "sim",
-    values_to = "seat_share"
-  )
-
-  latest %>%
+  latest_long %>%
     group_by(pollster, date, coalition) %>%
     group_modify(function(dat, key) {
-      d <- suppressWarnings(density(dat$seat_share, from = 0, to = 1, n = 512, bw = "bcv"))
-      q <- quantile(dat$seat_share, probs = c(0.025, 0.975), na.rm = TRUE)
-      seats <- dat$seat_share * parl_seats
+      members <- strsplit(key$coalition, "|", fixed = TRUE)[[1]]
+      presence <- party_presence %>%
+        filter(
+          pollster == key$pollster,
+          date == key$date,
+          party %in% members
+        ) %>%
+        group_by(sim) %>%
+        summarise(
+          all_members_present = all(members %in% party) && all(party_present),
+          .groups = "drop"
+        )
+
+      dat <- dat %>%
+        left_join(presence, by = "sim") %>%
+        mutate(all_members_present = tidyr::replace_na(all_members_present, FALSE))
+
+      parliament_presence_n <- sum(dat$all_members_present)
+      simulation_n <- nrow(dat)
+      parliament_presence <- parliament_presence_n / simulation_n
+      density_values <- dat$seat_share[is.finite(dat$seat_share)]
+      has_density <- length(density_values) > 1 && diff(range(density_values)) > 0
+
+      if (has_density) {
+        d <- suppressWarnings(density(density_values, from = 0, to = 1, n = 512, bw = "bcv"))
+        q <- quantile(density_values, probs = c(0.025, 0.975), na.rm = TRUE)
+      } else {
+        d <- list(x = seq(0, 1, length.out = 512), y = rep(0, 512))
+        q <- c(`2.5%` = NA_real_, `97.5%` = NA_real_)
+      }
+
+      subset_coalitions <- latest %>%
+        filter(
+          pollster == key$pollster,
+          date == key$date
+        ) %>%
+        pull(coalition) %>%
+        unique()
+      subset_coalitions <- subset_coalitions[vapply(subset_coalitions, function(coal) {
+        parties <- strsplit(coal, "|", fixed = TRUE)[[1]]
+        length(parties) < length(members) && all(parties %in% members)
+      }, logical(1))]
+
+      if (length(subset_coalitions) > 0) {
+        subset_majorities <- shares %>%
+          filter(
+            pollster == key$pollster,
+            date == key$date,
+            coalition %in% subset_coalitions
+          ) %>%
+          tidyr::pivot_longer(
+            starts_with("coal_share"),
+            names_to = "sim",
+            values_to = "seat_share"
+          ) %>%
+          group_by(sim) %>%
+          summarise(
+            subset_has_majority = any(seat_share > 0.5, na.rm = TRUE),
+            .groups = "drop"
+          )
+      } else {
+        subset_majorities <- tibble::tibble(
+          sim = unique(dat$sim),
+          subset_has_majority = FALSE
+        )
+      }
+
+      dat <- dat %>%
+        left_join(subset_majorities, by = "sim") %>%
+        mutate(subset_has_majority = tidyr::replace_na(subset_has_majority, FALSE))
+
+      probability <- mean(
+        dat$seat_share > 0.5 &
+          dat$all_members_present &
+          !dat$subset_has_majority
+      )
 
       tibble::tibble(
         seat_share = d$x,
         density = d$y,
-        prob_majority = mean(seats >= majority_seats),
+        prob_majority = probability,
+        parliament_presence = parliament_presence,
+        parliament_presence_n = parliament_presence_n,
+        simulation_n = simulation_n,
         ci_lower = q[[1]],
         ci_upper = q[[2]],
         ci_lower_seats = ceiling(q[[1]] * parl_seats),
@@ -63,6 +151,7 @@ coalition_density <- function(election_id, cfg, results_dir) {
     mutate(label = coal_labels[coalition]) %>%
     dplyr::select(
       pollster, date, coalition, label, seat_share, density, prob_majority,
+      parliament_presence, parliament_presence_n, simulation_n,
       ci_lower, ci_upper, ci_lower_seats, ci_upper_seats
     )
 }
