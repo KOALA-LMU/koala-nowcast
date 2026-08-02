@@ -127,12 +127,16 @@ ojs_define(
     BE = load_election("data/be"),
     BTW = load_election("data/btw")
   ),
+  # last_election_date is the machine-readable twin of last_election: the trend
+  # chart in "Deskriptive Analyse" marks it, and the poll history reaches back
+  # past that date for every election here.
   election_meta = list(
     ST = list(
       title = "Sachsen-Anhalt Landtagswahl 2026",
       seats = 83L,
       majority = 42L,
       last_election = "6. Juni 2021",
+      last_election_date = "2021-06-06",
       next_election = "6. September 2026"
     ),
     MV = list(
@@ -140,6 +144,7 @@ ojs_define(
       seats = 71L,
       majority = 36L,
       last_election = "26. September 2021",
+      last_election_date = "2021-09-26",
       next_election = "20. September 2026"
     ),
     BE = list(
@@ -147,6 +152,7 @@ ojs_define(
       seats = 130L,
       majority = 66L,
       last_election = "12. Februar 2023",
+      last_election_date = "2023-02-12",
       next_election = "20. September 2026"
     ),
     BTW = list(
@@ -154,6 +160,7 @@ ojs_define(
       seats = 630L,
       majority = 316L,
       last_election = "23. Februar 2025",
+      last_election_date = "2025-02-23",
       next_election = "26. Januar bis 25. März 2029, Termin offen"
     )
   ),
@@ -1067,7 +1074,9 @@ viewof hoveredCoalitionRow = {
     title: "Koalitionswahrscheinlichkeit über die Zeit",
     style: { fontSize: "14px" },
     marginTop: 40,
-    marginBottom: 55,
+    // 64 rather than 55: the crosshair's date label sits below the year tick
+    // and needs the extra room (see dateLabel's y offset in the overlay)
+    marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
     height: 460,
@@ -1117,28 +1126,36 @@ viewof hoveredCoalitionRow = {
   const svg    = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
   const xScale = plot.scale("x")
   const yScale = plot.scale("y")
-  const minGap = 0.045
+  // vertical distance between two stacked labels, in pixels: the 13px font plus
+  // enough room that the white halo of one does not bite into the next
+  const labelGap = 18
 
   const overlay = d3.select(svg).append("g").style("pointer-events", "none")
   const crosshair = overlay.append("line")
     .attr("stroke", "#999").attr("stroke-width", 1)
     .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(1))
-  // dots and labels go into two separate layers, appended in that order, so every
-  // label paints above every dot. With one group per coalition instead, SVG paint
-  // order puts a later coalition's dot on top of an earlier one's text wherever the
-  // crosshair bunches them together.
+  // connectors, dots and labels go into three layers, appended in that order, so
+  // every label paints above every dot. With one group per coalition instead, SVG
+  // paint order puts a later coalition's dot on top of an earlier one's text
+  // wherever the crosshair bunches them together.
+  const linkLayer  = overlay.append("g")
   const dotLayer   = overlay.append("g")
   const labelLayer = overlay.append("g")
   const items = selectedCoalitions.map(label => {
-    const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", colorByKey[label] || "#aaa")
+    const color = colorByKey[label] || "#aaa"
+    // drawn only where a label had to be pushed off its own value, so a reader can
+    // still tell which point on the crosshair the displaced label belongs to
+    const link = linkLayer.append("line")
+      .attr("stroke", color).attr("stroke-width", 1).attr("stroke-opacity", 0.5)
+    const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", color)
     const text = labelLayer.append("text").attr("dx", 8).attr("dy", "0.32em")
-      .attr("fill", colorByKey[label] || "#aaa").attr("font-size", 13).attr("font-weight", "bold")
+      .attr("fill", color).attr("font-size", 13).attr("font-weight", "bold")
       .attr("paint-order", "stroke")
       .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
-    return { key: label, label, dot, text }
+    return { key: label, label, link, dot, text }
   })
   const dateLabel = overlay.append("text")
-    .attr("text-anchor", "middle").attr("font-size", 15).attr("font-weight", "bold").attr("fill", "#333")
+    .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
     .attr("paint-order", "stroke")
     .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
 
@@ -1148,12 +1165,29 @@ viewof hoveredCoalitionRow = {
       .filter(it => it.probability != null)
       .sort((a, b) => a.probability - b.probability)
 
+    // Stack the labels in pixel space rather than in probability units: on the
+    // many days where several coalitions sit at exactly 0% or 100%, a gap
+    // expressed as a probability turns into a different number of pixels per
+    // chart, and the labels end up overlapping. Walking the list bottom-up (it is
+    // sorted ascending by probability, i.e. descending in pixels) pushes each
+    // colliding label above the previous one.
+    const yTop    = yScale.apply(1)
+    const yBottom = yScale.apply(0)
+    const gap = present.length > 1
+      ? Math.min(labelGap, (yBottom - yTop) / (present.length - 1))
+      : labelGap
     const labelY = []
     present.forEach((it, i) => {
-      let y = it.probability
-      if (i > 0 && y - labelY[i - 1] < minGap) y = labelY[i - 1] + minGap
+      let y = yScale.apply(it.probability)
+      if (i > 0 && labelY[i - 1] - y < gap) y = labelY[i - 1] - gap
       labelY.push(y)
     })
+    // the stack only ever grows upwards, so just its top can run out of the frame;
+    // slide the whole stack back down, but never past the bottom of the frame
+    if (labelY.length) {
+      const shift = Math.max(0, Math.min(yTop - labelY.at(-1), yBottom - labelY[0]))
+      for (let i = 0; i < labelY.length; i++) labelY[i] += shift
+    }
 
     const px = xScale.apply(row.date)
     crosshair.attr("x1", px).attr("x2", px)
@@ -1161,8 +1195,8 @@ viewof hoveredCoalitionRow = {
     // keep labels inside the SVG at the right-hand end of the series, where the
     // chart rests when nobody is hovering: a long coalition name drawn to the
     // right of the crosshair there runs past the edge of the SVG and paints over
-    // whatever sits beside the chart. Flip those to the left instead, and clamp
-    // the date label to the frame the same way.
+    // whatever sits beside the chart. Flip the stack to the left instead, and
+    // clamp the date label to the frame the same way.
     // getComputedTextLength() reports 0 while the plot is still detached, hence
     // the character-count fallback; position() re-runs on hover once attached.
     const svgWidth = +svg.getAttribute("width") || svg.getBoundingClientRect().width
@@ -1172,22 +1206,37 @@ viewof hoveredCoalitionRow = {
       return w || node.textContent.length * 7.2
     }
 
+    // fill the labels first: their widths decide which side of the crosshair the
+    // whole stack goes on, and getComputedTextLength() needs the final text
     items.forEach(it => {
       const match = present.find(p => p.key === it.key)
       const visible = Boolean(match)
       it.dot.style("display", visible ? null : "none")
       it.text.style("display", visible ? null : "none")
+      it.link.style("display", "none")
       if (!visible) return
-      const i = present.indexOf(match)
-      it.dot.attr("cx", px).attr("cy", yScale.apply(match.probability))
-      it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
-        .text(`${it.label} ${(match.probability * 100).toFixed(1)}%`)
-      const w = widthOf(it.text.node())
-      const flip = px + 8 + w > svgWidth - pad && px - 8 - w >= pad
-      it.text.attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
+      it.text.text(`${it.label} ${(match.probability * 100).toFixed(1)}%`)
     })
 
-    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 47)
+    // one side for all of them, chosen from the widest label. Deciding per label
+    // scatters a stack of near-identical entries across both sides of the
+    // crosshair, which reads as broken rather than as two columns.
+    const maxWidth = d3.max(present, p => widthOf(p.text.node())) ?? 0
+    const flip = px + 8 + maxWidth > svgWidth - pad && px - 8 - maxWidth >= pad
+
+    present.forEach((it, i) => {
+      const dotY = yScale.apply(it.probability)
+      it.dot.attr("cx", px).attr("cy", dotY)
+      it.text.attr("x", px).attr("y", labelY[i])
+        .attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
+      if (Math.abs(labelY[i] - dotY) > 2) {
+        it.link.style("display", null)
+          .attr("x1", px).attr("y1", dotY)
+          .attr("x2", px + (flip ? -8 : 8)).attr("y2", labelY[i])
+      }
+    })
+
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 56)
       .text(d3.utcFormat("%d.%m.%Y")(row.date))
     const dateWidth = widthOf(dateLabel.node())
     dateLabel.attr("x", Math.max(pad + dateWidth / 2,
@@ -1345,6 +1394,19 @@ viewof hoveredRow = {
 
   const yMax = Math.max(30, d3.max(pooled, d => d.percent) + 5)
 
+  // The poll series runs across the last actual election (23.02.2025 for the
+  // Bundestag), so everything left of that date are Sonntagsfragen for an
+  // election that has already been held. Mark the break, but only when it really
+  // falls inside the plotted range.
+  const electionDateRaw = cur_meta.last_election_date
+    ? new Date(`${cur_meta.last_election_date}T00:00:00Z`)
+    : null
+  const electionDate = electionDateRaw && electionDateRaw >= minDate && electionDateRaw <= maxDate
+    ? electionDateRaw
+    : null
+  // put the caption on whichever side of the rule has more room
+  const electionLabelRight = electionDate && (maxDate - electionDate) > (electionDate - minDate)
+
   // pooled series, one row per date/party id (including "others") — used for the
   // crosshair + bar chart when showing the pooled trend
   const byDate = d3.rollup(
@@ -1383,7 +1445,9 @@ viewof hoveredRow = {
     // marginTop - 3.5. At the default 20 the label almost touches "30%"; 40
     // matches the Zeitverlauf chart and gives it room.
     marginTop: 40,
-    marginBottom: 55,
+    // 64 rather than 55: the crosshair's date label sits below the year tick
+    // and needs the extra room (see dateLabel's y offset in the overlay)
+    marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
     height: 460,
@@ -1416,6 +1480,26 @@ viewof hoveredRow = {
         strokeDasharray: "4 3",
         strokeWidth: 1.2
       }),
+      // drawn before the polls so the data keeps painting on top of it
+      ...(electionDate ? [
+        Plot.ruleX([electionDate], {
+          stroke: "#333",
+          strokeDasharray: "6 4",
+          strokeWidth: 1.2
+        }),
+        Plot.text([electionDate], {
+          x: d => d,
+          y: yMax,
+          text: d => `Wahl ${d3.utcFormat("%d.%m.%Y")(d)}`,
+          textAnchor: electionLabelRight ? "start" : "end",
+          dx: electionLabelRight ? 6 : -6,
+          dy: 10,
+          fill: "#333",
+          fontSize: 12,
+          stroke: "white",
+          strokeWidth: 3
+        })
+      ] : []),
       // individual polls are background context only — kept faint so the
       // pooled trend lines stay legible where the scatter is dense
       Plot.dot(raw, {
@@ -1468,7 +1552,7 @@ viewof hoveredRow = {
     return { partyId, label: labels[i], dot, text }
   })
   const dateLabel = overlay.append("text")
-    .attr("text-anchor", "middle").attr("font-size", 15).attr("font-weight", "bold").attr("fill", "#333")
+    .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
     .attr("paint-order", "stroke")
     .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
 
@@ -1519,7 +1603,7 @@ viewof hoveredRow = {
       it.text.attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
     })
 
-    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 47)
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 56)
       .text(d3.utcFormat("%d.%m.%Y")(row.date))
     const dateWidth = widthOf(dateLabel.node())
     dateLabel.attr("x", Math.max(pad + dateWidth / 2,

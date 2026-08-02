@@ -67,6 +67,35 @@ coalition_density <- function(election_id, cfg, results_dir) {
     )
 }
 
+# First date whose pooled estimate rests on a fully scraped pooling window.
+# pool_surveys() averages over the period_extended days before each date, so the
+# estimates for the first window's worth of dates pool over a stretch that
+# reaches back past the oldest poll we hold. Those are computed and stored, but
+# not shown.
+reliable_from <- function(cfg, surveys_dir) {
+  raw <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
+    filter(pollster != "pooled") %>%
+    mutate(date = as.Date(date))
+  window <- cfg$pooling$period_extended
+  if (is.null(window)) window <- cfg$pooling$period
+  min(raw$date) + window
+}
+
+# Drop the pooling run-up from a series, unless that would leave nothing to plot
+# (an election whose whole history is still shorter than one pooling window).
+drop_warmup <- function(dat, cutoff, what, election_id) {
+  kept <- dat %>% filter(as.Date(date) >= cutoff)
+  if (nrow(kept) == 0) {
+    message(election_id, ": all ", what, " predates ", cutoff,
+            " — showing it anyway, pooling window not yet complete")
+    return(dat)
+  }
+  n_dropped <- length(unique(dat$date)) - length(unique(kept$date))
+  if (n_dropped > 0)
+    message(election_id, ": hiding ", n_dropped, " ", what, " date(s) before ", cutoff)
+  kept
+}
+
 prepare_election <- function(election_id) {
   cfg         <- yaml::yaml.load_file(paste0("config/elections/", election_id, ".yml"))
   results_dir <- paste0("data/results/", election_id)
@@ -104,14 +133,20 @@ prepare_election <- function(election_id) {
   write_json(list(party_shares = shares, updated = updated),
              file.path(out_dir, "party_shares.json"), auto_unbox = TRUE)
 
+  # Both time series start where the pooling window is first fully covered —
+  # the raw polls too, so the scatter never runs on past the end of the line.
+  cutoff <- reliable_from(cfg, surveys_dir)
+
   history <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
-    select(pollster, date, party, percent)
+    select(pollster, date, party, percent) %>%
+    drop_warmup(cutoff, "poll", election_id)
   write_json(list(history = history, updated = updated),
              file.path(out_dir, "poll_history.json"), auto_unbox = TRUE)
 
   coal_history <- fromJSON(file.path(results_dir, "coalProbs_grouping.json")) %>%
     mutate(date = as.Date(date), probability = prob / 100) %>%
-    select(pollster, date, label = coal_type, probability)
+    select(pollster, date, label = coal_type, probability) %>%
+    drop_warmup(cutoff, "coalition probability", election_id)
   write_json(list(coalitions_history = coal_history, updated = updated),
              file.path(out_dir, "coalition_history.json"), auto_unbox = TRUE)
 

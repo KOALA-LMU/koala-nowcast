@@ -7,9 +7,17 @@ suppressPackageStartupMessages({
 })
 source("scripts/scrape_btw.R")
 
-scrape_election <- function(config_path, oldest_date = as.Date("2026-06-21")) {
+scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   cfg <- read_yaml(config_path)
   message(sprintf("\n[%s] Scraping polls for %s...", cfg$id, cfg$name))
+
+  # How far back a from-scratch scrape reaches. Per election, because the useful
+  # start depends on the pooling window (cfg$pooling$period_extended): the first
+  # window's worth of dates pool over a stretch that is only partly scraped, so
+  # the run-up has to be long enough that the first date one actually wants to
+  # show has a complete window behind it.
+  if (!is.null(cfg$scraper$oldest_date))
+    oldest_date <- as.Date(as.character(cfg$scraper$oldest_date))
 
   parties <- sapply(cfg$parties, `[[`, "id")
   parties_required <- sapply(cfg$parties, function(p) if (isTRUE(p$required)) p$id else NULL) |>
