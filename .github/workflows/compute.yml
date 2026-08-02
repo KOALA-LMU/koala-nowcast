@@ -58,8 +58,27 @@ jobs:
             cat(paste0("new_data=", new_data, "\n"), file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
           '
 
+      # "No new polls" does not imply "nothing to compute": a run that was
+      # cancelled between scraping and computing, or that crashed part-way
+      # through calc_coalProbs, leaves survey dates behind that have no results.
+      # has_pending() compares every survey date against the dates in
+      # coalProbs.json (and flags elections that were never computed at all), so
+      # those get picked up on the next run instead of waiting for a fresh poll.
+      - name: Check for survey dates without results
+        id: check_pending
+        run: |
+          Rscript -e '
+            source("scripts/pending_configs.R")
+            configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
+            todo <- configs_todo(configs)
+            if (length(todo) > 0)
+              message("Pending: ", paste(basename(todo), collapse = ", "))
+            cat(paste0("pending=", if (length(todo) > 0) "true" else "false", "\n"),
+                file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
+          '
+
       - name: Compute coalition probabilities
-        if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false'
+        if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false' || steps.check_pending.outputs.pending == 'true'
         env:
           FORCE_ALL: ${{ steps.check_results.outputs.has_results == 'false' }}
         run: |
@@ -74,7 +93,7 @@ jobs:
           '
 
       - name: Upload data to Supabase Storage
-        if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false'
+        if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false' || steps.check_pending.outputs.pending == 'true'
         run: |
           aws s3 sync data/surveys/ s3://koala-data/surveys \
             --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
