@@ -1392,7 +1392,11 @@ viewof hoveredRow = {
   const maxDate = d3.max([...raw, ...pooled], d => d.date)
   const minDate = d3.min([...raw, ...pooled], d => d.date)
 
-  const yMax = Math.max(30, d3.max(pooled, d => d.percent) + 5)
+  // y domain is per election but constant within one: it comes from that
+  // election's entire pooled history, so it depends on neither the hovered
+  // date, the institute selector, nor any date window. Rounding up to the next
+  // 5 keeps it from nudging every time a new poll sets a slightly higher high.
+  const yMax = Math.max(30, Math.ceil((d3.max(pooled, d => d.percent) + 3) / 5) * 5)
 
   // The poll series runs across the last actual election (23.02.2025 for the
   // Bundestag), so everything left of that date are Sonntagsfragen for an

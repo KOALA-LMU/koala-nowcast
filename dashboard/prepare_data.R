@@ -73,11 +73,19 @@ coalition_density <- function(election_id, cfg, results_dir) {
 # reaches back past the oldest poll we hold. Those are computed and stored, but
 # not shown.
 reliable_from <- function(cfg, surveys_dir) {
+  window <- cfg$pooling$period_extended
+  if (is.null(window)) window <- cfg$pooling$period
+
+  # Measured from where the scrape starts, not from the first poll we happen to
+  # hold: a stretch with no polls in it is not a gap in the data. The first poll
+  # of a sparse state election can be months after the scrape start, and its
+  # window is complete all the same — there was simply nothing to pool.
+  if (!is.null(cfg$scraper$oldest_date))
+    return(as.Date(as.character(cfg$scraper$oldest_date)) + window)
+
   raw <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
     filter(pollster != "pooled") %>%
     mutate(date = as.Date(date))
-  window <- cfg$pooling$period_extended
-  if (is.null(window)) window <- cfg$pooling$period
   min(raw$date) + window
 }
 
