@@ -208,7 +208,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
   # ── Bind all pollsters ───────────────────────────────────────────────────────
   coalProbs          <- bind_rows(lapply(results, `[[`, "coalProbs"))
-  sharesSim          <- bind_rows(lapply(results, `[[`, "sharesSim"))
   shares             <- bind_rows(lapply(results, `[[`, "shares"))
   coalProbs_grouping <- bind_rows(lapply(results, `[[`, "coalProbs_grouping"))
   biggestParty       <- bind_rows(lapply(results, `[[`, "biggestParty"))
@@ -231,7 +230,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   }
   if (!identical(dates, dates_todo)) {
     coalProbs          <- bind_rows(coalProbs,          read_result("coalProbs")          %>% filter(!date %in% dates))
-    sharesSim          <- bind_rows(sharesSim,          read_result("sharesSim")          %>% filter(!date %in% dates))
     shares             <- bind_rows(shares,             read_result("shares")             %>% filter(!date %in% dates))
     coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping") %>% filter(!date %in% dates))
     biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty")       %>% filter(!date %in% dates))
@@ -240,18 +238,29 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
   # ── Sort final output by date, then pollster ─────────────────────────────────
   coalProbs          <- coalProbs          %>% dplyr::arrange(date, pollster)
-  sharesSim          <- sharesSim          %>% dplyr::arrange(date, pollster)
   shares             <- shares             %>% dplyr::arrange(date, pollster)
   coalProbs_grouping <- coalProbs_grouping %>% dplyr::arrange(date, pollster)
   biggestParty       <- biggestParty       %>% dplyr::arrange(date, pollster)
   passHurdle         <- passHurdle         %>% dplyr::arrange(date, pollster)
 
   # ── Save results ─────────────────────────────────────────────────────────────
+  # The dashboard only ever uses the most recent date per pollster (see
+  # coalition_density() in dashboard/prepare_data.R), so only that slice is
+  # written out. `shares` itself keeps all dates for the merge logic above.
+  shares_out <- shares %>%
+    group_by(pollster) %>%
+    filter(date == max(date)) %>%
+    ungroup()
+
   write_result <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, pretty = TRUE)
-  write_result(coalProbs,          "coalProbs")
-  write_result(sharesSim,          "sharesSim")
-  write_result(shares,             "shares")
-  write_result(coalProbs_grouping, "coalProbs_grouping")
-  write_result(biggestParty,       "biggestParty")
-  write_result(passHurdle,         "passHurdle")
+  # The two files that dominate on-disk size are written unprettified and rounded:
+  # these are Monte Carlo estimates, so the default 15 significant digits is noise
+  # at a large size cost. Only jsonlite::fromJSON ever reads them back.
+  write_compact <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, digits = 4)
+
+  write_compact(coalProbs,          "coalProbs")
+  write_compact(shares_out,         "shares")
+  write_result(coalProbs_grouping,  "coalProbs_grouping")
+  write_result(biggestParty,        "biggestParty")
+  write_result(passHurdle,          "passHurdle")
 }

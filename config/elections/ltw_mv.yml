@@ -6,6 +6,8 @@ scraper:
   function: scrape_ltw
   url: https://www.wahlrecht.de/umfragen/landtage/mecklenburg-vorpommern.htm
   ind_row_remove: [1]
+  # 100-day pooling window, so pooled estimates are complete from 2024-11-05 on
+  oldest_date: 2024-07-28
 
 parliament:
   seats: 71

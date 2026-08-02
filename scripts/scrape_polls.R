@@ -7,9 +7,17 @@ suppressPackageStartupMessages({
 })
 source("scripts/scrape_btw.R")
 
-scrape_election <- function(config_path, oldest_date = as.Date("2026-07-01")) {
+scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   cfg <- read_yaml(config_path)
   message(sprintf("\n[%s] Scraping polls for %s...", cfg$id, cfg$name))
+
+  # How far back a from-scratch scrape reaches. Per election, because the useful
+  # start depends on the pooling window (cfg$pooling$period_extended): the first
+  # window's worth of dates pool over a stretch that is only partly scraped, so
+  # the run-up has to be long enough that the first date one actually wants to
+  # show has a complete window behind it.
+  if (!is.null(cfg$scraper$oldest_date))
+    oldest_date <- as.Date(as.character(cfg$scraper$oldest_date))
 
   parties <- sapply(cfg$parties, `[[`, "id")
   parties_required <- sapply(cfg$parties, function(p) if (isTRUE(p$required)) p$id else NULL) |>
@@ -202,6 +210,21 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
   surveys_nested <- raw_imputed %>%
     nest(survey = c(party, percent, votes)) %>%
     nest(surveys = c(date, start, end, respondents, survey))
+
+  # pool_surveys()/get_eligible() hard-require >= 2 pollster rows in `surveys`
+  # (assert_data_frame(min.rows = 2)), even though the actual per-date pooling
+  # window only ever needs the eligible polls for that date. When an election
+  # currently has data from a single pollster only, pad with an inert
+  # placeholder pollster (empty surveys) so the assertion passes; since it has
+  # no surveys it never contributes to any date's window or estimate — the
+  # result is identical to that pollster's own numbers, same as the existing
+  # single-poll-window fallback below.
+  if (nrow(surveys_nested) < 2) {
+    placeholder <- surveys_nested[1, ]
+    placeholder$pollster <- "__placeholder__"
+    placeholder$surveys  <- list(surveys_nested$surveys[[1]][0, ])
+    surveys_nested <- bind_rows(surveys_nested, placeholder)
+  }
 
   # Pool for each date a raw poll was published; skip dates before from_date if
   # provided (earlier pooled estimates are unaffected by polls published later).

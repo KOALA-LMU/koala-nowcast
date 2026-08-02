@@ -90,6 +90,7 @@ format:
 ```
 
 ```{r}
+#| label: setup-locale
 #| output: false
 # Render environments (notably CI runners) can start R under the "C" locale,
 # which has no UTF-8 codeset. Under that locale, R's own encoding-conversion
@@ -105,6 +106,7 @@ for (loc in c("en_US.UTF-8", "C.UTF-8", "en_US.utf8")) {
 ```
 
 ```{r}
+#| label: load-dashboard-data
 #| output: false
 library(jsonlite)
 
@@ -130,12 +132,16 @@ ojs_define(
     BE = load_election("data/be"),
     BTW = load_election("data/btw")
   ),
+  # last_election_date is the machine-readable twin of last_election: the trend
+  # chart in "Deskriptive Analyse" marks it, and the poll history reaches back
+  # past that date for every election here.
   election_meta = list(
     ST = list(
       title = "Sachsen-Anhalt Landtagswahl 2026",
       seats = 83L,
       majority = 42L,
       last_election = "6. Juni 2021",
+      last_election_date = "2021-06-06",
       next_election = "6. September 2026"
     ),
     MV = list(
@@ -143,6 +149,7 @@ ojs_define(
       seats = 71L,
       majority = 36L,
       last_election = "26. September 2021",
+      last_election_date = "2021-09-26",
       next_election = "20. September 2026"
     ),
     BE = list(
@@ -150,6 +157,7 @@ ojs_define(
       seats = 130L,
       majority = 66L,
       last_election = "12. Februar 2023",
+      last_election_date = "2023-02-12",
       next_election = "20. September 2026"
     ),
     BTW = list(
@@ -157,6 +165,7 @@ ojs_define(
       seats = 630L,
       majority = 316L,
       last_election = "23. Februar 2025",
+      last_election_date = "2025-02-23",
       next_election = "26. Januar bis 25. März 2029, Termin offen"
     )
   ),
@@ -184,6 +193,7 @@ ojs_define(
 ```
 
 ```{ojs}
+//| label: ojs-setup
 //| output: false
 d3 = require("d3@7")
 party_order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
@@ -204,6 +214,21 @@ normCoalition = label =>
 
 labelFromParties = parties =>
   parties.map(party => party_to_label[party] || party).join("-")
+
+// Year ticks for the two time-series x-axes. Plot's own ticks: "year" only
+// emits January 1s that fall inside the domain, so a range shorter than a year
+// (a fresh scrape, or a single-institute series with few polls) yields no tick
+// at all and the axis loses its year label entirely. Fall back to the first
+// date in that case, so the year is always shown.
+yearTicks = (min, max) => {
+  if (min == null || max == null) return []
+  const years = d3.utcYears(d3.utcYear.ceil(min), max)
+  return years.length ? years : [min]
+}
+
+// tickFormat must return a string: a number goes through Plot's locale-aware
+// default number formatting, which renders the year as "2,026".
+formatYear = d => String(d.getUTCFullYear())
 
 // Coalitions that are mathematically possible but politically off the table —
 // no party governs with AfD, and Linke is ruled out by FDP, CDU and BSW alike.
@@ -576,6 +601,7 @@ plotCoalitionDensity = (rows, height = 260) => {
 # {.sidebar}
 
 ```{ojs}
+//| label: sidebar-roadmap
 html`<details style="
   margin-top:24px;
   color:#555;
@@ -620,6 +646,7 @@ html`<details style="
 ```
 
 ```{ojs}
+//| label: input-election
 viewof election = {
   const input = Inputs.select(
     new Map([
@@ -641,6 +668,7 @@ viewof election = {
 ```
 
 ```{ojs}
+//| label: derive-current-election
 //| output: false
 cur      = all_data[election]
 cur_meta = election_meta[election]
@@ -675,6 +703,7 @@ coal_history_source = institute === "Pooled"
 ```
 
 ```{ojs}
+//| label: sidebar-election-info
 html`<details style="
   margin:8px 0 14px 0;
   color:#555;
@@ -718,10 +747,12 @@ html`<details style="
 ```
 
 ```{ojs}
+//| label: sidebar-divider
 html`<hr style="margin:12px 0">`
 ```
 
 ```{ojs}
+//| label: input-institute
 viewof institute = {
   const label = d => d === "Pooled" ? "Gepoolte Umfrage" : (pollster_names[d] ?? d)
 
@@ -745,6 +776,7 @@ viewof institute = {
 ```
 
 ```{ojs}
+//| label: sidebar-pollbase-info
 html`<details style="
   margin:8px 0 0 0;
   color:#555;
@@ -787,7 +819,8 @@ html`<details style="
 
 ```{ojs}
 {
-  return html`<div style="
+  return //| label: sidebar-last-updated
+html`<div style="
     margin:14px 0 0 0;
     padding-top:10px;
     border-top:1px solid #e5e7eb;
@@ -808,6 +841,7 @@ html`<details style="
 #### Stimmenanteile
 
 ```{ojs}
+//| label: chart-vote-shares
 {
   const shares = cleanShares(shares_source, true)
   const maxY = Math.max(35, d3.max(shares, d => d.percent) + 7)
@@ -871,6 +905,7 @@ html`<details style="
 #### Koalitionen
 
 ```{ojs}
+//| label: chart-coalition-probabilities
 
 {
   const sortCoalitions = rows => rows.slice().sort((a, b) =>
@@ -1025,6 +1060,7 @@ html`<details style="
 #### Unsichere Einzüge
 
 ```{ojs}
+//| label: chart-hurdle-probabilities
 {
   const hurdles = cleanHurdles(hurdle_source)
   if (hurdles.length === 0) {
@@ -1165,6 +1201,7 @@ html`<details style="
 ## Row {height=100%}
 
 ```{ojs}
+//| label: chart-coalition-densities
 {
   const source = densitySource(cur, institute)
   const densityByLabel = new Map(
@@ -1235,20 +1272,30 @@ html`<details style="
 
 # Zeitverlauf
 
-## Row {height=700px}
+## Row {height=750px}
 
 ::: {.card .zeitverlauf-card}
 
 ```{ojs}
+//| label: chart-coalition-history
 viewof hoveredCoalitionRow = {
   const rows   = cleanCoalitionHistory(coal_history_source)
-  const active = rows.filter(d => selectedCoalitions.includes(d.label))
+  // sorted by date so Plot.line connects the points in chronological order
+  const active = rows
+    .filter(d => selectedCoalitions.includes(d.label))
+    .sort((a, b) => a.date - b.date)
 
   const colorByKey = Object.fromEntries(leading_variants.map(d => [d.label, party_colors[d.first_party] || "#aaa"]))
 
   const selectedLabels = selectedCoalitions
   const selectedColors = selectedCoalitions.map(k => colorByKey[k] || "#aaa")
-  const showLine       = institute === "Pooled"
+
+  // The series are drawn as lines only — the dots turned the dense pooled series
+  // (one point per poll date) into a scatter. A line needs two points to render
+  // anything, though, so coalitions with a single observation (some institutes
+  // have polled a state exactly once) still get a dot, or they would vanish.
+  const countByLabel = d3.rollup(active, v => v.length, d => d.label)
+  const singletons   = active.filter(d => countByLabel.get(d.label) === 1)
 
   // one row per date, one column per selected coalition — used for the
   // crosshair, which tracks the nearest date across all selected lines at once
@@ -1265,7 +1312,9 @@ viewof hoveredCoalitionRow = {
     title: "Koalitionswahrscheinlichkeit über die Zeit",
     style: { fontSize: "14px" },
     marginTop: 40,
-    marginBottom: 55,
+    // 64 rather than 55: the crosshair's date label sits below the year tick
+    // and needs the extra room (see dateLabel's y offset in the overlay)
+    marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
     height: 460,
@@ -1273,10 +1322,10 @@ viewof hoveredCoalitionRow = {
       type: "utc",
       label: null,
       interval: "day",
-      ticks: "year",
       tickPadding: 12,
       // one tick per year, anchored on 1.1. (d3.utcYear ticks land on January 1 UTC)
-      tickFormat: d => d.getUTCFullYear()
+      ticks: yearTicks(wide[0]?.date, wide.at(-1)?.date),
+      tickFormat: formatYear
     },
     y: {
       label: "Wahrscheinlichkeit",
@@ -1290,23 +1339,20 @@ viewof hoveredCoalitionRow = {
     },
     marks: [
       Plot.ruleY([0]),
-      ...(showLine ? [
-        Plot.line(active, {
-          x: "date",
-          y: "probability",
-          stroke: "label",
-          z: "label",
-          strokeWidth: 2
-        })
-      ] : []),
-      Plot.dot(active, {
+      Plot.line(active, {
+        x: "date",
+        y: "probability",
+        stroke: "label",
+        z: "label",
+        strokeWidth: 2
+      }),
+      Plot.dot(singletons, {
         x: "date",
         y: "probability",
         fill: "label",
-        fillOpacity: showLine ? 0.3 : 1,
         stroke: "white",
         strokeWidth: 1,
-        r: showLine ? 3 : 4
+        r: 4
       })
     ]
   })
@@ -1318,28 +1364,36 @@ viewof hoveredCoalitionRow = {
   const svg    = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
   const xScale = plot.scale("x")
   const yScale = plot.scale("y")
-  const minGap = 0.045
+  // vertical distance between two stacked labels, in pixels: the 13px font plus
+  // enough room that the white halo of one does not bite into the next
+  const labelGap = 18
 
   const overlay = d3.select(svg).append("g").style("pointer-events", "none")
   const crosshair = overlay.append("line")
     .attr("stroke", "#999").attr("stroke-width", 1)
     .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(1))
-  // dots and labels go into two separate layers, appended in that order, so every
-  // label paints above every dot. With one group per coalition instead, SVG paint
-  // order puts a later coalition's dot on top of an earlier one's text wherever the
-  // crosshair bunches them together.
+  // connectors, dots and labels go into three layers, appended in that order, so
+  // every label paints above every dot. With one group per coalition instead, SVG
+  // paint order puts a later coalition's dot on top of an earlier one's text
+  // wherever the crosshair bunches them together.
+  const linkLayer  = overlay.append("g")
   const dotLayer   = overlay.append("g")
   const labelLayer = overlay.append("g")
   const items = selectedCoalitions.map(label => {
-    const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", colorByKey[label] || "#aaa")
+    const color = colorByKey[label] || "#aaa"
+    // drawn only where a label had to be pushed off its own value, so a reader can
+    // still tell which point on the crosshair the displaced label belongs to
+    const link = linkLayer.append("line")
+      .attr("stroke", color).attr("stroke-width", 1).attr("stroke-opacity", 0.5)
+    const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", color)
     const text = labelLayer.append("text").attr("dx", 8).attr("dy", "0.32em")
-      .attr("fill", colorByKey[label] || "#aaa").attr("font-size", 13).attr("font-weight", "bold")
+      .attr("fill", color).attr("font-size", 13).attr("font-weight", "bold")
       .attr("paint-order", "stroke")
       .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
-    return { key: label, label, dot, text }
+    return { key: label, label, link, dot, text }
   })
   const dateLabel = overlay.append("text")
-    .attr("text-anchor", "middle").attr("font-size", 15).attr("font-weight", "bold").attr("fill", "#333")
+    .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
     .attr("paint-order", "stroke")
     .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
 
@@ -1349,29 +1403,82 @@ viewof hoveredCoalitionRow = {
       .filter(it => it.probability != null)
       .sort((a, b) => a.probability - b.probability)
 
+    // Stack the labels in pixel space rather than in probability units: on the
+    // many days where several coalitions sit at exactly 0% or 100%, a gap
+    // expressed as a probability turns into a different number of pixels per
+    // chart, and the labels end up overlapping. Walking the list bottom-up (it is
+    // sorted ascending by probability, i.e. descending in pixels) pushes each
+    // colliding label above the previous one.
+    const yTop    = yScale.apply(1)
+    const yBottom = yScale.apply(0)
+    const gap = present.length > 1
+      ? Math.min(labelGap, (yBottom - yTop) / (present.length - 1))
+      : labelGap
     const labelY = []
     present.forEach((it, i) => {
-      let y = it.probability
-      if (i > 0 && y - labelY[i - 1] < minGap) y = labelY[i - 1] + minGap
+      let y = yScale.apply(it.probability)
+      if (i > 0 && labelY[i - 1] - y < gap) y = labelY[i - 1] - gap
       labelY.push(y)
     })
+    // the stack only ever grows upwards, so just its top can run out of the frame;
+    // slide the whole stack back down, but never past the bottom of the frame
+    if (labelY.length) {
+      const shift = Math.max(0, Math.min(yTop - labelY.at(-1), yBottom - labelY[0]))
+      for (let i = 0; i < labelY.length; i++) labelY[i] += shift
+    }
 
     const px = xScale.apply(row.date)
     crosshair.attr("x1", px).attr("x2", px)
+
+    // keep labels inside the SVG at the right-hand end of the series, where the
+    // chart rests when nobody is hovering: a long coalition name drawn to the
+    // right of the crosshair there runs past the edge of the SVG and paints over
+    // whatever sits beside the chart. Flip the stack to the left instead, and
+    // clamp the date label to the frame the same way.
+    // getComputedTextLength() reports 0 while the plot is still detached, hence
+    // the character-count fallback; position() re-runs on hover once attached.
+    const svgWidth = +svg.getAttribute("width") || svg.getBoundingClientRect().width
+    const pad = 4
+    const widthOf = node => {
+      const w = node.getComputedTextLength ? node.getComputedTextLength() : 0
+      return w || node.textContent.length * 7.2
+    }
+
+    // fill the labels first: their widths decide which side of the crosshair the
+    // whole stack goes on, and getComputedTextLength() needs the final text
     items.forEach(it => {
       const match = present.find(p => p.key === it.key)
       const visible = Boolean(match)
       it.dot.style("display", visible ? null : "none")
       it.text.style("display", visible ? null : "none")
+      it.link.style("display", "none")
       if (!visible) return
-      const i = present.indexOf(match)
-      it.dot.attr("cx", px).attr("cy", yScale.apply(match.probability))
-      it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
-        .text(`${it.label} ${(match.probability * 100).toFixed(1)}%`)
+      it.text.text(`${it.label} ${(match.probability * 100).toFixed(1)}%`)
     })
 
-    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 47)
+    // one side for all of them, chosen from the widest label. Deciding per label
+    // scatters a stack of near-identical entries across both sides of the
+    // crosshair, which reads as broken rather than as two columns.
+    const maxWidth = d3.max(present, p => widthOf(p.text.node())) ?? 0
+    const flip = px + 8 + maxWidth > svgWidth - pad && px - 8 - maxWidth >= pad
+
+    present.forEach((it, i) => {
+      const dotY = yScale.apply(it.probability)
+      it.dot.attr("cx", px).attr("cy", dotY)
+      it.text.attr("x", px).attr("y", labelY[i])
+        .attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
+      if (Math.abs(labelY[i] - dotY) > 2) {
+        it.link.style("display", null)
+          .attr("x1", px).attr("y1", dotY)
+          .attr("x2", px + (flip ? -8 : 8)).attr("y2", labelY[i])
+      }
+    })
+
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 56)
       .text(d3.utcFormat("%d.%m.%Y")(row.date))
+    const dateWidth = widthOf(dateLabel.node())
+    dateLabel.attr("x", Math.max(pad + dateWidth / 2,
+                                 Math.min(svgWidth - pad - dateWidth / 2, px)))
   }
 
   // find the nearest point ourselves (rather than relying on Plot's own
@@ -1395,6 +1502,9 @@ viewof hoveredCoalitionRow = {
   position(lastRow)
   setValue(lastRow)
 
+  // No pointerleave reset: once a date has been hovered the crosshair stays
+  // there, so a value can be read off after moving the pointer away. The most
+  // recent date is only the initial state, set by the position() call above.
   d3.select(svg)
     .on("pointermove", event => {
       const [px] = d3.pointer(event, svg)
@@ -1402,16 +1512,13 @@ viewof hoveredCoalitionRow = {
       position(row)
       setValue(row)
     })
-    .on("pointerleave", () => {
-      position(lastRow)
-      setValue(lastRow)
-    })
 
   return plot
 }
 ```
 
 ```{ojs}
+//| label: input-coalition-selection
 viewof selectedCoalitions = {
   // one button per displayed coalition label; the label's first party is the
   // strongest currently polling member of that coalition
@@ -1489,13 +1596,14 @@ viewof selectedCoalitions = {
 
 # Deskriptive Analyse
 
-## Row {height=700px}
+## Row {height=670px}
 
 ### Column {width=65%}
 
 #### Verlauf
 
 ```{ojs}
+//| label: chart-poll-trend
 viewof hoveredRow = {
   // "others" is deliberately left out of the trend lines and the crosshair labels —
   // Sonstige never enters a coalition, so it would only add noise here. It is still
@@ -1509,26 +1617,41 @@ viewof hoveredRow = {
   const labels   = partyIds.map(p => party_to_label[p] || p)
   const colors   = partyIds.map(p => party_colors[p] || "#aaa")
 
-  const allRaw = history_raw
+  const raw = history_raw
     .filter(d => d.party !== "others")
     .map(d => ({ date: new Date(d.date), party: d.party, label: party_to_label[d.party] || d.party, percent: d.percent }))
-  const allPooled = history_pooled
+  const pooled = history_pooled
     .filter(d => d.party !== "others")
     .map(d => ({ date: new Date(d.date), label: party_to_label[d.party] || d.party, percent: d.percent }))
     .sort((a, b) => a.date - b.date)
 
-  const maxDate = d3.max([...allRaw, ...allPooled], d => d.date)
-  const cutoff  = d3.utcDay.offset(maxDate, -99)
+  // full available history — this chart used to window to the last 100 days
+  const maxDate = d3.max([...raw, ...pooled], d => d.date)
+  const minDate = d3.min([...raw, ...pooled], d => d.date)
 
-  const raw    = allRaw.filter(d => d.date >= cutoff)
-  const pooled = allPooled.filter(d => d.date >= cutoff)
+  // y domain is per election but constant within one: it comes from that
+  // election's entire pooled history, so it depends on neither the hovered
+  // date, the institute selector, nor any date window. Rounding up to the next
+  // 5 keeps it from nudging every time a new poll sets a slightly higher high.
+  const yMax = Math.max(30, Math.ceil((d3.max(pooled, d => d.percent) + 3) / 5) * 5)
 
-  const yMax = Math.max(30, d3.max(pooled, d => d.percent) + 5)
+  // The poll series runs across the last actual election (23.02.2025 for the
+  // Bundestag), so everything left of that date are Sonntagsfragen for an
+  // election that has already been held. Mark the break, but only when it really
+  // falls inside the plotted range.
+  const electionDateRaw = cur_meta.last_election_date
+    ? new Date(`${cur_meta.last_election_date}T00:00:00Z`)
+    : null
+  const electionDate = electionDateRaw && electionDateRaw >= minDate && electionDateRaw <= maxDate
+    ? electionDateRaw
+    : null
+  // put the caption on whichever side of the rule has more room
+  const electionLabelRight = electionDate && (maxDate - electionDate) > (electionDate - minDate)
 
   // pooled series, one row per date/party id (including "others") — used for the
   // crosshair + bar chart when showing the pooled trend
   const byDate = d3.rollup(
-    history_pooled.filter(d => new Date(d.date) >= cutoff),
+    history_pooled,
     v => Object.fromEntries(v.map(d => [d.party, d.percent])),
     d => +new Date(d.date)
   )
@@ -1541,7 +1664,7 @@ viewof hoveredRow = {
   // history_raw rather than `raw` so it keeps "others" (like `wide` above does):
   // Sonstige is dropped from the trend lines, but the bars report the full split.
   const byDateRaw = d3.rollup(
-    history_raw.filter(d => new Date(d.date) >= cutoff),
+    history_raw,
     v => Object.fromEntries(v.map(d => [d.party, d.percent])),
     d => +new Date(d.date)
   )
@@ -1558,7 +1681,14 @@ viewof hoveredRow = {
       ? "Punkte: einzelne Umfragen aller Institute · Linie: gepoolte Umfrage"
       : `Punkte: einzelne Umfragen (${pollster_names[institute] ?? institute})`,
     style: { fontSize: "14px" },
-    marginBottom: 55,
+    // Plot pins the y-axis label near the top of the SVG while the frame starts
+    // at marginTop, so the gap between the label and the topmost tick is
+    // marginTop - 3.5. At the default 20 the label almost touches "30%"; 40
+    // matches the Zeitverlauf chart and gives it room.
+    marginTop: 40,
+    // 64 rather than 55: the crosshair's date label sits below the year tick
+    // and needs the extra room (see dateLabel's y offset in the overlay)
+    marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
     height: 460,
@@ -1566,9 +1696,9 @@ viewof hoveredRow = {
       type: "utc",
       label: null,
       interval: "day",
-      ticks: "year",
       // one tick per year, anchored on 1.1. (d3.utcYear ticks land on January 1 UTC)
-      tickFormat: d => d.getUTCFullYear()
+      ticks: yearTicks(minDate, maxDate),
+      tickFormat: formatYear
     },
     y: {
       label: "Stimmenanteil (%)",
@@ -1582,7 +1712,7 @@ viewof hoveredRow = {
     },
     marks: [
       Plot.rect([{}], {
-        x1: cutoff, x2: maxDate, y1: 0, y2: 5,
+        x1: minDate, x2: maxDate, y1: 0, y2: 5,
         fill: "#888",
         fillOpacity: 0.15
       }),
@@ -1591,12 +1721,34 @@ viewof hoveredRow = {
         strokeDasharray: "4 3",
         strokeWidth: 1.2
       }),
+      // drawn before the polls so the data keeps painting on top of it
+      ...(electionDate ? [
+        Plot.ruleX([electionDate], {
+          stroke: "#333",
+          strokeDasharray: "6 4",
+          strokeWidth: 1.2
+        }),
+        Plot.text([electionDate], {
+          x: d => d,
+          y: yMax,
+          text: d => `Wahl ${d3.utcFormat("%d.%m.%Y")(d)}`,
+          textAnchor: electionLabelRight ? "start" : "end",
+          dx: electionLabelRight ? 6 : -6,
+          dy: 10,
+          fill: "#333",
+          fontSize: 12,
+          stroke: "white",
+          strokeWidth: 3
+        })
+      ] : []),
+      // individual polls are background context only — kept faint so the
+      // pooled trend lines stay legible where the scatter is dense
       Plot.dot(raw, {
         x: "date",
         y: "percent",
         fill: "label",
-        fillOpacity: 0.3,
-        r: 3
+        fillOpacity: 0.15,
+        r: 2.5
       }),
       ...(showLine ? [
         Plot.line(pooled.filter(d => d.label === party_to_label.fdp), {
@@ -1641,7 +1793,7 @@ viewof hoveredRow = {
     return { partyId, label: labels[i], dot, text }
   })
   const dateLabel = overlay.append("text")
-    .attr("text-anchor", "middle").attr("font-size", 15).attr("font-weight", "bold").attr("fill", "#333")
+    .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
     .attr("paint-order", "stroke")
     .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
 
@@ -1665,6 +1817,18 @@ viewof hoveredRow = {
 
     const px = xScale.apply(row.date)
     crosshair.attr("x1", px).attr("x2", px)
+
+    // keep labels inside the SVG at the right-hand end of the series — see the
+    // same flip in the Zeitverlauf overlay. Party labels are short enough that
+    // the longest ("Sonstige 12.3%") only just clears the right margin, so this
+    // is mostly insurance against a longer label or a font change.
+    const svgWidth = +svg.getAttribute("width") || svg.getBoundingClientRect().width
+    const pad = 4
+    const widthOf = node => {
+      const w = node.getComputedTextLength ? node.getComputedTextLength() : 0
+      return w || node.textContent.length * 7.2
+    }
+
     items.forEach(it => {
       const match = present.find(p => p.partyId === it.partyId)
       const visible = Boolean(match)
@@ -1675,10 +1839,16 @@ viewof hoveredRow = {
       it.dot.attr("cx", px).attr("cy", yScale.apply(match.percent))
       it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
         .text(`${it.label} ${match.percent.toFixed(1)}%`)
+      const w = widthOf(it.text.node())
+      const flip = px + 8 + w > svgWidth - pad && px - 8 - w >= pad
+      it.text.attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
     })
 
-    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 47)
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 56)
       .text(d3.utcFormat("%d.%m.%Y")(row.date))
+    const dateWidth = widthOf(dateLabel.node())
+    dateLabel.attr("x", Math.max(pad + dateWidth / 2,
+                                 Math.min(svgWidth - pad - dateWidth / 2, px)))
   }
 
   // find the nearest point in wideActive ourselves (rather than relying on
@@ -1713,8 +1883,8 @@ viewof hoveredRow = {
       if (rawDotsLayer && showLine) rawDotsLayer.style.opacity = 0
     })
     .on("pointerleave", () => {
-      position(lastRow)
-      setValue(lastRow)
+      // the crosshair deliberately stays on the last hovered date (see the
+      // Zeitverlauf overlay); only the background scatter is restored
       if (rawDotsLayer && showLine) rawDotsLayer.style.opacity = 1
     })
 
@@ -1727,6 +1897,7 @@ viewof hoveredRow = {
 #### Stimmenanteile
 
 ```{ojs}
+//| label: chart-poll-trend-shares
 {
   const shares = [...party_order, "others"]
     .filter(p => hoveredRow[p] != null)
@@ -1786,6 +1957,7 @@ viewof hoveredRow = {
 ## Row
 
 ```{ojs}
+//| label: text-methodik
 html`
 <div style="max-width:700px;line-height:1.7;font-size:0.95em">
 <h3>Methodik</h3>
