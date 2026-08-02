@@ -41,7 +41,12 @@ format:
 }
 
 .card-body svg [aria-label="tick"] text {
-  font-size: 12px;
+  font-size: 13px;
+}
+
+.overview-coalitions svg [aria-label="y-axis tick"] text,
+.overview-coalitions svg [aria-label="tick"] text {
+  font-size: 14px;
 }
 </style>
 
@@ -218,9 +223,9 @@ meanBy = (data, keyFn, valueFn) =>
     ([key, value]) => ({ key, value })
   )
 
-cleanShares = shares => {
+cleanShares = (shares, includeOthers = false) => {
   return meanBy(
-    shares.filter(d => d.party !== "others"),
+    shares.filter(d => includeOthers || d.party !== "others"),
     d => d.party,
     d => d.percent
   )
@@ -229,7 +234,11 @@ cleanShares = shares => {
       percent: d.value,
       label: party_names[d.key] || d.key
     }))
-    .sort((a, b) => party_order.indexOf(a.party) - party_order.indexOf(b.party))
+    .sort((a, b) => {
+      const ai = party_order.indexOf(a.party)
+      const bi = party_order.indexOf(b.party)
+      return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi)
+    })
 }
 
 cleanHurdles = hurdles => {
@@ -250,14 +259,6 @@ cleanCoalitions = (coalitions, shares) => {
   const partyVotes = Object.fromEntries(
     cleanShares(shares).map(d => [d.party, d.percent])
   )
-
-  const labelByVotes = parties => {
-    const ordered = parties
-      .slice()
-      .sort((a, b) => (partyVotes[b] ?? -Infinity) - (partyVotes[a] ?? -Infinity))
-
-    return labelFromParties(ordered)
-  }
 
   const byLabel = Array.from(
     d3.rollup(
@@ -285,9 +286,10 @@ cleanCoalitions = (coalitions, shares) => {
       )
 
       const probability = d3.sum(rows, d => d.probability)
-      const label = d3.max(rows, d => d.probability) > 0
-        ? rows[0].label
-        : labelByVotes(rows[0].parties)
+      const maxMemberVote = d3.max(rows[0].parties, p => partyVotes[p] ?? -Infinity)
+      const label = rows
+        .filter(d => (partyVotes[d.parties[0]] ?? -Infinity) === maxMemberVote)
+        .sort((a, b) => d3.ascending(a.label, b.label))[0]?.label ?? rows[0].label
 
       const first_party = coalitionParties(label)[0]
       const vote_share  = d3.sum(rows[0].parties, p => partyVotes[p] ?? 0)
@@ -303,42 +305,50 @@ cleanCoalitions = (coalitions, shares) => {
   ).sort((a, b) => a.probability - b.probability)
 }
 
-// Per-label view: unlike cleanCoalitions() (which merges every "who leads"
-// ordering of a coalition into a single summed line), this keeps each
-// ordering — e.g. "Grüne-SPD-Linke" vs. "Linke-SPD-Grüne" — as its own
-// distinguishable option, so near-tied leadership scenarios stay visible
-// instead of one silently winning the label and hiding the other.
+// One display label per coalition: among labels that exist in the simulation
+// output, show the one whose first party has the highest selected/local vote
+// share. If parties are tied, fall back to the label for stable ordering.
 leadershipVariants = (coalitions, shares, pooledShares) => {
   const partyVotes  = Object.fromEntries(cleanShares(shares).map(d => [d.party, d.percent]))
   const pooledVotes = Object.fromEntries(cleanShares(pooledShares).map(d => [d.party, d.percent]))
 
   const byLabel = Array.from(
     d3.rollup(coalitions, v => d3.mean(v, d => d.probability), d => d.label),
-    ([label, probability]) => ({ label, probability, parties: coalitionParties(label) })
+    ([label, probability]) => ({
+      label,
+      probability,
+      parties: coalitionParties(label),
+      coalition_key: normCoalition(label)
+    })
   )
 
   // The R side (derive_dynamic_coalitions() in scripts/calc_coalProbs_helpers.R)
   // deliberately computes more broadly (25% combined) than the site displays,
   // so this 33% cutoff is the real display-layer decision, not a mirror of it.
-  return byLabel
+  const eligible = byLabel
     .filter(d => isViableCoalition(d.parties))
     // only expose a coalition if it currently polls at least 33% combined,
     // based on the recent pooled estimate (not whichever institute is selected)
     .filter(d => d3.sum(d.parties, p => pooledVotes[p] ?? 0) >= 33)
-    // among a coalition's "who leads" orderings, only expose an alternative
-    // leader if it has at least 75% of the pooled vote share of the group's
-    // biggest-polling member — otherwise it's not a plausible leadership swap
-    .filter(d => {
-      const maxMemberVote = d3.max(d.parties, p => pooledVotes[p] ?? 0)
-      const leaderVote     = pooledVotes[d.parties[0]] ?? 0
-      return leaderVote >= 0.75 * maxMemberVote
-    })
-    .map(d => ({
-      label: d.label,
-      probability: d.probability,
-      first_party: d.parties[0],
-      vote_share: d3.sum(d.parties, p => partyVotes[p] ?? 0)
-    }))
+
+  return Array.from(
+    d3.group(eligible, d => d.coalition_key),
+    ([coalition_key, rows]) => {
+      const parties = rows[0].parties
+      const maxMemberVote = d3.max(parties, p => partyVotes[p] ?? -Infinity)
+      const match = rows
+        .filter(d => (partyVotes[d.parties[0]] ?? -Infinity) === maxMemberVote)
+        .sort((a, b) => d3.ascending(a.label, b.label))[0] ?? rows[0]
+
+      return {
+        coalition_key,
+        label: match.label,
+        probability: match.probability,
+        first_party: match.parties[0],
+        vote_share: d3.sum(parties, p => partyVotes[p] ?? 0)
+      }
+    }
+  )
 }
 
 cleanCoalitionHistory = rows => {
@@ -747,17 +757,19 @@ html`<details style="
 ```
 
 ```{ojs}
-html`<div style="
-  margin:14px 0 0 0;
-  padding-top:10px;
-  border-top:1px solid #e5e7eb;
-  color:#666;
-  font-size:0.78em;
-  line-height:1.35;
-">
-  Zuletzt aktualisiert:<br>
-  <b>${updated}</b>
-</div>`
+{
+  return html`<div style="
+    margin:14px 0 0 0;
+    padding-top:10px;
+    border-top:1px solid #e5e7eb;
+    color:#666;
+    font-size:0.78em;
+    line-height:1.35;
+  ">
+    Aktualisiert am:<br>
+    <b>${updated}</b>
+  </div>`
+}
 ```
 
 # Überblick
@@ -768,7 +780,7 @@ html`<div style="
 
 ```{ojs}
 {
-  const shares = cleanShares(shares_source)
+  const shares = cleanShares(shares_source, true)
   const maxY = Math.max(35, d3.max(shares, d => d.percent) + 7)
 
   return Plot.plot({
@@ -782,6 +794,7 @@ html`<div style="
     },
     y: {
       label: "Stimmenanteil (%)",
+      grid: true,
       domain: [0, maxY],
       tickFormat: d => d + "%"
     },
@@ -790,6 +803,15 @@ html`<div style="
         x: "label",
         y: "percent",
         fill: d => party_colors[d.party] || "#aaa",
+        insetLeft: 8,
+        insetRight: 8
+      }),
+      Plot.barY(shares.filter(d => d.party === "fdp"), {
+        x: "label",
+        y: "percent",
+        fill: "transparent",
+        stroke: "#999",
+        strokeWidth: 1.2,
         insetLeft: 8,
         insetRight: 8
       }),
@@ -815,40 +837,122 @@ html`<div style="
 
 ## Row {height=50%}
 
-### Column {width=60%}
+### Column {width=50%}
 
 #### Koalitionen
 
 ```{ojs}
 
 {
-  const coal = leading_variants.slice().sort((a, b) =>
+  const sortCoalitions = rows => rows.slice().sort((a, b) =>
     d3.ascending(a.probability, b.probability) || d3.ascending(a.vote_share, b.vote_share)
   )
 
-  return Plot.plot({
+  const hoverProbability = probability =>
+    probability < 0.001
+      ? "<0,1%"
+      : (probability * 100).toLocaleString("de-DE", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 2
+      }) + "%"
+  const withProbabilityTooltip = (plot, rows, valueKey) => {
+    const wrapper = html`<div style="position:relative"></div>`
+    const tooltip = html`<div style="
+      position:absolute;
+      display:none;
+      pointer-events:none;
+      z-index:5;
+      padding:4px 7px;
+      border:1px solid #d1d5db;
+      border-radius:4px;
+      background:white;
+      color:#333;
+      font-size:12px;
+      font-weight:700;
+      box-shadow:0 2px 8px rgba(0,0,0,0.12);
+      white-space:nowrap;
+    "></div>`
+    wrapper.append(plot, tooltip)
+
+    const svg = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
+    const xScale = plot.scale("x")
+    const yScale = plot.scale("y")
+    const active = rows
+    const overlay = d3.select(svg).append("g")
+
+    const show = (event, d) => {
+      const rect = wrapper.getBoundingClientRect()
+      tooltip.style.display = "block"
+      tooltip.style.left = `${event.clientX - rect.left + 10}px`
+      tooltip.style.top = `${event.clientY - rect.top - 30}px`
+      tooltip.textContent = `${d.label}: ${hoverProbability(d[valueKey])}`
+    }
+    const hide = () => { tooltip.style.display = "none" }
+
+    overlay.selectAll("line").data(active).join("line")
+      .attr("x1", xScale.apply(0))
+      .attr("x2", d => xScale.apply(d[valueKey]))
+      .attr("y1", d => yScale.apply(d.label))
+      .attr("y2", d => yScale.apply(d.label))
+      .attr("stroke", "transparent")
+      .attr("stroke-width", 16)
+      .style("pointer-events", "stroke")
+      .on("pointermove", show)
+      .on("pointerleave", hide)
+
+    overlay.selectAll("circle").data(active).join("circle")
+      .attr("cx", d => xScale.apply(d[valueKey]))
+      .attr("cy", d => yScale.apply(d.label))
+      .attr("r", 9)
+      .attr("fill", "transparent")
+      .style("pointer-events", "all")
+      .on("pointermove", show)
+      .on("pointerleave", hide)
+
+    return wrapper
+  }
+
+  const topN = 6
+  const ranked = leading_variants.slice().sort((a, b) =>
+    d3.descending(a.vote_share, b.vote_share) || d3.descending(a.probability, b.probability)
+  )
+  const coal = sortCoalitions(ranked.slice(0, topN))
+  const remaining = sortCoalitions(ranked.slice(topN))
+
+  const coalitionPlot = (rows, title = null) => {
+    const plot = Plot.plot({
+    ...(title ? { title } : {}),
     subtitle: "Wahrscheinlichkeit, dass die Koalition eine Mehrheit der Sitze erreicht.",
     marginLeft: 155,
-    marginRight: 85,
-    height: Math.max(280, coal.length * 34 + 40),
+    marginRight: 65,
+    height: Math.max(280, rows.length * 42 + 42),
     x: {
       label: "Koalitionswahrscheinlichkeit",
       domain: [0, 1],
-      ticks: [0, 0.5, 1],
+      ticks: [0, 0.25, 0.5, 0.75, 1],
       tickFormat: d => (d * 100).toFixed(0) + "%"
     },
     y: {
       label: null,
-      domain: coal.map(d => d.label)
+      domain: rows.map(d => d.label).reverse(),
+      tickSize: 0,
+      tickPadding: 8
     },
     marks: [
       Plot.ruleX([0], { stroke: "#aaa" }),
-      Plot.ruleX([0.5], {
-        stroke: "#999",
-        strokeDasharray: "4 3",
+      Plot.ruleX([0.25, 0.5, 0.75], {
+        stroke: "#e5e7eb",
         strokeWidth: 1
       }),
-      Plot.ruleY(coal, {
+      Plot.ruleY(rows.filter(d => d.first_party === "fdp"), {
+        y: "label",
+        x1: 0,
+        x2: "probability",
+        stroke: "#999",
+        strokeWidth: 5,
+        strokeOpacity: 0.8
+      }),
+      Plot.ruleY(rows, {
         y: "label",
         x1: 0,
         x2: "probability",
@@ -856,37 +960,134 @@ html`<div style="
         strokeWidth: 3,
         strokeOpacity: 0.75
       }),
-      Plot.text(coal, {
+      Plot.dot(rows, {
         y: "label",
-        x: d => d.probability > 0.9 ? 0.985 : d.probability + 0.07,
-        text: d => (d.probability * 100).toFixed(1) + "%",
-        fill: "#555",
-        fontSize: 12,
-        dy: -8,
-        textAnchor: d => d.probability > 0.93 ? "end" : "start"
+        x: "probability",
+        fill: d => party_colors[d.first_party] || "#aaa",
+        stroke: d => d.first_party === "fdp" ? "#999" : "white",
+        strokeWidth: d => d.first_party === "fdp" ? 1.8 : 1.5,
+        r: 5
       })
     ]
   })
+    return withProbabilityTooltip(plot, rows, "probability")
+  }
+
+  return html`
+    <div class="overview-coalitions">
+      ${coalitionPlot(coal)}
+      ${remaining.length ? html`
+        <details style="margin:8px 0 0 155px;font-size:0.9em;color:#555">
+          <summary style="cursor:pointer;font-weight:700">
+            Weitere ${remaining.length} Koalitionen anzeigen
+          </summary>
+          <div style="margin-top:8px;margin-left:-155px">
+            ${coalitionPlot(remaining, "Weitere Koalitionen")}
+          </div>
+        </details>
+      ` : ""}
+    </div>
+  `
 }
 ```
 
-### Column {width=40%}
+### Column {width=50%}
 
-#### Wahrscheinlichkeit des Einzugs (5%-Hürde)
+#### Unsichere Einzüge
 
 ```{ojs}
 {
   const hurdles = cleanHurdles(hurdle_source)
+  if (hurdles.length === 0) {
+    return html`<div style="
+      min-height:260px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#666;
+      font-size:0.95em;
+      text-align:center;
+      border:1px solid #e5e7eb;
+      border-radius:6px;
+      background:#fafafa;
+    ">
+      Keine Partei liegt aktuell unter 50% Einzugswahrscheinlichkeit.
+    </div>`
+  }
 
-  return Plot.plot({
-    subtitle: "Wahrscheinlichkeit des Parlamentseinzugs.",
+  const hoverProbability = probability =>
+    probability < 0.001
+      ? "<0,1%"
+      : (probability * 100).toLocaleString("de-DE", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 2
+      }) + "%"
+  const withProbabilityTooltip = (plot, rows, valueKey) => {
+    const wrapper = html`<div style="position:relative"></div>`
+    const tooltip = html`<div style="
+      position:absolute;
+      display:none;
+      pointer-events:none;
+      z-index:5;
+      padding:4px 7px;
+      border:1px solid #d1d5db;
+      border-radius:4px;
+      background:white;
+      color:#333;
+      font-size:12px;
+      font-weight:700;
+      box-shadow:0 2px 8px rgba(0,0,0,0.12);
+      white-space:nowrap;
+    "></div>`
+    wrapper.append(plot, tooltip)
+
+    const svg = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
+    const xScale = plot.scale("x")
+    const yScale = plot.scale("y")
+    const active = rows
+    const overlay = d3.select(svg).append("g")
+
+    const show = (event, d) => {
+      const rect = wrapper.getBoundingClientRect()
+      tooltip.style.display = "block"
+      tooltip.style.left = `${event.clientX - rect.left + 10}px`
+      tooltip.style.top = `${event.clientY - rect.top - 30}px`
+      tooltip.textContent = `${d.label}: ${hoverProbability(d[valueKey])}`
+    }
+    const hide = () => { tooltip.style.display = "none" }
+
+    overlay.selectAll("line").data(active).join("line")
+      .attr("x1", xScale.apply(0))
+      .attr("x2", d => xScale.apply(d[valueKey]))
+      .attr("y1", d => yScale.apply(d.label))
+      .attr("y2", d => yScale.apply(d.label))
+      .attr("stroke", "transparent")
+      .attr("stroke-width", 16)
+      .style("pointer-events", "stroke")
+      .on("pointermove", show)
+      .on("pointerleave", hide)
+
+    overlay.selectAll("circle").data(active).join("circle")
+      .attr("cx", d => xScale.apply(d[valueKey]))
+      .attr("cy", d => yScale.apply(d.label))
+      .attr("r", 9)
+      .attr("fill", "transparent")
+      .style("pointer-events", "all")
+      .on("pointermove", show)
+      .on("pointerleave", hide)
+
+    return wrapper
+  }
+
+  const plot = Plot.plot({
+    subtitle: "Parteien mit Einzugswahrscheinlichkeit unter 50%.",
     marginLeft: 80,
     marginRight: 80,
     height: Math.max(280, hurdles.length * 34 + 40),
     x: {
       label: "Einzugswahrscheinlichkeit",
       domain: [0, 1],
-      ticks: [0, 0.5, 1],
+      ticks: [0, 0.25, 0.5, 0.75, 1],
       tickFormat: d => (d * 100).toFixed(0) + "%"
     },
     y: {
@@ -895,10 +1096,17 @@ html`<div style="
     },
     marks: [
       Plot.ruleX([0], { stroke: "#aaa" }),
-      Plot.ruleX([0.5], {
-        stroke: "#999",
-        strokeDasharray: "4 3",
+      Plot.ruleX([0.25, 0.5, 0.75], {
+        stroke: "#e5e7eb",
         strokeWidth: 1
+      }),
+      Plot.ruleY(hurdles.filter(d => d.party === "fdp"), {
+        y: "label",
+        x1: 0,
+        x2: "prob_above_hurdle",
+        stroke: "#999",
+        strokeWidth: 5,
+        strokeOpacity: 0.8
       }),
       Plot.ruleY(hurdles, {
         y: "label",
@@ -906,19 +1114,20 @@ html`<div style="
         x2: "prob_above_hurdle",
         stroke: d => party_colors[d.party] || "#aaa",
         strokeWidth: 3,
-        strokeOpacity: 0.75
+        strokeOpacity: 0.8
       }),
-      Plot.text(hurdles, {
+      Plot.dot(hurdles, {
         y: "label",
-        x: d => d.prob_above_hurdle > 0.9 ? 0.985 : d.prob_above_hurdle + 0.09,
-        text: d => (d.prob_above_hurdle * 100).toFixed(1) + "%",
-        fill: "#555",
-        fontSize: 12,
-        dy: -8,
-        textAnchor: d => d.prob_above_hurdle > 0.9 ? "end" : "start"
+        x: "prob_above_hurdle",
+        fill: d => party_colors[d.party] || "#aaa",
+        stroke: d => d.party === "fdp" ? "#999" : "white",
+        strokeWidth: d => d.party === "fdp" ? 1.8 : 1.5,
+        r: 5
       })
     ]
   })
+
+  return withProbabilityTooltip(plot, hurdles, "prob_above_hurdle")
 }
 ```
 
@@ -1175,9 +1384,8 @@ viewof hoveredCoalitionRow = {
 
 ```{ojs}
 viewof selectedCoalitions = {
-  // one button per leading-party variant (not per coalition_key), so e.g.
-  // "Grüne-SPD-Linke" and "Linke-SPD-Grüne" stay separately selectable
-  // instead of collapsing into whichever narrowly has the higher probability
+  // one button per displayed coalition label; the label's first party is the
+  // strongest currently polling member of that coalition
   const options = leading_variants.slice().sort((a, b) =>
     d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
   )
