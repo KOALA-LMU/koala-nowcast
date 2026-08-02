@@ -27,10 +27,7 @@ coalition_density <- function(election_id, cfg, results_dir) {
   non_afd_coals <- !vapply(coal_parties, function(x) {
     "afd" %in% x && length(x) > 1
   }, logical(1))
-  non_bsw_coals <- !vapply(coal_parties, function(x) {
-    "bsw" %in% x && length(x) > 1
-  }, logical(1))
-  wanted_coals <- wanted_coals[non_afd_coals & non_bsw_coals]
+  wanted_coals <- wanted_coals[non_afd_coals]
 
   latest <- latest %>%
     filter(coalition %in% wanted_coals)
