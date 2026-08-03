@@ -121,9 +121,16 @@ for (loc in c("en_US.UTF-8", "C.UTF-8", "en_US.utf8")) {
 # that round trip costs minutes of render time and inlines every byte of it
 # into index.html, which every visitor then downloads before anything appears.
 ojs_define(
-  # last_election_date is the machine-readable twin of last_election: the trend
-  # chart in "Deskriptive Analyse" marks it, and the poll history reaches back
-  # past that date for every election here.
+  all_data = list(
+    ST = load_election("data/st"),
+    MV = load_election("data/mv"),
+    BE = load_election("data/be"),
+    BTW = load_election("data/btw")
+  ),
+  # seat_method / hurdle / pooling_days mirror parliament$seat_allocation,
+  # parliament$hurdle and pooling$period in config/elections/*.yml — the values
+  # the nowcast actually runs with. Keep them in sync when a config changes;
+  # the Methodik page states them as the method in use.
   election_meta = list(
     ST = list(
       title = "Sachsen-Anhalt Landtagswahl 2026",
@@ -2117,7 +2124,59 @@ viewof hoveredRow = {
 ::: {.card .methodik-card}
 
 ```{ojs}
-//| label: text-methodik
+//| output: false
+// Institutes whose polls actually feed the currently selected election, newest
+// poll first — the Datenbasis section names them instead of listing the static
+// config roster, which also contains institutes that never polled this race.
+methodik_institutes = {
+  const latest = new Map()
+  for (const d of cur.pollster_data.per_pollster) {
+    const prev = latest.get(d.pollster)
+    if (!prev || d.date > prev) latest.set(d.pollster, d.date)
+  }
+  return [...latest]
+    .sort((a, b) => d3.descending(a[1], b[1]))
+    .map(([pollster, date]) => ({
+      pollster,
+      name: pollster_names[pollster] || pollster,
+      date: new Date(date).toLocaleDateString("de-DE", {
+        day: "2-digit", month: "2-digit", year: "numeric"
+      })
+    }))
+}
+```
+
+```{ojs}
+//| output: false
+// One card per pipeline step. Kept as data so the markup below stays a single
+// loop rather than four near-identical blocks.
+methodik_steps = [
+  {
+    title: "Pooling",
+    lead: `Die Umfragen der letzten ${cur_meta.pooling_days} Tage werden zu einer
+           Schätzung zusammengefasst — gewichtet nach Stichprobengröße und Aktualität.`
+  },
+  {
+    title: "Simulation",
+    lead: `10.000 mögliche Wahlausgänge werden aus der Dirichlet-Posterior-Verteilung
+           gezogen. Ihre Streuung bildet die Unsicherheit der Umfragewerte ab.`
+  },
+  {
+    title: "Sitzverteilung",
+    lead: `Jeder simulierte Ausgang wird nach dem ${cur_meta.seat_method}-Verfahren
+           in Sitze übersetzt (${cur_meta.seats} Sitze, Sperrklausel ${cur_meta.hurdle}).`
+  },
+  {
+    title: "Wahrscheinlichkeit",
+    lead: `Ausgezählt wird, in wie vielen Simulationen ein Bündnis mindestens
+           ${cur_meta.majority} Sitze erreicht.`
+  }
+]
+```
+
+::: {.card .methodik-card}
+
+```{ojs}
 html`
 <div class="methodik">
   <style>
@@ -2145,7 +2204,7 @@ html`
       color: var(--accent);
     }
     .methodik-hero h2 { font-size: 1.6rem; line-height: 1.25; margin: 6px 0 8px; }
-    .methodik-lede { color: var(--muted); margin: 0; }
+    .methodik-lede { color: var(--muted); max-width: 62ch; margin: 0; }
 
     .methodik-facts {
       display: grid;
@@ -2182,15 +2241,10 @@ html`
       margin-bottom: 14px;
     }
 
-    /* Fixed 2x2 rather than auto-fit: with four steps, auto-fit lays out three
-       across and leaves the fourth orphaned on its own row at card width. */
     .methodik-steps {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 14px;
-    }
-    @media (max-width: 620px) {
-      .methodik-steps { grid-template-columns: 1fr; }
     }
     .methodik-step {
       position: relative;
