@@ -148,6 +148,8 @@ calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest
 #' @param min_combined_pct minimum combined pooled vote share (in percent) for a coalition to be computed at all.
 #' Deliberately looser than the dashboard's own display threshold (33%, see leadershipVariants() in
 #' dashboard/index.qmd) so the underlying data stays available even for combinations the site currently hides.
+#' The dashboard shows anything below 33% anyway once its probability is above 0, so this gate is what
+#' ultimately decides whether such a coalition can surface at all.
 #' @param leader_flip_ratio minimum ratio (candidate leader's share / subset's top share) to expose that leader ordering
 #' @export
 derive_dynamic_coalitions <- function(parties_cfg, pooled_shares, max_size = 4,
