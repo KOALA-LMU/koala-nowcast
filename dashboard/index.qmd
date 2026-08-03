@@ -40,6 +40,12 @@ format:
   flex: 0 0 auto !important;
 }
 
+/* The Methodik page is one long text card rather than a chart: let it scroll
+   inside the card instead of being clipped on short viewports. */
+.methodik-card > .cell.card-body {
+  overflow-y: auto !important;
+}
+
 .card-body svg [aria-label="tick"] text {
   font-size: 13px;
 }
@@ -132,41 +138,50 @@ ojs_define(
     BE = load_election("data/be"),
     BTW = load_election("data/btw")
   ),
-  # last_election_date is the machine-readable twin of last_election: the trend
-  # chart in "Deskriptive Analyse" marks it, and the poll history reaches back
-  # past that date for every election here.
+  # seat_method / hurdle / pooling_days mirror parliament$seat_allocation,
+  # parliament$hurdle and pooling$period in config/elections/*.yml — the values
+  # the nowcast actually runs with. Keep them in sync when a config changes;
+  # the Methodik page states them as the method in use.
   election_meta = list(
     ST = list(
       title = "Sachsen-Anhalt Landtagswahl 2026",
       seats = 83L,
       majority = 42L,
       last_election = "6. Juni 2021",
-      last_election_date = "2021-06-06",
-      next_election = "6. September 2026"
+      next_election = "6. September 2026",
+      seat_method = "Hare-Niemeyer",
+      hurdle = "5 %",
+      pooling_days = 14L
     ),
     MV = list(
       title = "Mecklenburg-Vorpommern Landtagswahl 2026",
       seats = 71L,
       majority = 36L,
       last_election = "26. September 2021",
-      last_election_date = "2021-09-26",
-      next_election = "20. September 2026"
+      next_election = "20. September 2026",
+      seat_method = "Hare-Niemeyer",
+      hurdle = "5 %",
+      pooling_days = 14L
     ),
     BE = list(
       title = "Abgeordnetenhauswahl Berlin 2026",
       seats = 130L,
       majority = 66L,
       last_election = "12. Februar 2023",
-      last_election_date = "2023-02-12",
-      next_election = "20. September 2026"
+      next_election = "20. September 2026",
+      seat_method = "Hare-Niemeyer",
+      hurdle = "5 %",
+      pooling_days = 14L
     ),
     BTW = list(
       title = "Bundestagswahl 2029",
       seats = 630L,
       majority = 316L,
       last_election = "23. Februar 2025",
-      last_election_date = "2025-02-23",
-      next_election = "26. Januar bis 25. März 2029, Termin offen"
+      next_election = "26. Januar bis 25. März 2029, Termin offen",
+      seat_method = "Sainte-Laguë/Schepers",
+      hurdle = "5 %",
+      pooling_days = 14L
     )
   ),
   party_colors = list(
@@ -1959,24 +1974,217 @@ viewof hoveredRow = {
 ```{ojs}
 //| label: text-methodik
 html`
-<div style="max-width:700px;line-height:1.7;font-size:0.95em">
-<h3>Methodik</h3>
-<p>Die Koalitionswahrscheinlichkeiten werden mit dem R-Paket
-<a href="https://github.com/adibender/coalitions" target="_blank"><code>coalitions</code></a>
-berechnet (Bender &amp; Bauer, 2018).</p>
-<h4>Datenbasis</h4>
-<p>Umfragedaten der letzten 14 Tage von <a href="https://www.wahlrecht.de" target="_blank">wahlrecht.de</a>
-werden gepooled.</p>
-<h4>Berechnung</h4>
-<ol>
-  <li><b>Pooling:</b> Mehrere Umfragen werden gewichtet gemittelt.</li>
-  <li><b>Monte-Carlo-Simulation:</b> 10.000 Wahlausgänge werden aus der Dirichlet-Posterior-Verteilung gezogen.</li>
-  <li><b>Sitzverteilung:</b> Für jeden simulierten Ausgang wird die Sitzverteilung nach dem Hare-Niemeyer-Verfahren berechnet
-  (${cur_meta.seats} Sitze, 5%-Hürde).</li>
-  <li><b>Koalitionswahrscheinlichkeit:</b> Anteil der Simulationen, in denen eine Koalition ≥ ${cur_meta.majority} Sitze erreicht.</li>
-</ol>
-<p><b>Hinweis:</b> Die Berechnung basiert auf Umfragedaten und spiegelt den Informationsstand zum Zeitpunkt der letzten
-Aktualisierung wider. Wahlüberraschungen, strategisches Wählen und Mobilisierungseffekte am Wahltag sind nicht modelliert.</p>
+<div class="methodik">
+  <style>
+    .methodik {
+      --ink: #1f2933;
+      --muted: #6b7280;
+      --accent: #2b6cb0;
+      --line: #e2e8f0;
+      --wash: #f7f9fc;
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 4px 4px 28px;
+      color: var(--ink);
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+    .methodik h2, .methodik h3 { margin: 0; font-weight: 700; }
+
+    .methodik-hero { border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+    .methodik-eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .methodik-hero h2 { font-size: 1.6rem; line-height: 1.25; margin: 6px 0 8px; }
+    .methodik-lede { color: var(--muted); max-width: 62ch; margin: 0; }
+
+    .methodik-facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin: 20px 0 6px;
+    }
+    .methodik-fact {
+      background: var(--wash);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .methodik-fact-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+    .methodik-fact-label {
+      font-size: 0.76rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+
+    .methodik-section { margin-top: 30px; }
+    .methodik-section > h3 {
+      font-size: 1.05rem;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+
+    .methodik-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .methodik-step {
+      position: relative;
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 16px 16px;
+      background: #fff;
+    }
+    .methodik-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .methodik-step h4 { font-size: 0.98rem; font-weight: 700; margin: 0 0 4px; }
+    .methodik-step p { margin: 0; font-size: 0.89rem; color: var(--muted); }
+
+    .methodik-split {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+    }
+    .methodik-institutes { list-style: none; margin: 10px 0 0; padding: 0; }
+    .methodik-institutes li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 5px 0;
+      border-bottom: 1px dashed var(--line);
+      font-size: 0.9rem;
+    }
+    .methodik-institutes li span:last-child {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .methodik-note {
+      margin-top: 14px;
+      background: var(--wash);
+      border-left: 3px solid var(--accent);
+      padding: 10px 14px;
+      font-size: 0.87rem;
+      color: var(--muted);
+    }
+    .methodik-note b { color: var(--accent); }
+
+    .methodik-refs {
+      margin-top: 26px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+    .methodik a { color: var(--accent); }
+  </style>
+
+  <div class="methodik-hero">
+    <div class="methodik-eyebrow">Methodik</div>
+    <h2>Von Umfragewerten zu Koalitionswahrscheinlichkeiten</h2>
+    <p class="methodik-lede">
+      KOALA übersetzt aktuelle Umfragen in Wahrscheinlichkeiten für Mehrheiten,
+      berechnet mit dem R-Paket
+      <a href="https://github.com/adibender/coalitions" target="_blank"><code>coalitions</code></a>
+      (Bender &amp; Bauer, 2018). Angezeigt wird <b>${cur_meta.title}</b>,
+      Stand ${updated} Uhr.
+    </p>
+  </div>
+
+  <div class="methodik-facts">
+    ${[
+      { value: cur_meta.seats,          label: "Sitze im Parlament" },
+      { value: cur_meta.majority,       label: "Sitze für die Mehrheit" },
+      { value: cur_meta.hurdle,         label: "Sperrklausel" },
+      { value: "10.000",                label: "Simulationen" },
+      { value: cur_meta.pooling_days + " Tage", label: "Pooling-Fenster" }
+    ].map(f => html`
+      <div class="methodik-fact">
+        <div class="methodik-fact-value">${f.value}</div>
+        <div class="methodik-fact-label">${f.label}</div>
+      </div>
+    `)}
+  </div>
+
+  <div class="methodik-section">
+    <h3>Der Rechenweg</h3>
+    <div class="methodik-steps">
+      ${methodik_steps.map((s, i) => html`
+        <div class="methodik-step">
+          <div class="methodik-step-num">${i + 1}</div>
+          <h4>${s.title}</h4>
+          <p>${s.lead}</p>
+        </div>
+      `)}
+    </div>
+  </div>
+
+  <div class="methodik-section methodik-split">
+    <div>
+      <h3>Datenbasis</h3>
+      <p style="margin:0">
+        Umfragen von
+        <a href="https://www.wahlrecht.de" target="_blank">wahlrecht.de</a>.
+        Über den Institutsfilter in der Seitenleiste lässt sich statt der gepoolten
+        Schätzung ein einzelnes Institut betrachten.
+      </p>
+      <ul class="methodik-institutes">
+        ${methodik_institutes.map(i => html`
+          <li><span>${i.name}</span><span>zuletzt ${i.date}</span></li>
+        `)}
+      </ul>
+    </div>
+    <div>
+      <h3>Wie die Zahlen zu lesen sind</h3>
+      <p style="margin:0">
+        Eine Koalitionswahrscheinlichkeit von 60 % heißt: In 6 von 10 simulierten
+        Wahlausgängen hätte das Bündnis eine Mehrheit — wenn heute gewählt würde und
+        die Umfragen den Trend richtig treffen. Über das politische Zustandekommen
+        einer Koalition sagt das nichts.
+      </p>
+      <div class="methodik-note">
+        <b>Nicht im Modell:</b> systematische Verzerrungen der Umfragen (House
+        Effects), strategisches Wählen und Mobilisierung am Wahltag sowie
+        Besonderheiten des Wahlrechts wie Überhang- und Ausgleichsmandate.
+      </div>
+    </div>
+  </div>
+
+  <div class="methodik-refs">
+    Bender, A. &amp; Bauer, A. (2018). coalitions: Coalition Probabilities in
+    Multi-Party Democracies. <i>Journal of Open Source Software</i>, 3(23), 606.
+    · Quellcode:
+    <a href="https://github.com/adibender/koala" target="_blank">github.com/adibender/koala</a>
+  </div>
 </div>
 `
 ```
+
+:::
