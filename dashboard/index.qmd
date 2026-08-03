@@ -108,30 +108,13 @@ for (loc in c("en_US.UTF-8", "C.UTF-8", "en_US.utf8")) {
 ```{r}
 #| label: load-dashboard-data
 #| output: false
-library(jsonlite)
-
-load_election <- function(dir) {
-  tryCatch(
-    list(
-      coalitions    = fromJSON(file.path(dir, "coalition_probabilities.json"), simplifyVector = FALSE),
-      party_data    = fromJSON(file.path(dir, "party_shares.json"),            simplifyVector = FALSE),
-      hurdle_data   = fromJSON(file.path(dir, "hurdle_probabilities.json"),    simplifyVector = FALSE),
-      pollster_data = fromJSON(file.path(dir, "per_pollster.json"),            simplifyVector = FALSE),
-      history_data  = fromJSON(file.path(dir, "poll_history.json"),            simplifyVector = FALSE),
-      coal_history_data = fromJSON(file.path(dir, "coalition_history.json"),   simplifyVector = FALSE),
-      density_data  = fromJSON(file.path(dir, "coalition_densities.json"),     simplifyVector = FALSE)
-    ),
-    error = function(e) NULL
-  )
-}
-
+# Only hand-written constants go through ojs_define. The data itself is read
+# straight from data/ by the browser (see the election-files cell below):
+# prepare_data.R already wrote it as JSON, so routing it through R would just
+# parse it and serialise it back out — for the ~90 MB across all four elections
+# that round trip costs minutes of render time and inlines every byte of it
+# into index.html, which every visitor then downloads before anything appears.
 ojs_define(
-  all_data = list(
-    ST = load_election("data/st"),
-    MV = load_election("data/mv"),
-    BE = load_election("data/be"),
-    BTW = load_election("data/btw")
-  ),
   # last_election_date is the machine-readable twin of last_election: the trend
   # chart in "Deskriptive Analyse" marks it, and the poll history reaches back
   # past that date for every election here.
@@ -398,7 +381,10 @@ cleanCoalitionHistory = rows => {
   ).flat()
 }
 
-densityRows = densityData => {
+// One record per (pollster, date, coalition), carrying that group's whole curve
+// as the parallel arrays `seat_share` and `density` — see the nesting step in
+// prepare_data.R for why the curve is not stored as 512 separate rows.
+densityGroups = densityData => {
   const densities = densityData?.densities ?? []
   if (Array.isArray(densities)) return densities
 
@@ -421,9 +407,9 @@ densityValue = function normalizeDensityValue(value) {
   return +value
 }
 
-densitySource = (data, selectedInstitute) => {
+densitySource = (densityData, selectedInstitute) => {
   const pollster = selectedInstitute === "Pooled" ? "pooled" : selectedInstitute
-  const densities = densityRows(data?.density_data)
+  const densities = densityGroups(densityData)
   const latestDate = d3.max(
     densities.filter(d => d.pollster === pollster),
     d => new Date(d.date)
@@ -445,27 +431,31 @@ coalitionDensityOptions = (data, selectedInstitute) => {
   )
 }
 
-normalizeDensityCurve = rows => {
-  const dat = rows
-    .map(d => ({
-      ...d,
-      seat_share: densityValue(d.seat_share),
-      density: Math.max(0, densityValue(d.density))
+// Zips the group's two curve arrays back into the {seat_share, density} points
+// the marks below plot. densityValue is applied per element, never to the array
+// itself — it unwraps single-element wrappers and would collapse a whole curve
+// to its first point.
+normalizeDensityCurve = group => {
+  const xs = group?.seat_share ?? []
+  const ys = group?.density ?? []
+
+  return xs
+    .map((x, i) => ({
+      seat_share: densityValue(x),
+      density: Math.max(0, densityValue(ys[i]))
     }))
     .filter(d => Number.isFinite(d.seat_share) && Number.isFinite(d.density))
     .sort((a, b) => d3.ascending(a.seat_share, b.seat_share))
-
-  return dat
 }
 
-plotCoalitionDensity = (rows, height = 260) => {
-  const dat = normalizeDensityCurve(rows)
-  const label = rows[0]?.label ?? ""
-  const coalition = rows[0]?.coalition ?? ""
+plotCoalitionDensity = (group, height = 260) => {
+  const dat = normalizeDensityCurve(group)
+  const label = group?.label ?? ""
+  const coalition = group?.coalition ?? ""
   const isSingleParty = !String(coalition).includes("|")
-  const parliamentPresence = densityValue(rows[0]?.parliament_presence)
-  const parliamentPresenceN = densityValue(rows[0]?.parliament_presence_n)
-  const simulationN = densityValue(rows[0]?.simulation_n)
+  const parliamentPresence = densityValue(group?.parliament_presence)
+  const parliamentPresenceN = densityValue(group?.parliament_presence_n)
+  const simulationN = densityValue(group?.simulation_n)
   const hasParliamentPresence = Number.isFinite(parliamentPresence)
     && Number.isFinite(parliamentPresenceN)
     && Number.isFinite(simulationN)
@@ -477,11 +467,11 @@ plotCoalitionDensity = (rows, height = 260) => {
     return html`<div style="font-weight:700">${label}</div>`
   }
 
-  const probMajority = densityValue(rows[0]?.prob_majority)
-  const ciLower = densityValue(rows[0]?.ci_lower)
-  const ciUpper = densityValue(rows[0]?.ci_upper)
-  const ciLowerSeats = densityValue(rows[0]?.ci_lower_seats)
-  const ciUpperSeats = densityValue(rows[0]?.ci_upper_seats)
+  const probMajority = densityValue(group?.prob_majority)
+  const ciLower = densityValue(group?.ci_lower)
+  const ciUpper = densityValue(group?.ci_upper)
+  const ciLowerSeats = densityValue(group?.ci_lower_seats)
+  const ciUpperSeats = densityValue(group?.ci_upper_seats)
   const maxDensity = d3.max(dat, d => d.density)
   const threshold = 0.5
   const leadingParty = label.split("-")[0] ?? label
@@ -668,9 +658,84 @@ viewof election = {
 ```
 
 ```{ojs}
+//| label: election-files
+//| output: false
+// Quarto resolves FileAttachment() references statically, at render time, to
+// decide which files to copy into the rendered site — so the path has to be a
+// literal and `data/${election}/...` would find nothing. Hence one spelled-out
+// entry per election. The fetch itself stays lazy: only the selected election's
+// files are ever requested, and the browser caches them across switches.
+//
+// Written as a block with an explicit return rather than the shorter
+// `election_files = ({...})`: Quarto's OJS layer silently evaluates a cell whose
+// body is a parenthesised object literal to undefined, and every cell that reads
+// it then fails with "election_files is not defined".
+election_files = {
+  return {
+    ST: {
+      coalitions        : FileAttachment("data/st/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/st/party_shares.json"),
+      hurdle_data       : FileAttachment("data/st/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/st/per_pollster.json"),
+      history_data      : FileAttachment("data/st/poll_history.json"),
+      coal_history_data : FileAttachment("data/st/coalition_history.json"),
+      density_data      : FileAttachment("data/st/coalition_densities.json")
+    },
+    MV: {
+      coalitions        : FileAttachment("data/mv/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/mv/party_shares.json"),
+      hurdle_data       : FileAttachment("data/mv/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/mv/per_pollster.json"),
+      history_data      : FileAttachment("data/mv/poll_history.json"),
+      coal_history_data : FileAttachment("data/mv/coalition_history.json"),
+      density_data      : FileAttachment("data/mv/coalition_densities.json")
+    },
+    BE: {
+      coalitions        : FileAttachment("data/be/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/be/party_shares.json"),
+      hurdle_data       : FileAttachment("data/be/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/be/per_pollster.json"),
+      history_data      : FileAttachment("data/be/poll_history.json"),
+      coal_history_data : FileAttachment("data/be/coalition_history.json"),
+      density_data      : FileAttachment("data/be/coalition_densities.json")
+    },
+    BTW: {
+      coalitions        : FileAttachment("data/btw/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/btw/party_shares.json"),
+      hurdle_data       : FileAttachment("data/btw/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/btw/per_pollster.json"),
+      history_data      : FileAttachment("data/btw/poll_history.json"),
+      coal_history_data : FileAttachment("data/btw/coalition_history.json"),
+      density_data      : FileAttachment("data/btw/coalition_densities.json")
+    }
+  }
+}
+```
+
+```{ojs}
 //| label: derive-current-election
 //| output: false
-cur      = all_data[election]
+// Four async cells rather than one, because the four pages of this dashboard
+// need very different amounts of data and OJS blocks a cell until *every*
+// dependency of it has resolved. Loading all of it as one `cur` would make the
+// Überblick charts — which need about 77 KB — wait for the coalition densities,
+// which are 49 MB for the Bundestagswahl. Split like this, each page renders as
+// its own file arrives, and switching elections redraws the overview
+// immediately instead of after the largest file has been fetched and parsed.
+//
+// Async cells: every cell reading one of these gets the resolved value, so the
+// charts below need no awaiting of their own.
+cur = Object.fromEntries(          // Überblick + sidebar, ~77 KB
+  await Promise.all(
+    ["coalitions", "party_data", "hurdle_data", "pollster_data"]
+      .map(async key => [key, await election_files[election][key].json()])
+  )
+)
+
+cur_polls        = election_files[election].history_data.json()       // Deskriptive Analyse
+cur_coal_history = election_files[election].coal_history_data.json()  // Zeitverlauf
+cur_density      = election_files[election].density_data.json()       // Koalitionswahrscheinlichkeiten
+
 cur_meta = election_meta[election]
 updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
   day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
@@ -688,18 +753,18 @@ hurdle_source = institute === "Pooled"
   ? cur.hurdle_data.hurdle
   : cur.pollster_data.per_pollster_hurdle.filter(d => d.pollster === institute)
 
-history_pooled = cur.history_data.history.filter(d => d.pollster === "pooled")
+history_pooled = cur_polls.history.filter(d => d.pollster === "pooled")
 
 history_raw = institute === "Pooled"
-  ? cur.history_data.history.filter(d => d.pollster !== "pooled")
-  : cur.history_data.history.filter(d => d.pollster === institute)
+  ? cur_polls.history.filter(d => d.pollster !== "pooled")
+  : cur_polls.history.filter(d => d.pollster === institute)
 
 overview_coalitions = cleanCoalitions(coal_source, shares_source)
 leading_variants    = leadershipVariants(coal_source, shares_source, cur.party_data.party_shares)
 
 coal_history_source = institute === "Pooled"
-  ? cur.coal_history_data.coalitions_history.filter(d => d.pollster === "pooled")
-  : cur.coal_history_data.coalitions_history.filter(d => d.pollster === institute)
+  ? cur_coal_history.coalitions_history.filter(d => d.pollster === "pooled")
+  : cur_coal_history.coalitions_history.filter(d => d.pollster === institute)
 ```
 
 ```{ojs}
@@ -1203,13 +1268,10 @@ html`<div style="
 ```{ojs}
 //| label: chart-coalition-densities
 {
-  const source = densitySource(cur, institute)
-  const densityByLabel = new Map(
-    Array.from(
-      d3.rollup(source, rows => rows[0].coalition, d => d.label),
-      ([label, value]) => [label, value]
-    )
-  )
+  const source = densitySource(cur_density, institute)
+  // exactly one record per coalition now, so no rollup is needed to collapse
+  // the repeated rows a single curve used to be spread over
+  const densityByLabel = new Map(source.map(d => [d.label, d.coalition]))
   const options = leading_variants
     .slice()
     .sort((a, b) =>
@@ -1253,10 +1315,10 @@ html`<div style="
   }
 
   const draw = () => {
-    const rows = source.filter(d => d.coalition === select.value)
+    const group = source.find(d => d.coalition === select.value)
     plotArea.replaceChildren(
-      rows.length
-        ? plotCoalitionDensity(rows, 380)
+      group
+        ? plotCoalitionDensity(group, 380)
         : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Koalition gefunden.</div>`
     )
   }
