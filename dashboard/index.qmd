@@ -1,16 +1,24 @@
 ---
-title: "KOALA"
+title: ""
 subtitle: "Koalitionswahrscheinlichkeitsrechner LMU"
+# the visible navbar title is empty (the logo carries the name); pagetitle keeps
+# the browser tab from falling back to the file name
+pagetitle: "KOALA"
 format:
   dashboard:
     theme: cosmo
-    nav-buttons:
-      - icon: github
-        href: https://github.com/adibender/koala
+    logo: Koala_Logo_Schrift.png
 ---
 
 ```{=html}
 <style>
+/* Header bar one shade down from Bootstrap's gray-100 default (#f8f9fa), so it
+   reads as a distinct band against the white page body rather than blending
+   into it. Cosmo sets this via the navbar's own background, hence !important. */
+#quarto-dashboard-header .navbar {
+  background-color: #e9ecef !important;
+}
+
 .card-body,
 .card-body .html-fill-item,
 .card-body .cell,
@@ -24,11 +32,12 @@ format:
 }
 
 .card-body figure > h2 {
-  font-size: 1rem !important;
+  font-size: 1.15rem !important;
 }
 
 .card-body figure > h3 {
-  font-size: 0.8rem !important;
+  font-size: 0.95rem !important;
+  margin-bottom: 16px !important;
 }
 
 /* Cards built from multiple ojs cells (via ::: {.card} fences) get one
@@ -121,19 +130,13 @@ for (loc in c("en_US.UTF-8", "C.UTF-8", "en_US.utf8")) {
 # that round trip costs minutes of render time and inlines every byte of it
 # into index.html, which every visitor then downloads before anything appears.
 ojs_define(
-  all_data = list(
-    ST = load_election("data/st"),
-    MV = load_election("data/mv"),
-    BE = load_election("data/be"),
-    BTW = load_election("data/btw")
-  ),
   # seat_method / hurdle / pooling_days mirror parliament$seat_allocation,
   # parliament$hurdle and pooling$period in config/elections/*.yml — the values
   # the nowcast actually runs with. Keep them in sync when a config changes;
   # the Methodik page states them as the method in use.
   election_meta = list(
     ST = list(
-      title = "Sachsen-Anhalt Landtagswahl 2026",
+      title = "Landtagswahl in Sachsen-Anhalt 2026",
       seats = 83L,
       majority = 42L,
       last_election = "6. Juni 2021",
@@ -143,7 +146,7 @@ ojs_define(
       pooling_days = 14L
     ),
     MV = list(
-      title = "Mecklenburg-Vorpommern Landtagswahl 2026",
+      title = "Landtagswahl in Mecklenburg-Vorpommern 2026",
       seats = 71L,
       majority = 36L,
       last_election = "26. September 2021",
@@ -153,7 +156,7 @@ ojs_define(
       pooling_days = 14L
     ),
     BE = list(
-      title = "Abgeordnetenhauswahl Berlin 2026",
+      title = "Abgeordnetenhauswahl in Berlin 2026",
       seats = 130L,
       majority = 66L,
       last_election = "12. Februar 2023",
@@ -683,7 +686,7 @@ html`<details style="
     <div><b>Überblick:</b> aktuelle Stimmenanteile, Koalitionschancen und Hürdenwahrscheinlichkeiten.</div>
     <div style="margin-top:5px"><b>Koalitionswahrscheinlichkeiten:</b> Verteilung möglicher Sitzanteile ausgewählter Koalitionen.</div>
     <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Koalitionswahrscheinlichkeiten über die Zeit.</div>
-    <div style="margin-top:5px"><b>Deskriptive Analyse:</b> Umfragen, gepoolte Schätzung und Parteienwerte im Verlauf.</div>
+    <div style="margin-top:5px"><b>Umfragedaten:</b> Umfragen, gepoolte Schätzung und Parteienwerte im Verlauf.</div>
     <div style="margin-top:5px"><b>Methodik:</b> Erklärung der statistischen Methoden.</div>
   </div>
 </details>`
@@ -786,13 +789,16 @@ cur = Object.fromEntries(          // Überblick + sidebar, ~77 KB
   )
 )
 
-cur_polls        = election_files[election].history_data.json()       // Deskriptive Analyse
+cur_polls        = election_files[election].history_data.json()       // Umfragedaten
 cur_coal_history = election_files[election].coal_history_data.json()  // Zeitverlauf
 cur_density      = election_files[election].density_data.json()       // Koalitionswahrscheinlichkeiten
 
 cur_meta = election_meta[election]
+// A date rather than a timestamp: the day the most recent poll was published.
+// Formatted in UTC on purpose — a date-only ISO string parses as UTC midnight,
+// so rendering it in a zone behind UTC would roll it back to the previous day.
 updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
-  day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+  day: "2-digit", month: "long", year: "numeric", timeZone: "UTC"
 })
 
 coal_source = institute === "Pooled"
@@ -865,7 +871,8 @@ methodik_steps = [
   {
     title: "Wahrscheinlichkeit",
     lead: `Ausgezählt wird, in wie vielen Simulationen ein Bündnis mindestens
-           ${cur_meta.majority} Sitze erreicht.`
+           ${cur_meta.majority} Sitze erreicht — ohne dass eine kleinere
+           Teilkoalition daraus schon eine Mehrheit hätte.`
   }
 ]
 ```
@@ -986,8 +993,7 @@ html`<details style="
 ```
 
 ```{ojs}
-{
-  return //| label: sidebar-last-updated
+//| label: sidebar-last-updated
 html`<div style="
     margin:14px 0 0 0;
     padding-top:10px;
@@ -996,10 +1002,9 @@ html`<div style="
     font-size:0.78em;
     line-height:1.35;
   ">
-    Aktualisiert am:<br>
+    Letzte Umfrage vom:<br>
     <b>${updated}</b>
   </div>`
-}
 ```
 
 # Überblick
@@ -1437,7 +1442,7 @@ html`<div style="
 
 # Zeitverlauf
 
-## Row {height=750px}
+## Row {height=820px}
 
 ::: {.card .zeitverlauf-card}
 
@@ -1475,6 +1480,7 @@ viewof hoveredCoalitionRow = {
 
   const plot = Plot.plot({
     title: "Koalitionswahrscheinlichkeit über die Zeit",
+    subtitle: "In wie viel Prozent der Simulationen erreicht das Bündnis eine Mehrheit, ohne dass eine kleinere Teilkoalition daraus bereits eine hätte",
     style: { fontSize: "14px" },
     marginTop: 40,
     // 64 rather than 55: the crosshair's date label sits below the year tick
@@ -1692,8 +1698,10 @@ viewof selectedCoalitions = {
   )
   const active  = new Set(options.length ? [options[0].label] : [])
 
+  // width:100% makes the label consume a whole flex line, so the buttons wrap
+  // onto the rows beneath it instead of sitting next to it.
   const form = html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-    <span style="font-size:0.85em;color:#666">Betrachtete Koalitionen</span>
+    <span style="width:100%;font-size:0.85em;color:#666">Betrachtete Koalitionen</span>
   </div>`
 
   const style = (btn, color, isActive) => {
@@ -1759,7 +1767,7 @@ viewof selectedCoalitions = {
 
 :::
 
-# Deskriptive Analyse
+# Umfragedaten
 
 ## Row {height=670px}
 
@@ -2124,59 +2132,6 @@ viewof hoveredRow = {
 ::: {.card .methodik-card}
 
 ```{ojs}
-//| output: false
-// Institutes whose polls actually feed the currently selected election, newest
-// poll first — the Datenbasis section names them instead of listing the static
-// config roster, which also contains institutes that never polled this race.
-methodik_institutes = {
-  const latest = new Map()
-  for (const d of cur.pollster_data.per_pollster) {
-    const prev = latest.get(d.pollster)
-    if (!prev || d.date > prev) latest.set(d.pollster, d.date)
-  }
-  return [...latest]
-    .sort((a, b) => d3.descending(a[1], b[1]))
-    .map(([pollster, date]) => ({
-      pollster,
-      name: pollster_names[pollster] || pollster,
-      date: new Date(date).toLocaleDateString("de-DE", {
-        day: "2-digit", month: "2-digit", year: "numeric"
-      })
-    }))
-}
-```
-
-```{ojs}
-//| output: false
-// One card per pipeline step. Kept as data so the markup below stays a single
-// loop rather than four near-identical blocks.
-methodik_steps = [
-  {
-    title: "Pooling",
-    lead: `Die Umfragen der letzten ${cur_meta.pooling_days} Tage werden zu einer
-           Schätzung zusammengefasst — gewichtet nach Stichprobengröße und Aktualität.`
-  },
-  {
-    title: "Simulation",
-    lead: `10.000 mögliche Wahlausgänge werden aus der Dirichlet-Posterior-Verteilung
-           gezogen. Ihre Streuung bildet die Unsicherheit der Umfragewerte ab.`
-  },
-  {
-    title: "Sitzverteilung",
-    lead: `Jeder simulierte Ausgang wird nach dem ${cur_meta.seat_method}-Verfahren
-           in Sitze übersetzt (${cur_meta.seats} Sitze, Sperrklausel ${cur_meta.hurdle}).`
-  },
-  {
-    title: "Wahrscheinlichkeit",
-    lead: `Ausgezählt wird, in wie vielen Simulationen ein Bündnis mindestens
-           ${cur_meta.majority} Sitze erreicht.`
-  }
-]
-```
-
-::: {.card .methodik-card}
-
-```{ojs}
 html`
 <div class="methodik">
   <style>
@@ -2195,16 +2150,17 @@ html`
     }
     .methodik h2, .methodik h3 { margin: 0; font-weight: 700; }
 
-    .methodik-hero { border-bottom: 1px solid var(--line); padding-bottom: 18px; }
-    .methodik-eyebrow {
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      font-size: 0.72rem;
+    .methodik-election {
+      font-size: 1.5rem;
       font-weight: 700;
-      color: var(--accent);
+      line-height: 1.25;
+      margin: 4px 0 0;
     }
-    .methodik-hero h2 { font-size: 1.6rem; line-height: 1.25; margin: 6px 0 8px; }
-    .methodik-lede { color: var(--muted); max-width: 62ch; margin: 0; }
+    .methodik-election-date {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 3px;
+    }
 
     .methodik-facts {
       display: grid;
@@ -2243,8 +2199,13 @@ html`
 
     .methodik-steps {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      /* Fixed 2x2 rather than auto-fit: with four steps, auto-fit lays out three
+         across in the 940px container and leaves the fourth orphaned on its own row. */
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
+    }
+    @media (max-width: 620px) {
+      .methodik-steps { grid-template-columns: 1fr; }
     }
     .methodik-step {
       position: relative;
@@ -2284,6 +2245,13 @@ html`
       border-bottom: 1px dashed var(--line);
       font-size: 0.9rem;
     }
+    .methodik-institutes li.methodik-institutes-head {
+      border-bottom: 1px solid var(--line);
+      font-size: 0.76rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
     .methodik-institutes li span:last-child {
       color: var(--muted);
       font-variant-numeric: tabular-nums;
@@ -2300,27 +2268,11 @@ html`
     }
     .methodik-note b { color: var(--accent); }
 
-    .methodik-refs {
-      margin-top: 26px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-      font-size: 0.84rem;
-      color: var(--muted);
-    }
     .methodik a { color: var(--accent); }
   </style>
 
-  <div class="methodik-hero">
-    <div class="methodik-eyebrow">Methodik</div>
-    <h2>Von Umfragewerten zu Koalitionswahrscheinlichkeiten</h2>
-    <p class="methodik-lede">
-      KOALA übersetzt aktuelle Umfragen in Wahrscheinlichkeiten für Mehrheiten,
-      berechnet mit dem R-Paket
-      <a href="https://github.com/adibender/coalitions" target="_blank"><code>coalitions</code></a>
-      (Bender &amp; Bauer, 2018). Angezeigt wird <b>${cur_meta.title}</b>,
-      Stand ${updated} Uhr.
-    </p>
-  </div>
+  <div class="methodik-election">${cur_meta.title}</div>
+  <div class="methodik-election-date">Wahltermin: ${cur_meta.next_election}</div>
 
   <div class="methodik-facts">
     ${[
@@ -2354,14 +2306,17 @@ html`
     <div>
       <h3>Datenbasis</h3>
       <p style="margin:0">
-        Umfragen von
-        <a href="https://www.wahlrecht.de" target="_blank">wahlrecht.de</a>.
-        Über den Institutsfilter in der Seitenleiste lässt sich statt der gepoolten
-        Schätzung ein einzelnes Institut betrachten.
+        Umfragedaten werden über
+        <a href="https://www.wahlrecht.de" target="_blank">wahlrecht.de</a>
+        gesammelt. Für die ${cur_meta.title} werden die folgenden Institute
+        betrachtet:
       </p>
       <ul class="methodik-institutes">
+        <li class="methodik-institutes-head">
+          <span>Institut</span><span>Letzte Umfrage vom</span>
+        </li>
         ${methodik_institutes.map(i => html`
-          <li><span>${i.name}</span><span>zuletzt ${i.date}</span></li>
+          <li><span>${i.name}</span><span>${i.date}</span></li>
         `)}
       </ul>
     </div>
@@ -2369,9 +2324,10 @@ html`
       <h3>Wie die Zahlen zu lesen sind</h3>
       <p style="margin:0">
         Eine Koalitionswahrscheinlichkeit von 60 % heißt: In 6 von 10 simulierten
-        Wahlausgängen hätte das Bündnis eine Mehrheit — wenn heute gewählt würde und
-        die Umfragen den Trend richtig treffen. Über das politische Zustandekommen
-        einer Koalition sagt das nichts.
+        Wahlausgängen hätte das Bündnis eine Mehrheit — und keine kleinere
+        Teilkoalition daraus schon allein. Ein größeres Bündnis kann deshalb einen
+        niedrigen Wert haben, obwohl es rechnerisch fast immer reichen würde. Über
+        das politische Zustandekommen einer Koalition sagt das nichts.
       </p>
       <div class="methodik-note">
         <b>Nicht im Modell:</b> systematische Verzerrungen der Umfragen (House
@@ -2381,11 +2337,65 @@ html`
     </div>
   </div>
 
-  <div class="methodik-refs">
-    Bender, A. &amp; Bauer, A. (2018). coalitions: Coalition Probabilities in
-    Multi-Party Democracies. <i>Journal of Open Source Software</i>, 3(23), 606.
-    · Quellcode:
-    <a href="https://github.com/adibender/koala" target="_blank">github.com/adibender/koala</a>
+</div>
+`
+```
+
+:::
+
+# Über das Projekt
+
+## Row
+
+::: {.card .projekt-card}
+
+```{ojs}
+//| label: text-projekt
+html`
+<div class="projekt">
+  <style>
+    .projekt {
+      --ink: #1f2933;
+      --muted: #6b7280;
+      --accent: #2b6cb0;
+      --line: #e2e8f0;
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 4px 4px 28px;
+      color: var(--ink);
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+    .projekt a { color: var(--accent); }
+
+    .projekt-hero { border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+    .projekt-eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .projekt-hero h2 {
+      font-size: 1.6rem;
+      line-height: 1.25;
+      font-weight: 700;
+      margin: 6px 0 8px;
+    }
+    .projekt-lede { color: var(--muted); margin: 0; }
+  </style>
+
+  <div class="projekt-hero">
+    <div class="projekt-eyebrow">Über das Projekt</div>
+    <h2>Von Umfragewerten zu Koalitionswahrscheinlichkeiten</h2>
+    <p class="projekt-lede">
+      KOALA übersetzt aktuelle Umfragen in Wahrscheinlichkeiten für Mehrheiten,
+      Berechnungen basieren auf dem R-Paket
+      <a href="https://github.com/adibender/coalitions" target="_blank"><code>coalitions</code></a>
+      (Bender &amp; Bauer, 2018). Nähere Informationen zur statistischen Methodik
+      sind zu finden unter
+      <a href="https://doi.org/10.21105/joss.00606" target="_blank">doi.org/10.21105/joss.00606</a>.
+    </p>
   </div>
 </div>
 `
