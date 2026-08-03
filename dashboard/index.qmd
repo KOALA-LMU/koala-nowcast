@@ -438,19 +438,58 @@ cleanCoalitionHistory = rows => {
   ).flat()
 }
 
+latestCoalitionProbabilityByLabel = rows => {
+  const history = cleanCoalitionHistory(rows)
+  const latestDate = d3.max(history, d => d.date)
+
+  if (latestDate == null) return new Map()
+
+  return new Map(
+    history
+      .filter(d => +d.date === +latestDate)
+      .map(d => [d.label, d.probability])
+  )
+}
+
 // One record per (pollster, date, coalition), carrying that group's whole curve
 // as the parallel arrays `seat_share` and `density` — see the nesting step in
 // prepare_data.R for why the curve is not stored as 512 separate rows.
+densityArray = value => {
+  if (Array.isArray(value)) return value
+  if (value && typeof value === "object") {
+    return Object.keys(value)
+      .sort((a, b) => +a - +b)
+      .map(key => value[key])
+  }
+  return value == null ? [] : [value]
+}
+
 densityGroups = densityData => {
   const densities = densityData?.densities ?? []
-  if (Array.isArray(densities)) return densities
+  const rows = Array.isArray(densities)
+    ? densities
+    : (() => {
+        const columns = Object.keys(densities)
+        if (columns.length === 0) return []
 
-  const columns = Object.keys(densities)
-  if (columns.length === 0) return []
+        const n = densities[columns[0]]?.length ?? 0
+        return d3.range(n).map(i =>
+          Object.fromEntries(columns.map(column => [column, densities[column][i]]))
+        )
+      })()
 
-  const n = densities[columns[0]]?.length ?? 0
-  return d3.range(n).map(i =>
-    Object.fromEntries(columns.map(column => [column, densities[column][i]]))
+  if (rows.length === 0 || densityArray(rows[0].seat_share).length > 1) return rows
+
+  return Array.from(
+    d3.rollup(
+      rows,
+      values => ({
+        ...values[0],
+        seat_share: values.map(d => d.seat_share),
+        density: values.map(d => d.density)
+      }),
+      d => `${d.pollster}\u0001${d.date}\u0001${d.coalition}`
+    ).values()
   )
 }
 
@@ -493,8 +532,8 @@ coalitionDensityOptions = (data, selectedInstitute) => {
 // itself — it unwraps single-element wrappers and would collapse a whole curve
 // to its first point.
 normalizeDensityCurve = group => {
-  const xs = group?.seat_share ?? []
-  const ys = group?.density ?? []
+  const xs = densityArray(group?.seat_share)
+  const ys = densityArray(group?.density)
 
   return xs
     .map((x, i) => ({
@@ -505,7 +544,7 @@ normalizeDensityCurve = group => {
     .sort((a, b) => d3.ascending(a.seat_share, b.seat_share))
 }
 
-plotCoalitionDensity = (group, height = 260) => {
+plotCoalitionDensity = (group, height = 260, probability) => {
   const dat = normalizeDensityCurve(group)
   const label = group?.label ?? ""
   const coalition = group?.coalition ?? ""
@@ -524,7 +563,7 @@ plotCoalitionDensity = (group, height = 260) => {
     return html`<div style="font-weight:700">${label}</div>`
   }
 
-  const probMajority = densityValue(group?.prob_majority)
+  const probMajority = densityValue(probability)
   const ciLower = densityValue(group?.ci_lower)
   const ciUpper = densityValue(group?.ci_upper)
   const ciLowerSeats = densityValue(group?.ci_lower_seats)
@@ -534,9 +573,11 @@ plotCoalitionDensity = (group, height = 260) => {
   const leadingParty = label.split("-")[0] ?? label
   const hasInterval = Number.isFinite(ciLower) && Number.isFinite(ciUpper)
   const hasSeatInterval = Number.isFinite(ciLowerSeats) && Number.isFinite(ciUpperSeats)
-  const probabilityLabel = probMajority < 0.001
-    ? "<0,1%"
-    : `${(probMajority * 100).toFixed(1).replace(".", ",")}%`
+  const probabilityLabel = !Number.isFinite(probMajority)
+    ? "keine Angabe"
+    : probMajority < 0.001
+      ? "<0,1%"
+      : `${(probMajority * 100).toFixed(1).replace(".", ",")}%`
   const intervalLabel = hasSeatInterval
     ? `${ciLowerSeats.toFixed(0)} - ${ciUpperSeats.toFixed(0)}`
     : ""
@@ -1377,6 +1418,7 @@ html`<div style="
 //| label: chart-coalition-densities
 {
   const source = densitySource(cur_density, institute)
+  const historyProbabilityByLabel = latestCoalitionProbabilityByLabel(coal_history_source)
   // exactly one record per coalition now, so no rollup is needed to collapse
   // the repeated rows a single curve used to be spread over
   const densityByLabel = new Map(source.map(d => [d.label, d.coalition]))
@@ -1424,9 +1466,10 @@ html`<div style="
 
   const draw = () => {
     const group = source.find(d => d.coalition === select.value)
+    const probability = historyProbabilityByLabel.get(group?.label)
     plotArea.replaceChildren(
       group
-        ? plotCoalitionDensity(group, 380)
+        ? plotCoalitionDensity(group, 380, probability)
         : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Koalition gefunden.</div>`
     )
   }

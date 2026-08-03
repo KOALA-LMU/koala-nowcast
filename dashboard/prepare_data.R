@@ -1,16 +1,12 @@
 library(jsonlite)
 library(dplyr)
 library(yaml)
-source("scripts/calc_coalProbs_helpers.R")
 
-coalition_density <- function(election_id, cfg, results_dir) {
+coalition_density <- function(cfg, results_dir) {
   parl_seats     <- cfg$parliament$seats
-
-  coal_labels <- setNames(
-    vapply(cfg$coalitions, `[[`, character(1), "label"),
-    vapply(cfg$coalitions, function(c) {
-      paste(c$parties, collapse = "|")
-    }, character(1))
+  party_labels   <- setNames(
+    vapply(cfg$parties, `[[`, character(1), "label"),
+    vapply(cfg$parties, `[[`, character(1), "id")
   )
 
   shares <- jsonlite::fromJSON(file.path(results_dir, "shares.json")) %>%
@@ -44,15 +40,10 @@ coalition_density <- function(election_id, cfg, results_dir) {
       values_to = "seat_share"
     )
 
-  wanted_coals <- names(coal_labels)
-  coal_parties <- strsplit(wanted_coals, "|", fixed = TRUE)
-  non_afd_coals <- !vapply(coal_parties, function(x) {
-    "afd" %in% x && length(x) > 1
-  }, logical(1))
-  wanted_coals <- wanted_coals[non_afd_coals]
-
   latest_long <- latest_long %>%
-    filter(coalition %in% wanted_coals)
+    filter(!vapply(strsplit(coalition, "|", fixed = TRUE), function(x) {
+      "afd" %in% x && length(x) > 1
+    }, logical(1)))
 
   latest_long %>%
     group_by(pollster, date, coalition) %>%
@@ -88,56 +79,9 @@ coalition_density <- function(election_id, cfg, results_dir) {
         q <- c(`2.5%` = NA_real_, `97.5%` = NA_real_)
       }
 
-      subset_coalitions <- latest %>%
-        filter(
-          pollster == key$pollster,
-          date == key$date
-        ) %>%
-        pull(coalition) %>%
-        unique()
-      subset_coalitions <- subset_coalitions[vapply(subset_coalitions, function(coal) {
-        parties <- strsplit(coal, "|", fixed = TRUE)[[1]]
-        length(parties) < length(members) && all(parties %in% members)
-      }, logical(1))]
-
-      if (length(subset_coalitions) > 0) {
-        subset_majorities <- shares %>%
-          filter(
-            pollster == key$pollster,
-            date == key$date,
-            coalition %in% subset_coalitions
-          ) %>%
-          tidyr::pivot_longer(
-            starts_with("coal_share"),
-            names_to = "sim",
-            values_to = "seat_share"
-          ) %>%
-          group_by(sim) %>%
-          summarise(
-            subset_has_majority = any(seat_share > 0.5, na.rm = TRUE),
-            .groups = "drop"
-          )
-      } else {
-        subset_majorities <- tibble::tibble(
-          sim = unique(dat$sim),
-          subset_has_majority = FALSE
-        )
-      }
-
-      dat <- dat %>%
-        left_join(subset_majorities, by = "sim") %>%
-        mutate(subset_has_majority = tidyr::replace_na(subset_has_majority, FALSE))
-
-      probability <- mean(
-        dat$seat_share > 0.5 &
-          dat$all_members_present &
-          !dat$subset_has_majority
-      )
-
       tibble::tibble(
         seat_share = d$x,
         density = d$y,
-        prob_majority = probability,
         parliament_presence = parliament_presence,
         parliament_presence_n = parliament_presence_n,
         simulation_n = simulation_n,
@@ -148,9 +92,11 @@ coalition_density <- function(election_id, cfg, results_dir) {
       )
     }) %>%
     ungroup() %>%
-    mutate(label = coal_labels[coalition]) %>%
+    mutate(label = vapply(strsplit(coalition, "|", fixed = TRUE), function(x) {
+      paste(party_labels[x], collapse = "-")
+    }, character(1))) %>%
     dplyr::select(
-      pollster, date, coalition, label, seat_share, density, prob_majority,
+      pollster, date, coalition, label, seat_share, density,
       parliament_presence, parliament_presence_n, simulation_n,
       ci_lower, ci_upper, ci_lower_seats, ci_upper_seats
     )
@@ -201,20 +147,6 @@ prepare_election <- function(election_id) {
 
   dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-  # If the YAML has no coalitions: list at all, derive it dynamically from the
-  # current pooled vote shares (mirrors calc_coalProbs.R, so the labels this
-  # script expects to find in coalProbs_grouping.json match what was computed).
-  if (is.null(cfg$coalitions) || length(cfg$coalitions) == 0) {
-    polls          <- fromJSON(file.path(surveys_dir, "polls.json")) %>% mutate(date = as.Date(date))
-    pooled_latest  <- polls %>% filter(pollster == "pooled", date == max(date))
-    pooled_shares  <- setNames(pooled_latest$percent, pooled_latest$party)
-    cfg$coalitions <- derive_dynamic_coalitions(cfg$parties, pooled_shares)
-  }
-
-  coal_labels <- setNames(
-    sapply(cfg$coalitions, `[[`, "label"),
-    sapply(cfg$coalitions, function(c) paste(c$parties, collapse = "|"))
-  )
   # "Aktualisiert am" on the site: the date of the most recent poll behind this
   # election's numbers. Not a build timestamp — deploy runs after every compute
   # run, including the many where no institute published anything, so that would
@@ -307,7 +239,7 @@ prepare_election <- function(election_id) {
   #
   # Grouping by "every column except the curve" rather than by a hard-coded key
   # list keeps this correct if coalition_density() gains or drops a column.
-  dens <- coalition_density(cfg$id, cfg, results_dir) %>%
+  dens <- coalition_density(cfg, results_dir) %>%
     group_by(across(!c(seat_share, density))) %>%
     summarise(
       seat_share = list(signif(seat_share, 4)),
