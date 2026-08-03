@@ -290,11 +290,28 @@ prepare_election <- function(election_id) {
     file.path(out_dir, "per_pollster.json"), auto_unbox = TRUE
   )
 
-  dens <- coalition_density(cfg$id, cfg, results_dir)
+  # One record per (pollster, date, coalition), holding the curve as two arrays,
+  # rather than 512 rows that each repeat the group's twelve constant fields.
+  # This file is by far the largest thing the dashboard loads and the browser has
+  # to have all of it before the Koalitionswahrscheinlichkeiten page can draw, so
+  # the redundancy is expensive: for the Bundestagswahl, nesting plus rounding the
+  # curve to four significant digits takes it from 49 MB to 3 MB.
+  #
+  # Grouping by "every column except the curve" rather than by a hard-coded key
+  # list keeps this correct if coalition_density() gains or drops a column.
+  dens <- coalition_density(cfg$id, cfg, results_dir) %>%
+    group_by(across(!c(seat_share, density))) %>%
+    summarise(
+      seat_share = list(signif(seat_share, 4)),
+      density    = list(signif(density, 4)),
+      .groups    = "drop"
+    )
   write_json(
     list(densities = dens, updated = updated),
     file.path(out_dir, "coalition_densities.json"),
-    auto.unbox = TRUE
+    # was auto.unbox, which is not an argument jsonlite knows: it went into `...`
+    # and was silently ignored, so this file alone was written boxed
+    auto_unbox = TRUE
   )
 
   message(election_id, " dashboard data written to ", out_dir)
