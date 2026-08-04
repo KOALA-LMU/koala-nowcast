@@ -180,7 +180,8 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       res_biggestParty <- res_biggestParty %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
       res_passHurdle   <- res_passHurdle   %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
 
-      n <- nsim
+      # We only use 1000 simulations
+      n <- 1000
       if (nrow(dirichlet.draws) > n) {
         dirichlet.draws    <- dirichlet.draws[sample(seq_len(nrow(dirichlet.draws)), n), ]
         coal_share_columns <- grepl("coal_share", colnames(shares))
