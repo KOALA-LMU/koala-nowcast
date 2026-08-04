@@ -58,8 +58,25 @@ jobs:
             cat(paste0("new_data=", new_data, "\n"), file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
           '
 
+      # Backup for the case where the bucket and the scraper's own bookkeeping
+      # disagree. Surveys are uploaded before results, so a run that scraped
+      # successfully but then failed (or half-uploaded) leaves new polls in the
+      # bucket with no results behind them. The next run re-scrapes, sees those
+      # polls already present, reports new_raw=FALSE, and skips computing — the
+      # gap never closes on its own. Comparing scraped dates against computed
+      # ones catches that regardless of what the scrape step reported.
+      - name: Check for scraped dates without results
+        id: pending
+        run: |
+          Rscript -e '
+            source("scripts/pending_configs.R")
+            configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
+            pending <- length(configs_todo(configs)) > 0
+            cat(paste0("pending=", pending, "\n"), file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
+          '
+
       - name: Compute coalition probabilities
-        if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false'
+        if: steps.scrape.outputs.new_data == 'TRUE' || steps.pending.outputs.pending == 'TRUE' || steps.check_results.outputs.has_results == 'false'
         env:
           FORCE_ALL: ${{ steps.check_results.outputs.has_results == 'false' }}
         run: |
@@ -74,7 +91,7 @@ jobs:
           '
 
       - name: Upload data to Supabase Storage
-        if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false'
+        if: steps.scrape.outputs.new_data == 'TRUE' || steps.pending.outputs.pending == 'TRUE' || steps.check_results.outputs.has_results == 'false'
         run: |
           aws s3 sync data/surveys/ s3://koala-data/surveys \
             --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress

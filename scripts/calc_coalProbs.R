@@ -80,6 +80,13 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     dates          <- dates_todo[!dates_todo %in% computed_dates]
   }
 
+  # Nothing to do: the per-pollster loop below would return empty frames and the
+  # post-processing would then fail on the missing columns.
+  if (length(dates) == 0) {
+    message(sprintf("[%s] no dates to compute", cfg$id))
+    return(invisible(NULL))
+  }
+
   # ── Per-pollster computation ─────────────────────────────────────────────────
   results <- lapply(pollsters, function(p) {
     survey_byTime <- surveys_byTime %>% filter(pollster == p)
