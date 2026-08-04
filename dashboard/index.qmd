@@ -544,7 +544,7 @@ normalizeDensityCurve = group => {
     .sort((a, b) => d3.ascending(a.seat_share, b.seat_share))
 }
 
-plotCoalitionDensity = (group, height = 260, probability) => {
+plotCoalitionDensity = (group, height = 260) => {
   const dat = normalizeDensityCurve(group)
   const label = group?.label ?? ""
   const coalition = group?.coalition ?? ""
@@ -563,31 +563,25 @@ plotCoalitionDensity = (group, height = 260, probability) => {
     return html`<div style="font-weight:700">${label}</div>`
   }
 
-  const probMajority = densityValue(probability)
   const ciLower = densityValue(group?.ci_lower)
   const ciUpper = densityValue(group?.ci_upper)
   const ciLowerSeats = densityValue(group?.ci_lower_seats)
   const ciUpperSeats = densityValue(group?.ci_upper_seats)
   const maxDensity = d3.max(dat, d => d.density)
   const threshold = 0.5
-  const leadingParty = label.split("-")[0] ?? label
   const hasInterval = Number.isFinite(ciLower) && Number.isFinite(ciUpper)
   const hasSeatInterval = Number.isFinite(ciLowerSeats) && Number.isFinite(ciUpperSeats)
-  const probabilityLabel = !Number.isFinite(probMajority)
-    ? "keine Angabe"
-    : probMajority < 0.001
-      ? "<0,1%"
-      : `${(probMajority * 100).toFixed(1).replace(".", ",")}%`
   const intervalLabel = hasSeatInterval
     ? `${ciLowerSeats.toFixed(0)} - ${ciUpperSeats.toFixed(0)}`
     : ""
+  const intervalSentence = isSingleParty
+    ? html`Für die Partei <b>${label}</b> liegt die Anzahl der Sitze mit 95% Wahrscheinlichkeit im Intervall <b style="color:#f39c12;font-size:1.18rem">${intervalLabel}</b>.`
+    : html`Für <b>${label}</b> liegt die Summe der Sitze mit 95% Wahrscheinlichkeit im Intervall <b style="color:#f39c12;font-size:1.18rem">${intervalLabel}</b>.`
   const densityNote = isSingleParty
     ? html`Die Dichte zeigt alle Simulationen. Die Partei war in ${parliamentPresenceLabel} im Parlament.`
     : html`Die Dichte zeigt alle Simulationen; Parteien, die im jeweiligen Simulationsdurchgang nicht im Parlament vertreten sind, tragen 0 zur Sitzsumme bei.<br>
       Alle Koalitionsparteien waren in ${parliamentPresenceLabel} im Parlament.`
-  const probabilityExplanation = isSingleParty
-    ? html`Die Wahrscheinlichkeit zählt Simulationen, in denen die Partei mehr als 50% der Sitze erreicht.`
-    : html`Die Koalitionswahrscheinlichkeit zählt Simulationen, in denen alle Koalitionsparteien im Parlament sind, die Koalition mehr als 50% der Sitze erreicht und keine kleinere Teilkoalition aus denselben Parteien bereits eine Mehrheit hat.`
+  const showSeatCountNotice = election !== "BTW"
   const plot = Plot.plot({
     height,
     width: Math.max(900, window.innerWidth - 430),
@@ -655,32 +649,29 @@ plotCoalitionDensity = (group, height = 260, probability) => {
         Anteil der Sitze im Parlament
       </div>
       ${plot}
-      ${hasParliamentPresence ? html`
-        <p style="margin:8px 0 0 34px;color:#666;font-size:0.86rem;line-height:1.45">
-          ${densityNote}
+      ${hasSeatInterval ? html`
+        <p style="margin:10px 0 0 34px;color:#333;font-size:1.08rem;line-height:1.35;white-space:nowrap">
+          ${intervalSentence}
         </p>
       ` : ""}
-      <div style="font-size:0.95rem;line-height:1.7;margin-top:18px">
-        <p style="font-size:1.05rem;margin:0 0 8px 0">
-          ${isSingleParty ? html`Für die Partei <b>${label}</b>...` : html`Für <b>${label}</b>...`}
-        </p>
-        ${hasSeatInterval ? html`
-          <p style="margin:0 0 4px 34px">
-            ... liegt die letztendliche Sitzanzahl mit 95% Wahrscheinlichkeit im Intervall
-            <b style="color:#f39c12;font-size:1.1rem">${intervalLabel}</b>.
-          </p>
-        ` : ""}
-        <p style="margin:0 0 4px 34px">
-          ... besteht eine Wahrscheinlichkeit von
-          <b style="color:#2b6cb0;font-size:1.1rem">${probabilityLabel}</b>,
-          ${isSingleParty
-            ? html`dass die Partei die Mehrheit der Sitze erreicht.`
-            : html`dass die Koalition die Mehrheit der Sitze <b>unter Führung der ${leadingParty}</b> erreicht.`}
-        </p>
-        <p style="margin:6px 0 0 34px;color:#666;font-size:0.86rem;line-height:1.45">
-          ${probabilityExplanation}
-        </p>
-      </div>
+      ${hasParliamentPresence ? html`
+        <div style="
+          margin:10px 34px 0 34px;
+          padding:10px 12px;
+          border-left:4px solid #2b6cb0;
+          background:#f7f9fc;
+          color:#444;
+          font-size:0.88rem;
+          line-height:1.45;
+        ">
+          <div>${densityNote}</div>
+          ${showSeatCountNotice ? html`
+            <div style="margin-top:8px">
+              <b>Beachten Sie:</b> Die angezeigte Sitzanzahl dient der groben Orientierung, da Überhangs- bzw. Ausgleichsmandate nicht berücksichtigt werden. Auf die Mehrheitsverhältnisse wirken sich diese, gemäß aktuellem Wahlrecht, jedoch nur geringfügig aus. Wir gehen bei unserer Analyse von einer Gesamtzahl von ${cur_meta.seats} Sitzen aus.
+            </div>
+          ` : ""}
+        </div>
+      ` : ""}
     </div>
   `
 }
@@ -725,7 +716,7 @@ html`<details style="
     background:#f7f9fc;
   ">
     <div><b>Überblick:</b> aktuelle Stimmenanteile, Koalitionschancen und Hürdenwahrscheinlichkeiten.</div>
-    <div style="margin-top:5px"><b>Koalitionswahrscheinlichkeiten:</b> Verteilung möglicher Sitzanteile ausgewählter Koalitionen.</div>
+    <div style="margin-top:5px"><b>Sitzverteilung:</b> Verteilung möglicher Sitzanteile ausgewählter Koalitionen.</div>
     <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Koalitionswahrscheinlichkeiten über die Zeit.</div>
     <div style="margin-top:5px"><b>Umfragedaten:</b> Umfragen, gepoolte Schätzung und Parteienwerte im Verlauf.</div>
     <div style="margin-top:5px"><b>Methodik:</b> Erklärung der statistischen Methoden.</div>
@@ -1410,7 +1401,7 @@ html`<div style="
 }
 ```
 
-# Koalitionswahrscheinlichkeiten
+# Sitzverteilung
 
 ## Row {height=100%}
 
@@ -1418,16 +1409,15 @@ html`<div style="
 //| label: chart-coalition-densities
 {
   const source = densitySource(cur_density, institute)
-  const historyProbabilityByLabel = latestCoalitionProbabilityByLabel(coal_history_source)
   // exactly one record per coalition now, so no rollup is needed to collapse
   // the repeated rows a single curve used to be spread over
-  const densityByLabel = new Map(source.map(d => [d.label, d.coalition]))
+  const densityByKey = new Map(source.map(d => [d.coalition, d.coalition]))
   const options = leading_variants
     .slice()
     .sort((a, b) =>
       d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
     )
-    .map(d => ({ label: d.label, value: densityByLabel.get(d.label) }))
+    .map(d => ({ label: d.label, value: densityByKey.get(d.coalition_key) }))
     .filter(d => d.value != null)
 
   const container = html`<div style="
@@ -1466,10 +1456,9 @@ html`<div style="
 
   const draw = () => {
     const group = source.find(d => d.coalition === select.value)
-    const probability = historyProbabilityByLabel.get(group?.label)
     plotArea.replaceChildren(
       group
-        ? plotCoalitionDensity(group, 380, probability)
+        ? plotCoalitionDensity(group, 380)
         : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Koalition gefunden.</div>`
     )
   }
