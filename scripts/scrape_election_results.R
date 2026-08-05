@@ -57,18 +57,31 @@ scrape_election_results <- function(
 
   table <- table[, c(1, percent_col, seats_col)]
   colnames(table) <- c("label", "percent", "seats")
-  table <- table[-1, ]
-  sum_seats <- as.numeric(table$seats[table$label == "Wahlbeteiligung"])
+  table <- table[-c(1, 2), ]
 
   table$label <- clean_party_label(table$label)
-  res <- table[table$label %in% names(party_lookup()), ]
-  res$percent <- gsub(",", ".", res$percent, fixed = TRUE)
-  res$percent <- as.numeric(res$percent)
-  res$seats <- as.numeric(ifelse(res$seats == "–", "0", res$seats))
-  res$sum_seats <- ifelse(is.na(sum_seats), sum(res$seats), sum_seats)
-  res$party <- unname(party_lookup()[res$label])
+  lookup <- party_lookup()
+  table$party <- ifelse(table$label %in% names(lookup),
+    unname(lookup[table$label]),
+    "others"
+  )
+  
+  table$percent <- gsub(",", ".", table$percent, fixed = TRUE)
+  table$percent <- as.numeric(ifelse(table$percent == "–", "0", table$percent))
+  table$seats <- as.numeric(ifelse(table$seats == "–", "0", table$seats))
+  table$sum_seats <- sum(table$seats)
 
-  res <- res[, c("label", "party", "percent", "seats", "sum_seats")]
+  res <- table |>
+    dplyr::group_by(party) |>
+    summarise(
+      label = dplyr::first(ifelse(party == "others", "Sonstige", label)),
+      percent = sum(percent, na.rm = TRUE),
+      seats = sum(seats, na.rm = TRUE),
+      sum_seats = dplyr::first(sum_seats),
+      .groups = "drop"
+    ) |>
+    dplyr::select(label, party, percent, seats, sum_seats)
+
 
   if (!("bsw" %in% res$party)) {
     res <- rbind(
