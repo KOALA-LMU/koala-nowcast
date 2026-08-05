@@ -275,7 +275,7 @@ cleanShares = (shares, includeOthers = false) => {
 
 cleanHurdles = hurdles => {
   return meanBy(
-    hurdles.filter(d => d.party !== "others" && d.prob_above_hurdle < 0.5),
+    hurdles.filter(d => d.party !== "others" && d.prob_above_hurdle < 1),
     d => d.party,
     d => d.prob_above_hurdle
   )
@@ -1187,11 +1187,57 @@ html`<div style="
   )
   const coal = sortCoalitions(ranked.slice(0, topN))
   const remaining = sortCoalitions(ranked.slice(topN))
+  const plotHeading = (line1, line2 = null) => html`<div style="
+    margin:0 0 6px 0;
+    color:#555;
+    font-size:13px;
+    font-weight:600;
+    line-height:1.35;
+    min-height:35px;
+  ">
+    <div>${line1}</div>
+    ${line2 ? html`<div>${line2}</div>` : html`<div style="visibility:hidden">&nbsp;</div>`}
+  </div>`
+  const plotInfo = content => html`<details style="
+    margin:0 0 8px 0;
+    padding:7px 9px;
+    border:1px solid #d1d5db;
+    border-radius:6px;
+    background:#fafafa;
+    color:#666;
+    font-size:11px;
+    line-height:1.35;
+  ">
+    <summary style="
+      cursor:pointer;
+      list-style:none;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      font-weight:600;
+    ">
+      <span style="
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        width:13px;
+        height:13px;
+        border:1px solid #888;
+        border-radius:50%;
+        font-size:9px;
+        line-height:1;
+      ">i</span>
+      <span>Was wird hier dargestellt?</span>
+    </summary>
+    <div style="margin:6px 0 0 18px;max-width:720px;color:#666;font-weight:400">
+      ${content}
+    </div>
+  </details>`
 
   const coalitionPlot = (rows, title = null) => {
     const plot = Plot.plot({
     ...(title ? { title } : {}),
-    subtitle: "Wahrscheinlichkeit, dass die Koalition eine Mehrheit der Sitze erreicht.",
+    style: { fontSize: "13px" },
     marginLeft: 155,
     marginRight: 65,
     height: Math.max(280, rows.length * 42 + 42),
@@ -1244,6 +1290,16 @@ html`<div style="
 
   return html`
     <div class="overview-coalitions">
+      ${plotInfo(html`
+        <div style="font-weight:700;margin-bottom:4px">Wahrscheinlichkeiten für Mehrheiten möglicher Koalitionen</div>
+        <div style="margin-bottom:6px">
+          Hier wird für alle möglichen Koalitionen die Wahrscheinlichkeit dargestellt, dass - wenn heute Wahl wäre - nach der Wahl eine potenzielle Mehrheit im Parlament besteht. Einbezogen werden hierbei ausschließlich <i>ausgewählte Koalitionen</i>. So wird z.B. eine Koalition der Union und der Linken ebenso wie generelle Koalitionsbeteiligungen der AfD nicht in die Berechnung miteinbezogen.
+        </div>
+        <div>
+          Wichtig: Falls eine Zweierkoalition (z.B. Union-SPD) möglich ist, werden übergeordnete Dreierbündnisse (z.B. Union-Grüne-SPD) in den Berechnungen als nicht möglich gewertet.
+        </div>
+      `)}
+      ${plotHeading("Wahrscheinlichkeit, dass die Koalition eine Mehrheit der Sitze erreicht.")}
       ${coalitionPlot(coal)}
       ${remaining.length ? html`
         <details style="margin:8px 0 0 155px;font-size:0.9em;color:#555">
@@ -1281,7 +1337,7 @@ html`<div style="
       border-radius:6px;
       background:#fafafa;
     ">
-      Keine Partei liegt aktuell unter 50% Einzugswahrscheinlichkeit.
+      Keine Partei liegt aktuell unter 100% Einzugswahrscheinlichkeit.
     </div>`
   }
 
@@ -1349,11 +1405,58 @@ html`<div style="
     return wrapper
   }
 
+  const plotHeading = (line1, line2 = null) => html`<div style="
+    margin:0 0 6px 0;
+    color:#555;
+    font-size:13px;
+    font-weight:600;
+    line-height:1.35;
+    min-height:35px;
+  ">
+    <div>${line1}</div>
+    ${line2 ? html`<div>${line2}</div>` : html`<div style="visibility:hidden">&nbsp;</div>`}
+  </div>`
+  const plotInfo = content => html`<details style="
+    margin:0 0 8px 0;
+    padding:7px 9px;
+    border:1px solid #d1d5db;
+    border-radius:6px;
+    background:#fafafa;
+    color:#666;
+    font-size:11px;
+    line-height:1.35;
+  ">
+    <summary style="
+      cursor:pointer;
+      list-style:none;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      font-weight:600;
+    ">
+      <span style="
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        width:13px;
+        height:13px;
+        border:1px solid #888;
+        border-radius:50%;
+        font-size:9px;
+        line-height:1;
+      ">i</span>
+      <span>Was wird hier dargestellt?</span>
+    </summary>
+    <div style="margin:6px 0 0 18px;max-width:720px;color:#666;font-weight:400">
+      ${content}
+    </div>
+  </details>`
+
   const plot = Plot.plot({
-    subtitle: "Parteien mit Einzugswahrscheinlichkeit unter 50%.",
+    style: { fontSize: "13px" },
     marginLeft: 80,
     marginRight: 80,
-    height: Math.max(280, hurdles.length * 34 + 40),
+    height: Math.max(260, hurdles.length * 34 + 40),
     x: {
       label: "Einzugswahrscheinlichkeit",
       domain: [0, 1],
@@ -1397,7 +1500,19 @@ html`<div style="
     ]
   })
 
-  return withProbabilityTooltip(plot, hurdles, "prob_above_hurdle")
+  return html`
+    ${plotInfo(html`
+      <div style="font-weight:700;margin-bottom:4px">Wahrscheinlichkeiten für den Einzug ins Parlament</div>
+      <div>
+        Hier wird für Parteien dargestellt, wie wahrscheinlich es ist, dass sie nach einer Wahl im ${election === "BTW" ? "Bundestag" : "Landtag"} vertreten wären, wenn heute Wahl wäre. Angezeigt werden nur Parteien, deren Einzugswahrscheinlichkeit unter 100% liegt, weil bei diesen Parteien noch Unsicherheit darüber besteht, ob sie tatsächlich ins Parlament einziehen würden.
+      </div>
+    `)}
+    ${plotHeading(
+      `Wahrscheinlichkeit, dass die Partei in den ${election === "BTW" ? "Bundestag" : "Landtag"} einzieht.`,
+      "(Es werden nur Parteien mit einer Einzugswahrscheinlichkeit von unter 100% angezeigt)"
+    )}
+    ${withProbabilityTooltip(plot, hurdles, "prob_above_hurdle")}
+  `
 }
 ```
 
