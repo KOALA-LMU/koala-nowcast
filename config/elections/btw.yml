@@ -2,6 +2,10 @@ id: btw
 name: Bundestagswahl 2029
 hashtag: "#btwwahl"
 
+last_result:
+  url: https://www.wahlrecht.de/ergebnisse/bundestag.htm
+  year: 2025
+
 scraper:
   function: scrape_btw
   # 28-day pooling window, so pooled estimates are complete from 2024-12-29 on

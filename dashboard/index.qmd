@@ -764,6 +764,7 @@ election_files = {
     ST: {
       coalitions        : FileAttachment("data/st/coalition_probabilities.json"),
       party_data        : FileAttachment("data/st/party_shares.json"),
+      last_result_data  : FileAttachment("data/st/last_results.json"),
       hurdle_data       : FileAttachment("data/st/hurdle_probabilities.json"),
       pollster_data     : FileAttachment("data/st/per_pollster.json"),
       history_data      : FileAttachment("data/st/poll_history.json"),
@@ -773,6 +774,7 @@ election_files = {
     MV: {
       coalitions        : FileAttachment("data/mv/coalition_probabilities.json"),
       party_data        : FileAttachment("data/mv/party_shares.json"),
+      last_result_data  : FileAttachment("data/mv/last_results.json"),
       hurdle_data       : FileAttachment("data/mv/hurdle_probabilities.json"),
       pollster_data     : FileAttachment("data/mv/per_pollster.json"),
       history_data      : FileAttachment("data/mv/poll_history.json"),
@@ -782,6 +784,7 @@ election_files = {
     BE: {
       coalitions        : FileAttachment("data/be/coalition_probabilities.json"),
       party_data        : FileAttachment("data/be/party_shares.json"),
+      last_result_data  : FileAttachment("data/be/last_results.json"),
       hurdle_data       : FileAttachment("data/be/hurdle_probabilities.json"),
       pollster_data     : FileAttachment("data/be/per_pollster.json"),
       history_data      : FileAttachment("data/be/poll_history.json"),
@@ -791,6 +794,7 @@ election_files = {
     BTW: {
       coalitions        : FileAttachment("data/btw/coalition_probabilities.json"),
       party_data        : FileAttachment("data/btw/party_shares.json"),
+      last_result_data  : FileAttachment("data/btw/last_results.json"),
       hurdle_data       : FileAttachment("data/btw/hurdle_probabilities.json"),
       pollster_data     : FileAttachment("data/btw/per_pollster.json"),
       history_data      : FileAttachment("data/btw/poll_history.json"),
@@ -816,7 +820,7 @@ election_files = {
 // charts below need no awaiting of their own.
 cur = Object.fromEntries(          // Überblick + sidebar, ~77 KB
   await Promise.all(
-    ["coalitions", "party_data", "hurdle_data", "pollster_data"]
+    ["coalitions", "party_data", "last_result_data", "hurdle_data", "pollster_data"]
       .map(async key => [key, await election_files[election][key].json()])
   )
 )
@@ -1049,16 +1053,39 @@ html`<div style="
 //| label: chart-vote-shares
 {
   const shares = cleanShares(shares_source, true)
-  const maxY = Math.max(35, d3.max(shares, d => d.percent) + 7)
+  const lastResults = cleanShares(cur.last_result_data.last_result || [], true)
+  const lastByParty = Object.fromEntries(lastResults.map(d => [d.party, d.percent]))
+  const comparison = shares.map((d, i) => ({
+    ...d,
+    index: i,
+    last_percent: lastByParty[d.party],
+    diff: Number.isFinite(lastByParty[d.party]) ? d.percent - lastByParty[d.party] : null
+  }))
+  const hasLastResult = comparison.some(d => Number.isFinite(d.last_percent))
+  const maxY = Math.max(
+    35,
+    d3.max(comparison, d => Math.max(d.percent, Number.isFinite(d.last_percent) ? d.last_percent : 0)) + 7
+  )
+  const formatDiff = d =>
+    d.diff == null
+      ? ""
+      : Math.abs(d.diff) < 0.05
+      ? "±0"
+      : `${d.diff >= 0 ? "+" : ""}${d.diff.toLocaleString("de-DE", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      })}`
 
   return Plot.plot({
-    marginBottom: 55,
+    marginBottom: hasLastResult ? 86 : 55,
     marginLeft: 55,
     marginRight: 25,
     height: 310,
     x: {
       label: null,
-      domain: shares.map(d => d.label)
+      domain: [0, comparison.length],
+      ticks: comparison.map(d => d.index + 0.5),
+      tickFormat: d => comparison[Math.floor(d)]?.label || ""
     },
     y: {
       label: "Stimmenanteil (%)",
@@ -1067,36 +1094,51 @@ html`<div style="
       tickFormat: d => d + "%"
     },
     marks: [
-      Plot.barY(shares, {
-        x: "label",
-        y: "percent",
+      ...(hasLastResult ? [
+        Plot.rectY(comparison.filter(d => Number.isFinite(d.last_percent)), {
+          x1: d => d.index + 0.18,
+          x2: d => d.index + 0.48,
+          y1: 0,
+          y2: "last_percent",
+          fill: d => party_colors[d.party] || "#aaa",
+          fillOpacity: 0.28
+        })
+      ] : []),
+      Plot.rectY(comparison, {
+        x1: d => hasLastResult ? d.index + 0.48 : d.index + 0.22,
+        x2: d => hasLastResult ? d.index + 0.78 : d.index + 0.78,
+        y1: 0,
+        y2: "percent",
         fill: d => party_colors[d.party] || "#aaa",
-        insetLeft: 8,
-        insetRight: 8
-      }),
-      Plot.barY(shares.filter(d => d.party === "fdp"), {
-        x: "label",
-        y: "percent",
-        fill: "transparent",
-        stroke: "#999",
-        strokeWidth: 1.2,
-        insetLeft: 8,
-        insetRight: 8
+        fillOpacity: d => d.party === "fdp" ? 1 : 0.9
       }),
       Plot.ruleY([5], {
         stroke: "#555",
         strokeDasharray: "4 3",
         strokeWidth: 1.2
       }),
-      Plot.text(shares, {
-        x: "label",
-        y: d => d.percent + 2,
+      Plot.text(comparison, {
+        x: d => hasLastResult ? d.index + 0.48 : d.index + 0.5,
+        y: 0,
         text: d => d.percent.toFixed(1) + "%",
         fill: "#555",
         fontSize: 12,
-        dy: -2,
+        fontWeight: 600,
+        dy: 45,
         textAnchor: "middle"
       }),
+      ...(hasLastResult ? [
+        Plot.text(comparison, {
+          x: d => d.index + 0.48,
+          y: 0,
+          text: formatDiff,
+          fill: d => d.diff > 0 ? "#666" : d.diff < 0 ? "#999" : "#888",
+          fontSize: 12,
+          fontWeight: 600,
+          dy: 61,
+          textAnchor: "middle"
+        })
+      ] : []),
       Plot.ruleY([0])
     ]
   })

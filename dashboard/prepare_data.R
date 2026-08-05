@@ -1,7 +1,8 @@
 library(jsonlite)
 library(dplyr)
 library(yaml)
-source("dashboard/coalition_density.R")
+source("scripts/coalition_density.R")
+source("scripts/scrape_election_results.R")
 
 # First date whose pooled estimate rests on a fully scraped pooling window.
 # pool_surveys() averages over the period_extended days before each date, so the
@@ -152,6 +153,18 @@ prepare_election <- function(election_id) {
     file.path(out_dir, "coalition_densities.json"),
     # was auto.unbox, which is not an argument jsonlite knows: it went into `...`
     # and was silently ignored, so this file alone was written boxed
+    auto_unbox = TRUE
+  )
+
+  if (!is.null(cfg$last_result)) {
+    last_result <- scrape_election_results(
+      url = cfg$last_result$url,
+      election_year = cfg$last_result$year
+    )
+  }
+  write_json(
+    list(last_result = last_result, updated = updated),
+    file.path(out_dir, "last_results.json"),
     auto_unbox = TRUE
   )
 
