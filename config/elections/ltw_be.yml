@@ -2,6 +2,10 @@ id: ltw_be
 name: Abgeordnetenhauswahl Berlin 2026
 hashtag: "#aghwahl"
 
+last_result:
+  url: https://www.wahlrecht.de/ergebnisse/berlin.htm
+  year: 2023
+
 scraper:
   function: scrape_ltw
   url: https://www.wahlrecht.de/umfragen/landtage/berlin.htm
