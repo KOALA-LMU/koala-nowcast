@@ -6,6 +6,7 @@
 /website/_site/
 /website/.quarto/
 /dashboard/_site/
+/local-preview/
 **/index_files/
 **/index.html
 .quarto/

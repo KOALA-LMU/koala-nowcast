@@ -49,9 +49,11 @@ format:
   flex: 0 0 auto !important;
 }
 
-/* The Methodik page is one long text card rather than a chart: let it scroll
-   inside the card instead of being clipped on short viewports. */
-.methodik-card > .cell.card-body {
+/* The text-heavy Methodik and project cards need to scroll inside the card
+   instead of being clipped on short viewports. */
+.methodik-card > .cell.card-body,
+.methodik-publications-card > .cell.card-body,
+.projekt-card > .cell.card-body {
   overflow-y: auto !important;
 }
 
@@ -578,9 +580,9 @@ plotCoalitionDensity = (group, height = 260) => {
     ? html`Für die Partei <b>${label}</b> liegt die Anzahl der Sitze mit 95% Wahrscheinlichkeit im Intervall <b style="color:#f39c12;font-size:1.18rem">${intervalLabel}</b>.`
     : html`Für <b>${label}</b> liegt die Summe der Sitze mit 95% Wahrscheinlichkeit im Intervall <b style="color:#f39c12;font-size:1.18rem">${intervalLabel}</b>.`
   const densityNote = isSingleParty
-    ? html`Die Dichte zeigt alle Simulationen. Die Partei war in ${parliamentPresenceLabel} im Parlament.`
-    : html`Die Dichte zeigt alle Simulationen; Parteien, die im jeweiligen Simulationsdurchgang nicht im Parlament vertreten sind, tragen 0 zur Sitzsumme bei.<br>
-      Alle Koalitionsparteien waren in ${parliamentPresenceLabel} im Parlament.`
+    ? html`Die Dichte zeigt alle Simulationen. Die Partei war in ${parliamentPresenceLabel} im Parlament vertreten.`
+    : html`Die Dichte zeigt alle Simulationen. Parteien, die in einem Simulationsdurchgang nicht im Parlament vertreten sind, tragen in diesem 0 zur Sitzsumme bei.<br>
+      Alle ausgewählten Parteien waren in ${parliamentPresenceLabel} im Parlament vertreten.`
   const showSeatCountNotice = election !== "BTW"
   const plot = Plot.plot({
     height,
@@ -1597,7 +1599,7 @@ html`<div style="
     font-size:0.9rem;
     font-weight:700;
     white-space:nowrap;
-  ">Betrachtete Koalition</label>`
+  ">Betrachtete Parteikombination</label>`
   const select = html`<select style="
     width:220px;
     max-width:220px;
@@ -1616,7 +1618,7 @@ html`<div style="
     plotArea.replaceChildren(
       group
         ? plotCoalitionDensity(group, 380)
-        : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Koalition gefunden.</div>`
+        : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Parteikombination gefunden.</div>`
     )
   }
 
@@ -1677,7 +1679,7 @@ viewof hoveredCoalitionRow = {
     marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
-    height: 460,
+    height: 550,
     x: {
       type: "utc",
       label: null,
@@ -2053,7 +2055,7 @@ viewof hoveredRow = {
     marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
-    height: 460,
+    height: 550,
     x: {
       type: "utc",
       label: null,
@@ -2278,7 +2280,7 @@ viewof hoveredRow = {
     marginBottom: 40,
     marginLeft: 55,
     marginRight: 25,
-    height: 460,
+    height: 550,
     x: {
       label: null,
       domain: shares.map(d => d.label)
@@ -2350,6 +2352,10 @@ html`
       font-size: 0.9rem;
       margin-top: 3px;
     }
+    .methodik-lede {
+      color: var(--muted);
+      margin: 14px 0 0;
+    }
 
     .methodik-facts {
       display: grid;
@@ -2419,6 +2425,11 @@ html`
     }
     .methodik-step h4 { font-size: 0.98rem; font-weight: 700; margin: 0 0 4px; }
     .methodik-step p { margin: 0; font-size: 0.89rem; color: var(--muted); }
+    .methodik-package {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.89rem;
+    }
 
     .methodik-split {
       display: grid;
@@ -2462,6 +2473,11 @@ html`
 
   <div class="methodik-election">${cur_meta.title}</div>
   <div class="methodik-election-date">Wahltermin: ${cur_meta.next_election}</div>
+  <p class="methodik-lede">
+    KOALA übersetzt aktuelle Umfragen in Wahrscheinlichkeiten für Mehrheiten,
+    Mandatsverteilungen und den Einzug von Parteien. Für die Wahl
+    <strong>${cur_meta.title}</strong> gilt dabei:
+  </p>
 
   <div class="methodik-facts">
     ${[
@@ -2489,6 +2505,11 @@ html`
         </div>
       `)}
     </div>
+    <p class="methodik-package">
+      Die Berechnungen basieren auf dem R-Paket
+      <a href="https://github.com/adibender/coalitions" target="_blank" rel="noopener noreferrer"><code>coalitions</code></a>
+      (Bender &amp; Bauer, 2018).
+    </p>
   </div>
 
   <div class="methodik-section methodik-split">
@@ -2532,6 +2553,36 @@ html`
 
 :::
 
+## Row {height=250px}
+
+::: {.card .methodik-publications-card}
+
+```{ojs}
+html`
+<div style="max-width:940px;margin:0 auto;padding:4px;color:#1f2933;font-size:0.9rem;line-height:1.55">
+  <h3 style="display:inline-block;margin:0 0 12px;padding-bottom:6px;border-bottom:2px solid #2b6cb0;font-size:1.05rem;font-weight:700">
+    Veröffentlichungen zur Methodik
+  </h3>
+  <div style="display:grid;gap:10px">
+    <div>
+      Bauer, A., Bender, A., Klima, A. et al. (2020).
+      <em>KOALA: a new paradigm for election coverage.</em>
+      AStA Advances in Statistical Analysis, 104, 101–115.
+      <a href="https://doi.org/10.1007/s10182-019-00352-6" target="_blank" rel="noopener noreferrer">https://doi.org/10.1007/s10182-019-00352-6</a>
+    </div>
+    <div>
+      Bauer, A., Klima, A., Gauß, J., Kümpel, H., Bender, A. &amp; Küchenhoff, H. (2022).
+      <em>Mundus Vult Decipi, Ergo Decipiatur: Visual Communication of Uncertainty in Election Polls.</em>
+      PS: Political Science &amp; Politics, 55(1), 102–108.
+      <a href="https://doi.org/10.1017/S1049096521000950" target="_blank" rel="noopener noreferrer">https://doi.org/10.1017/S1049096521000950</a>
+    </div>
+  </div>
+</div>
+`
+```
+
+:::
+
 # Über das Projekt
 
 ## Row
@@ -2556,6 +2607,7 @@ html`
       line-height: 1.65;
     }
     .projekt a { color: var(--accent); }
+    .projekt p { margin: 0; }
 
     .projekt-hero { border-bottom: 1px solid var(--line); padding-bottom: 18px; }
     .projekt-eyebrow {
@@ -2572,6 +2624,55 @@ html`
       margin: 6px 0 8px;
     }
     .projekt-lede { color: var(--muted); margin: 0; }
+
+    .projekt-section { margin-top: 28px; }
+    .projekt-section > h3 {
+      display: inline-block;
+      margin: 0 0 14px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--accent);
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .projekt-section p + p { margin-top: 12px; }
+
+    .projekt-team {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .projekt-panel {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f7f9fc;
+    }
+    .projekt-panel h4 {
+      margin: 0 0 7px;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .projekt-names {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 3px 18px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    @media (max-width: 520px) {
+      .projekt-names { grid-template-columns: 1fr; }
+    }
+
+    .projekt-legal {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+    }
+    .projekt-legal address { margin: 0; font-style: normal; }
+    .projekt-small { color: var(--muted); font-size: 0.87rem; }
   </style>
 
   <div class="projekt-hero">
@@ -2579,13 +2680,127 @@ html`
     <h2>Von Umfragewerten zu Koalitionswahrscheinlichkeiten</h2>
     <p class="projekt-lede">
       KOALA übersetzt aktuelle Umfragen in Wahrscheinlichkeiten für Mehrheiten,
-      Berechnungen basieren auf dem R-Paket
-      <a href="https://github.com/adibender/coalitions" target="_blank"><code>coalitions</code></a>
-      (Bender &amp; Bauer, 2018). Nähere Informationen zur statistischen Methodik
-      sind zu finden unter
-      <a href="https://doi.org/10.21105/joss.00606" target="_blank">doi.org/10.21105/joss.00606</a>.
+      Mandatsverteilungen und den Einzug von Parteien. Nähere Informationen zur
+      statistischen Methodik sind zu finden unter <a href="#methodik">Methodik</a>.
     </p>
   </div>
+
+  <section class="projekt-section">
+    <h3>Das Projekt</h3>
+    <p>
+      Ausgehend von der Idee, die Unsicherheit von Wahlumfragen verständlich und
+      für eine sinnvolle Wahlberichterstattung nutzbar zu machen, entstand zur
+      Bundestagswahl 2013 gemeinsam mit ZEIT ONLINE das Projekt
+      <a href="https://www.zeit.de/serie/wahlistik" target="_blank" rel="noopener noreferrer">Wahlistik</a>.
+      Dafür wurde ein statistisches Verfahren entwickelt, das die Wahrscheinlichkeiten
+      konkreter Wahlausgänge und politischer Mehrheiten quantifiziert. Zur
+      Bundestagswahl 2017 wurde die Methodik weiterentwickelt. Zugleich bestand
+      eine Zusammenarbeit mit
+      <a href="https://pollyvote.de/" target="_blank" rel="noopener noreferrer">PollyVote</a>,
+      dessen konkrete Vorhersage des Wahlausgangs das KOALA Angebot ergänzte.
+    </p>
+    <p>
+      Für die aktuelle, auf dieser Seite präsentierte Fassung wurde KOALA technisch neu aufgesetzt, die statistische Methodik ist gleich geblieben.
+    </p>
+  </section>
+
+  <section class="projekt-section">
+    <h3>Wer wir sind</h3>
+    <p style="margin-bottom:14px">
+      Die statistische Methodik und die ursprüngliche Webseite wurden vom
+      <a href="https://www.stat.lmu.de/stablab/de/" target="_blank" rel="noopener noreferrer">Statistischen Beratungslabor StaBLab</a>
+      des Instituts für Statistik der LMU München entwickelt. Die neue Fassung ist in Kooperation mit der <a href="https://www.slds.stat.uni-muenchen.de/consulting/" target="_blank" rel="noopener noreferrer">Machine Learning Consulting Unit (MLCU)</a>, die Teil des Instituts für Statistik und <a href="https://mcml.ai/" target="_blank" rel="noopener noreferrer">Munich Center for Machine Learning</a> ist, entstanden.
+    </p>
+    <div class="projekt-team">
+      <div class="projekt-panel">
+        <h4>Beteiligte der bisherigen Projektentwicklung</h4>
+        <ul class="projekt-names">
+          <li>Dr. Alexander Bauer</li>
+          <li>Dr. Andreas Bender</li>
+          <li>Dr. Matthias Aßenmacher</li>
+          <li>Dr. André Klima</li>
+          <li>Prof. Dr. Helmut Küchenhoff</li>
+          <li>Jana Gauß</li>
+          <li>Rebekka Schade</li>
+          <li>Daniel Schlichting</li>
+          <li>Helena Veit</li>
+        </ul>
+      </div>
+      <div class="projekt-panel">
+        <h4>Beteiligte an der Neuaufsetzung</h4>
+        <ul class="projekt-names">
+          <li>Alexander Winterstetter</li>
+          <li>Jakob Haas</li>
+          <li>Jan Anders</li>
+          <li>Dr. Andreas Bender</li>
+          <li>Prof. Dr. Helmut Küchenhoff</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px">
+      Fragen zum Projekt beantworten wir gerne. Kontakt unter
+      <a href="mailto:jan.anders@stat.uni-muenchen.de">jan.anders@stat.uni-muenchen.de</a>.
+    </p>
+  </section>
+
+  <section class="projekt-section">
+    <h3>Unser Dank</h3>
+    <p>
+      Wir danken
+      <a href="https://www.zeit.de/autoren/S/Matthias_Stolz/index.xml" target="_blank" rel="noopener noreferrer">Matthias Stolz</a>
+      von ZEIT ONLINE, von dem die Idee für diese innovative Art der Darstellung
+      stammt, sowie
+      Andreas Graefe von PollyVote für wichtige Anregungen und fachlichen Input. Unser Dank gilt
+      außerdem dem Team von
+      <a href="https://www.wahlrecht.de" target="_blank" rel="noopener noreferrer">wahlrecht.de</a>
+      für die zuverlässige und zeitnahe Bereitstellung neuer Umfragedaten.
+    </p>
+  </section>
+
+  <section class="projekt-section">
+    <h3>Datenschutz</h3>
+    <p>
+      Dieses Informationsangebot verwendet keine Formulare, setzt selbst
+      keine Cookies und nutzt keine eigene Reichweitenanalyse. Beim Aufruf werden
+      technisch erforderliche Verbindungsdaten, insbesondere die IP-Adresse, durch
+      den Hosting-Dienst GitHub Pages verarbeitet. Für die interaktiven Grafiken
+      wird die Programmbibliothek D3 über das Content Delivery Network jsDelivr
+      geladen, dabei erhält auch der CDN-Anbieter technisch erforderliche
+      Verbindungsdaten.
+    </p>
+    <p class="projekt-small">
+      Weitere Informationen finden Sie in der
+      <a href="https://www.lmu.de/de/footer/datenschutz/" target="_blank" rel="noopener noreferrer">Datenschutzerklärung der LMU</a>,
+      den <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">Datenschutzhinweisen von GitHub</a>
+      und der <a href="https://www.jsdelivr.com/terms/privacy-policy" target="_blank" rel="noopener noreferrer">Datenschutzerklärung von jsDelivr</a>.
+    </p>
+  </section>
+
+  <section class="projekt-section">
+    <h3>Impressum</h3>
+    <div class="projekt-legal">
+      <address>
+        <strong>Ludwig-Maximilians-Universität München</strong><br>
+        Geschwister-Scholl-Platz 1<br>
+        80539 München<br>
+        Telefon: +49 89 2180-0<br>
+        E-Mail: <a href="mailto:poststelle@verwaltung.uni-muenchen.de">poststelle@verwaltung.uni-muenchen.de</a>
+      </address>
+      <div>
+        <p>
+          Die Ludwig-Maximilians-Universität München ist eine staatliche Einrichtung
+          des Freistaates Bayern und eine rechtsfähige Personalkörperschaft des
+          öffentlichen Rechts. Sie wird durch ihren Präsidenten gesetzlich vertreten.
+        </p>
+        <p class="projekt-small">
+          Inhaltlicher Kontakt für dieses Angebot: Jan Anders,
+          <a href="mailto:jan.anders@stat.uni-muenchen.de">jan.anders@stat.uni-muenchen.de</a>.
+          Vollständige Pflichtangaben, Aufsichtsbehörde und Haftungshinweise enthält das
+          <a href="https://www.lmu.de/de/footer/impressum/" target="_blank" rel="noopener noreferrer">zentrale Impressum der LMU</a>.
+        </p>
+      </div>
+    </div>
+  </section>
 </div>
 `
 ```
