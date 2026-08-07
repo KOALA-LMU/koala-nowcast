@@ -2103,14 +2103,18 @@ viewof hoveredRow = {
           strokeWidth: 3
         })
       ] : []),
-      // individual polls are background context only — kept faint so the
-      // pooled trend lines stay legible where the scatter is dense
+      // In the pooled view the individual polls are background context only —
+      // kept faint so the pooled trend lines stay legible where the scatter is
+      // dense. With a single institute selected there are no lines, so these
+      // dots are the whole series and have to read as such: solid fill, larger
+      // radius, and a white stroke to keep polls that land close together apart.
       Plot.dot(raw, {
         x: "date",
         y: "percent",
         fill: "label",
-        fillOpacity: 0.15,
-        r: 2.5
+        ...(showLine
+          ? { fillOpacity: 0.15, r: 2.5 }
+          : { fillOpacity: 0.9, r: 4, stroke: "white", strokeWidth: 0.75 })
       }),
       ...(showLine ? [
         Plot.line(pooled.filter(d => d.label === party_to_label.fdp), {
@@ -2264,7 +2268,16 @@ viewof hoveredRow = {
   const shares = [...party_order, "others"]
     .filter(p => hoveredRow[p] != null)
     .map(p => ({ party: p, percent: hoveredRow[p], label: party_names[p] || p }))
-  const maxY = Math.max(35, d3.max(shares, d => d.percent) + 5)
+
+  // Fixed y domain, following the same rule as the trend chart to its left: per
+  // election, but constant within one. Deriving it from the hovered row instead
+  // made the axis rescale on every crosshair move, so the bars changed height
+  // between two dates that differ by a point — the axis moved, not the poll.
+  // cur_polls.history is the unfiltered series (every institute plus the pooled
+  // one, "others" included), so the selected institute does not shift it either
+  // and no bar can exceed it. Rounding up to the next 5 keeps the ticks clean
+  // and leaves room for the value label sitting above each bar.
+  const maxY = Math.max(35, Math.ceil((d3.max(cur_polls.history, d => d.percent) + 3) / 5) * 5)
 
   const hoveredDate = hoveredRow.date.toLocaleDateString("de-DE", {
     day: "2-digit", month: "long", year: "numeric"
