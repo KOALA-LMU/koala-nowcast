@@ -81,15 +81,32 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   }
 
   # ── Parallelisation strategy ─────────────────────────────────────────────────
-  # `cores` is spent on the date loop rather than on calc_allCoalProbs(): the
-  # per-date cost is dominated by draw_from_posterior() + get_seats(), both
-  # single-threaded, so the coalition-level split can only shave off part of the
-  # work while the date-level split scales the whole thing. calc_allCoalProbs()
-  # therefore runs sequentially inside each worker — nested forking would
-  # oversubscribe the machine. mclapply() has no parallel path on Windows, so fall
-  # back to the coalition-level split there.
-  dates_in_parallel <- cores > 1 && Sys.info()[["sysname"]] != "Windows"
-  cores_coals       <- if (dates_in_parallel) 1 else cores
+  # `cores` is spent on the date loop, not on calc_allCoalProbs(): the per-date
+  # cost is dominated by draw_from_posterior() + get_seats(), both single-threaded,
+  # so splitting whole dates across workers is what actually scales, while splitting
+  # the (comparatively cheap) coalition-probability step within one date mostly adds
+  # inter-process overhead for little gain. calc_allCoalProbs() therefore always
+  # runs with cores = 1 inside a worker.
+  # Linux gets date-level parallelism via mclapply() (fork-based, cheap per date).
+  # Windows has no fork, so it uses a single persistent PSOCK cluster of `cores`
+  # workers instead, built once here and reused for every pollster/date below —
+  # recreating a cluster per date (as this used to do) exhausted system memory on a
+  # multi-year survey history.
+  dates_in_parallel <- cores > 1
+  is_windows        <- Sys.info()[["sysname"]] == "Windows"
+
+  windows_cluster <- if (dates_in_parallel && is_windows) {
+    # outfile = "" forwards each worker's message()/print() output to this console
+    # (interleaved across workers) instead of the makePSOCKcluster() default of
+    # silently discarding it — needed so the per-date progress log below is visible.
+    cl <- parallel::makePSOCKcluster(rep("localhost", cores), outfile = "")
+    parallel::clusterEvalQ(cl = cl, c(library(parallel), library(coalitions), library(dplyr), library(tidyr)))
+    parallel::clusterExport(cl = cl, "calc_allCoalProbs")
+    cl
+  } else {
+    NULL
+  }
+  on.exit(if (!is.null(windows_cluster)) parallel::stopCluster(windows_cluster), add = TRUE)
 
   # ── Per-pollster computation ─────────────────────────────────────────────────
   results <- lapply(pollsters, function(p) {
@@ -103,6 +120,8 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     print(paste0("Perform new calculations for ", cfg$name, " (", p, ")..."))
 
     calc_oneDate <- function(date_ins) {
+      message(sprintf("[%s] %s (%s): computing...", cfg$id, date_ins, p))
+
       survey_raw <- survey_byTime %>%
         filter(date == date_ins) %>%
         distinct(party, .keep_all = TRUE) %>%   # take first record per party when two surveys land on the same day
@@ -165,8 +184,10 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
         if (any(keep)) strongest_party_coals[keep] else NULL
       }
 
+      # Coalition-level work within a single date is cheap; the parallel budget is
+      # spent on splitting dates across workers instead (see dates_in_parallel above).
       res_all   <- calc_allCoalProbs(seat.distributions, parties_ins, dirichlet.draws,
-                                     strongest_party_coals = spc_ins, cores = cores_coals)
+                                     strongest_party_coals = spc_ins, cores = 1)
       coalProbs <- res_all$coalProbs
       allShares <- res_all$shares_perSimulation
 
@@ -243,7 +264,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
            "passHurdle" = res_passHurdle)
     }
 
-    results <- if (dates_in_parallel) {
+    results <- if (dates_in_parallel && !is_windows) {
       # mclapply() returns a "try-error" per failed element instead of aborting, so
       # surface the first failure rather than writing silently incomplete results.
       out    <- parallel::mclapply(dates_ins, calc_oneDate, mc.cores = cores)
@@ -252,6 +273,11 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
         stop(sprintf("[%s] %d of %d date(s) failed, first error: %s", cfg$id,
                      sum(failed), length(out), conditionMessage(attr(out[[which(failed)[1]]], "condition"))))
       out
+    } else if (dates_in_parallel) {
+      # Windows: dispatch across the persistent cluster built above. parLapply()
+      # (unlike mclapply()) raises on the master as soon as any worker errors.
+      parallel::clusterExport(cl = windows_cluster, "calc_oneDate", envir = environment())
+      parallel::parLapply(cl = windows_cluster, X = dates_ins, fun = function(d) calc_oneDate(d))
     } else {
       lapply(dates_ins, calc_oneDate)
     }
@@ -268,8 +294,9 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   })
 
   # ── Bind all pollsters ───────────────────────────────────────────────────────
+  # sharesSim is never bound/written below (see "Save results"): it's the biggest
+  # driver of on-disk size and nothing downstream reads it back.
   coalProbs          <- bind_rows(lapply(results, `[[`, "coalProbs"))
-  sharesSim          <- bind_rows(lapply(results, `[[`, "sharesSim"))
   shares             <- bind_rows(lapply(results, `[[`, "shares"))
   coalProbs_grouping <- bind_rows(lapply(results, `[[`, "coalProbs_grouping"))
   biggestParty       <- bind_rows(lapply(results, `[[`, "biggestParty"))
@@ -292,7 +319,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   }
   if (!identical(dates, dates_todo)) {
     coalProbs          <- bind_rows(coalProbs,          read_result("coalProbs")          %>% filter(!date %in% dates))
-    sharesSim          <- bind_rows(sharesSim,          read_result("sharesSim")          %>% filter(!date %in% dates))
     shares             <- bind_rows(shares,             read_result("shares")             %>% filter(!date %in% dates))
     coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping") %>% filter(!date %in% dates))
     biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty")       %>% filter(!date %in% dates))
@@ -301,18 +327,29 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
   # ── Sort final output by date, then pollster ─────────────────────────────────
   coalProbs          <- coalProbs          %>% dplyr::arrange(date, pollster)
-  sharesSim          <- sharesSim          %>% dplyr::arrange(date, pollster)
   shares             <- shares             %>% dplyr::arrange(date, pollster)
   coalProbs_grouping <- coalProbs_grouping %>% dplyr::arrange(date, pollster)
   biggestParty       <- biggestParty       %>% dplyr::arrange(date, pollster)
   passHurdle         <- passHurdle         %>% dplyr::arrange(date, pollster)
 
   # ── Save results ─────────────────────────────────────────────────────────────
+  # The dashboard only ever uses the most recent date per pollster (see
+  # coalition_density() in dashboard/prepare_data.R), so only that slice is
+  # written out. `shares` itself keeps all dates for the merge logic above.
+  shares_out <- shares %>%
+    group_by(pollster) %>%
+    filter(date == max(date)) %>%
+    ungroup()
+
   write_result <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, pretty = TRUE)
-  write_result(coalProbs,          "coalProbs")
-  write_result(sharesSim,          "sharesSim")
-  write_result(shares,             "shares")
-  write_result(coalProbs_grouping, "coalProbs_grouping")
-  write_result(biggestParty,       "biggestParty")
-  write_result(passHurdle,         "passHurdle")
+  # The two files that dominate on-disk size are written unprettified and rounded:
+  # these are Monte Carlo estimates, so the default 15 significant digits is noise
+  # at a large size cost. Only jsonlite::fromJSON ever reads them back.
+  write_compact <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, digits = 4)
+
+  write_compact(coalProbs,          "coalProbs")
+  write_compact(shares_out,         "shares")
+  write_result(coalProbs_grouping,  "coalProbs_grouping")
+  write_result(biggestParty,        "biggestParty")
+  write_result(passHurdle,          "passHurdle")
 }

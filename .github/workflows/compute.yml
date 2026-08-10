@@ -45,18 +45,20 @@ jobs:
       - name: Scrape and pool polls
         id: scrape
         run: |
+          set -o pipefail
           Rscript -e '
             source("scripts/scrape_polls.R")
             configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
             new_data <- any(sapply(configs, scrape_election))
             cat(paste0("new_data=", new_data, "\n"), file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
-          '
+          ' 2>&1 | tee scrape.log
 
       - name: Compute coalition probabilities
         if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false'
         env:
           FORCE_ALL: ${{ steps.check_results.outputs.has_results == 'false' }}
         run: |
+          set -o pipefail
           Rscript -e '
             suppressPackageStartupMessages({ library(coalitions); library(dplyr); library(tidyr); library(yaml); library(jsonlite) })
             source("scripts/calc_coalProbs_helpers.R")
@@ -65,7 +67,21 @@ jobs:
             configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
             todo <- configs_todo(configs, force_all = Sys.getenv("FORCE_ALL") == "true")
             invisible(lapply(todo, calc_coalProbs))
-          '
+          ' 2>&1 | tee compute.log
+
+      # Runs even if scraping/computing above failed, so a crash (e.g. an OOM) is
+      # still diagnosable from the Actions run instead of only from the console
+      # output getting truncated/lost.
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compute-logs-${{ github.run_id }}
+          path: |
+            scrape.log
+            compute.log
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Upload data to R2
         if: steps.scrape.outputs.new_data == 'TRUE' || steps.check_results.outputs.has_results == 'false'

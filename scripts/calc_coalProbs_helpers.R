@@ -26,11 +26,16 @@ suppressPackageStartupMessages({
 #' is the leading one. E.g. \code{"cdu|spd"} is only counted as a possible coalition if the coalition
 #' both has a majority and cdu is the leading party in the coalition.
 #' @param cores number of cores to use for parallel processing. Possible for both Linux-based systems and Windows.
+#' @param cluster On Windows, an optional pre-built PSOCK cluster (as returned by
+#' \code{parallel::makePSOCKcluster()}) to reuse instead of spawning a fresh one for this call.
+#' Passing one in avoids repeatedly starting/stopping \code{cores} full R processes when this
+#' function is called many times in a loop (e.g. once per survey date); if \code{NULL}, a cluster
+#' is created and torn down for this call only, as before.
 #' @return \code{list} containing the coalition probabilities, the shares of each coalition in each simulation
 #'                     and for each simulation if the coalition has a majority while no subset coalition already has a majority.
 #' @import parallel
 #' @export
-calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest_party_coals = NULL, cores = 1) {
+calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest_party_coals = NULL, cores = 1, cluster = NULL) {
   norm_coal <- function(c) paste(sort(strsplit(c, "\\|")[[1]]), collapse = "|")
   nsim <- max(as.numeric(seat.distributions$sim))
   nseats <- sum(seat.distributions$seats[seat.distributions$sim == 1])
@@ -117,15 +122,20 @@ calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest
   } else if (Sys.info()["sysname"] != "Windows") { # parallel call for Linux-based systems
     majorities <- mclapply(coal_names, function(coal) { calc_oneCoal(coal) }, mc.cores = cores)
   } else { # parallel call for Windows
-    local_cluster <- makePSOCKcluster(rep("localhost", cores)) # create cluster
+    # Reuse a caller-supplied cluster when given. Spawning + tearing down a fresh
+    # PSOCK cluster of `cores` full R processes (each reloading dplyr/tidyr/coalitions
+    # from scratch) on every call — as this used to do unconditionally — is cheap once,
+    # but ruinous when called once per survey date across a multi-year history.
+    owns_cluster <- is.null(cluster)
+    if (owns_cluster) {
+      cluster <- makePSOCKcluster(rep("localhost", cores)) # create cluster
+      clusterEvalQ(cl = cluster, c(library(parallel), library(coalitions), library(dplyr), library(tidyr)))
+    }
     # Export objects to the cluster
-    clusterExport(cl = local_cluster, c("calc_oneCoal","res_shares","res_maj"), envir=environment())
-    clusterEvalQ(cl = local_cluster, c(library(parallel), library(coalishin), library(coalitions), library(dplyr),
-                                       library(tidyr)))
-    
-    majorities <- parLapply(cl = local_cluster, X = coal_names,
+    clusterExport(cl = cluster, c("calc_oneCoal","res_shares","res_maj"), envir=environment())
+    majorities <- parLapply(cl = cluster, X = coal_names,
                          fun = function(coal) { calc_oneCoal(coal) })
-    stopCluster(cl = local_cluster) # close cluster
+    if (owns_cluster) stopCluster(cl = cluster) # close cluster only if we created it
   }
   
   ### Preparating and returning results
