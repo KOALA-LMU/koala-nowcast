@@ -1083,7 +1083,7 @@ html`<div style="
      empty space, while the Koalitionen card below clipped its "Weitere N
      Koalitionen anzeigen" toggle. -->
 
-## Row {height=49%}
+## Row {height=53%}
 
 #### Stimmenanteile
 
@@ -1125,13 +1125,12 @@ html`<div style="
     title: `${institute_label} - ${shareDateLabel}`,
     // without this the party names fall back to Plot's 10px default
     style: { fontSize: "13px" },
-    // see the marginTop note on the Umfrageverlauf trend chart; height grows by
-    // the same 20 so the bars keep the room they had
+    // see the marginTop note on the Umfrageverlauf trend chart
     marginTop: 40,
     marginBottom: hasLastResult ? 86 : 55,
     marginLeft: 55,
     marginRight: 25,
-    height: 330,
+    height: 360,
     x: {
       label: null,
       domain: [0, comparison.length],
@@ -1202,7 +1201,7 @@ html`<div style="
 }
 ```
 
-## Row {height=51%}
+## Row {height=47%}
 
 ### Column {width=50%}
 
@@ -1694,7 +1693,7 @@ html`<div style="
 
 # Zeitverlauf
 
-## Row {height=860px}
+## Row {height=890px}
 
 ::: {.card .zeitverlauf-card}
 
@@ -1740,7 +1739,7 @@ viewof hoveredCoalitionRow = {
     marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
-    height: 500,
+    height: 530,
     x: {
       type: "utc",
       label: null,
