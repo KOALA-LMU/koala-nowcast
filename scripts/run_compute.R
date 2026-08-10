@@ -1,0 +1,12 @@
+suppressPackageStartupMessages({
+  library(coalitions)
+  library(dplyr)
+  library(tidyr)
+  library(yaml)
+  library(jsonlite)
+})
+source("scripts/calc_coalProbs_helpers.R")
+source("scripts/calc_coalProbs.R")
+source("scripts/pending_configs.R")
+configs <- list.files("config/elections", pattern = "[.]yml$", full.names = TRUE)
+invisible(lapply(configs_todo(configs, force_all = TRUE), calc_coalProbs, cores = parallel::detectCores() - 1))
