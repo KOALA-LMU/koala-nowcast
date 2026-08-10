@@ -2,24 +2,29 @@ name: Deploy Website
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Scrape, Pool and Compute"]
-    types:
-      - completed
 
 permissions:
+  contents: read
   pages: write
   id-token: write
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - uses: actions/checkout@v4
 
-      # Supabase's endpoint carries a path (/storage/v1/s3), so virtual-hosted
-      # addressing would resolve to a bucket subdomain that does not exist.
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: stable
+
+      - name: Checkout beta
+        uses: actions/checkout@v4
+        with:
+          ref: 56-introduce-beta-website
+          path: beta
+
       - name: Use path-style S3 addressing
         run: aws configure set default.s3.addressing_style path
 
@@ -27,19 +32,17 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
-          # Supabase signs against the project's real region; "auto" fails here.
           AWS_DEFAULT_REGION: eu-central-1
           SUPABASE_ENDPOINT: https://agmqujupclwlttjwfnaq.storage.supabase.co/storage/v1/s3
         run: |
-          aws s3 sync s3://koala-data/surveys data/surveys/ \
+          aws s3 sync s3://koala-data/surveys stable/data/surveys/ \
             --endpoint-url "$SUPABASE_ENDPOINT"
-          # coalProbs.json is the largest result file and is only ever read by
-          # calc_coalProbs.R / pending_configs.R on the compute side; the
-          # dashboard uses coalProbs_grouping.json instead. Skipping it roughly
-          # halves deploy egress. This job never uploads, so nothing is at risk.
-          aws s3 sync s3://koala-data/results data/results/ \
+
+          aws s3 sync s3://koala-data/results stable/data/results/ \
             --endpoint-url "$SUPABASE_ENDPOINT" \
             --exclude "*/coalProbs.json"
+
+          cp -R stable/data beta/data
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -47,18 +50,37 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          working-directory: stable
           extra-packages: knitr, rmarkdown
-
-      - name: Prepare dashboard data
-        run: Rscript dashboard/prepare_data.R
 
       - uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Render dashboard
+      - name: Prepare stable dashboard data
+        working-directory: stable
+        run: Rscript dashboard/prepare_data.R
+
+      - name: Render stable dashboard
+        working-directory: stable
         run: quarto render dashboard/index.qmd --output-dir _site
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dashboard/_site
+      - name: Prepare beta dashboard data
+        working-directory: beta
+        run: Rscript dashboard/prepare_data.R
 
-      - uses: actions/deploy-pages@v4
+      - name: Render beta dashboard
+        working-directory: beta
+        run: quarto render dashboard/index.qmd --output-dir _site
+
+      - name: Assemble GitHub Pages website
+        run: |
+          mkdir -p _site/dev
+          cp -R stable/dashboard/_site/. _site/
+          cp -R beta/dashboard/_site/. _site/dev/
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy GitHub Pages
+        uses: actions/deploy-pages@v4
