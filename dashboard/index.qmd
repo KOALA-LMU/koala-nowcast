@@ -1201,7 +1201,7 @@ html`<div style="
 }
 ```
 
-## Row {height=47%}
+## Row {height=40%}
 
 ### Column {width=50%}
 
