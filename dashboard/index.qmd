@@ -1083,7 +1083,7 @@ html`<div style="
      empty space, while the Koalitionen card below clipped its "Weitere N
      Koalitionen anzeigen" toggle. -->
 
-## Row {height=60%}
+## Row {height=55%}
 
 #### Stimmenanteile
 
@@ -1201,7 +1201,7 @@ html`<div style="
 }
 ```
 
-## Row {height=40%}
+## Row {height=45%}
 
 ### Column {width=50%}
 
