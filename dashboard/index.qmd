@@ -218,8 +218,11 @@ party_to_label = Object.fromEntries(
 coalitionParties = label =>
   label.split("-").map(label => label_to_party[label])
 
+partyKey = parties =>
+  parties.slice().sort().join("|")
+
 normCoalition = label =>
-  coalitionParties(label).slice().sort().join("|")
+  partyKey(coalitionParties(label))
 
 labelFromParties = parties =>
   parties.map(party => party_to_label[party] || party).join("-")
@@ -274,8 +277,15 @@ excludedPairs = [
   ["left", "bsw"]
 ]
 
+// The single exception to "no party governs with AfD": AfD and BSW on their own,
+// which from here on is treated like any other coalition — no special display
+// rule, so it surfaces wherever the usual thresholds let it. Only that exact
+// pair, though: AfD with any other partner stays off the table, and so does
+// AfD-BSW with a third party joined to it.
+afdBswKey = "afd|bsw"
+
 isViableCoalition = parties =>
-  !(parties.includes("afd") && parties.length > 1) &&
+  (!parties.includes("afd") || parties.length === 1 || partyKey(parties) === afdBswKey) &&
   !excludedPairs.some(([a, b]) => parties.includes(a) && parties.includes(b))
 
 meanBy = (data, keyFn, valueFn) =>
@@ -1395,7 +1405,7 @@ html`<div style="
       ${plotInfo(html`
         <div style="font-weight:700;margin-bottom:4px">Wahrscheinlichkeiten für Mehrheiten möglicher Koalitionen</div>
         <div style="margin-bottom:6px">
-          Hier wird für alle möglichen Koalitionen die Wahrscheinlichkeit dargestellt, dass - wenn heute Wahl wäre - nach der Wahl eine potenzielle Mehrheit im Parlament besteht. Einbezogen werden hierbei ausschließlich <i>ausgewählte Koalitionen</i>. So wird z.B. eine Koalition der Union und der Linken ebenso wie generelle Koalitionsbeteiligungen der AfD nicht in die Berechnung miteinbezogen.
+          Hier wird für alle möglichen Koalitionen die Wahrscheinlichkeit dargestellt, dass - wenn heute Wahl wäre - nach der Wahl eine potenzielle Mehrheit im Parlament besteht. Einbezogen werden hierbei ausschließlich <i>ausgewählte Koalitionen</i>. So wird z.B. eine Koalition der Union und der Linken nicht in die Berechnung miteinbezogen. Koalitionsbeteiligungen der AfD bleiben ebenfalls außen vor - mit Ausnahme eines Bündnisses aus AfD und BSW.
         </div>
         <div>
           Wichtig: Falls eine Zweierkoalition (z.B. Union-SPD) möglich ist, werden übergeordnete Dreierbündnisse (z.B. Union-Grüne-SPD) in den Berechnungen als nicht möglich gewertet.
