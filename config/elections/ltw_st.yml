@@ -66,7 +66,7 @@ pollsters:
   - gms
   - infratest
   - insa
-
+  - pollytix
 # coalitions: dynamically derived at compute time from current pooled vote
 # shares (see derive_dynamic_coalitions() in scripts/calc_coalProbs_helpers.R).
 # Leaving this key absent/empty is what triggers the dynamic path.
