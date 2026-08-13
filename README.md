@@ -20,7 +20,7 @@ per election in [config/elections/](config/elections/):
 ## Architecture
 
 Everything is pre-computed in CI; the site is static files on GitHub Pages.
-Nothing is calculated in the browser beyond drawing.
+No statistical computation is made in the browser.
 
 ```
                  ┌──────────────── GitHub Actions: compute.yml (4×/day) ─────────────────┐
