@@ -179,7 +179,19 @@ addressing and region `eu-central-1`, because Supabase's endpoint carries a path
 ## Credits
 
 Poll data from [wahlrecht.de](https://www.wahlrecht.de). Methods from the
-`coalitions` package — Bender & Bauer (2018),
-[JOSS 3(23), 606](https://doi.org/10.21105/joss.00606).
+`coalitions` package.
+
+**Methodology publications**
+
+- Bender, A. & Bauer, A. (2018). *coalitions: Coalition probabilities in
+  multi-party democracies*. Journal of Open Source Software, 3(23), 606.
+  <https://doi.org/10.21105/joss.00606>
+- Bauer, A., Bender, A., Klima, A. et al. (2020). *KOALA: a new paradigm for
+  election coverage*. AStA Advances in Statistical Analysis, 104, 101–115.
+  <https://doi.org/10.1007/s10182-019-00352-6>
+- Bauer, A., Klima, A., Gauß, J., Kümpel, H., Bender, A. & Küchenhoff, H. (2022).
+  *Mundus Vult Decipi, Ergo Decipiatur: Visual Communication of Uncertainty in
+  Election Polls*. PS: Political Science & Politics, 55(1), 102–108.
+  <https://doi.org/10.1017/S1049096521000950>
 
 MIT licensed — see [LICENSE](LICENSE).
