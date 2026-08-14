@@ -3,6 +3,16 @@ name: Deploy Website
 on:
   workflow_dispatch:
 
+  push:
+    branches:
+      - dev
+    
+  workflow_run:
+    workflows: ["Scrape, Pool and Compute"]
+    types:
+      - completed
+
+
 permissions:
   contents: read
   pages: write
@@ -11,6 +21,7 @@ permissions:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    if: 
 
     steps:
       - name: Checkout master
@@ -22,7 +33,7 @@ jobs:
       - name: Checkout beta
         uses: actions/checkout@v4
         with:
-          ref: 56-introduce-beta-website
+          ref: dev
           path: beta
 
       - name: Use path-style S3 addressing
