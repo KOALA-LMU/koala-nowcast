@@ -104,22 +104,22 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
         distinct(party, .keep_all = TRUE) %>%   # take first record per party when two surveys land on the same day
         select(party, percent, votes)
 
+      # A party the pollster did not report is left out rather than entered at 0%:
+      # the poll says nothing about it (its voters sit inside "others"), and a 0%
+      # row also makes draw_from_posterior() discard about half of its draws. Only
+      # per-pollster rows are affected — impute_polls_for_pooling() in
+      # scrape_polls.R completes the "pooled" row before it reaches here. The
+      # resulting parties_ins drives everything below, so a party or coalition this
+      # poll cannot speak to is absent from the results rather than reported as 0.
+      #
+      # coalitions::sls() re-sorts parties alphabetically internally and returns
+      # seat counts with no names attached; coalitions::get_seats() then reattaches
+      # them positionally to survey's original row order. Pre-sorting here so that
+      # order already matches what sls() assumes avoids that mislabeling.
       survey <- survey_raw %>%
-        filter(party != "others") %>%
-        right_join(data.frame(party = parties, stringsAsFactors = FALSE), by = "party")
-
-      others_row <- survey_raw %>% filter(party == "others")
-      if (nrow(others_row) > 0)
-        survey <- bind_rows(survey, others_row %>% select(party, percent, votes))
-
-      survey <- survey %>%
-        mutate(percent = ifelse(is.na(percent), 0, percent),
-               votes   = ifelse(is.na(votes),   0, votes)) %>%
-        # coalitions::sls() re-sorts parties alphabetically internally and returns
-        # seat counts with no names attached; coalitions::get_seats() then reattaches
-        # them positionally to survey's original row order. Pre-sorting here so that
-        # order already matches what sls() assumes avoids that mislabeling.
+        filter(party %in% parties_all, !is.na(percent)) %>%
         arrange(party)
+      parties_ins <- intersect(parties, survey$party)
 
       dirichlet.draws    <- coalitions::draw_from_posterior(survey = survey, nsim = nsim, correction = correction)
       # Drop "others" before seat allocation so majorities are computed over the
@@ -129,13 +129,21 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
                                                   survey = survey %>% filter(party != "others"),
                                                   distrib.fun = distrib_fun, n_seats = parl_seats)
 
-      res_all   <- calc_allCoalProbs(seat.distributions, parties, dirichlet.draws,
-                                     strongest_party_coals = strongest_party_coals, cores = cores)
+      # Leadership variants naming an omitted party are appended to
+      # calc_allCoalProbs()'s coalition list regardless (which.min() skips the NA
+      # from match()) and then scored from the surviving members alone — a real
+      # probability under a label the poll cannot support. Drop them.
+      spc_ins <- Filter(function(x) all(strsplit(x, "\\|")[[1]] %in% parties_ins),
+                        strongest_party_coals)
+      if (length(spc_ins) == 0) spc_ins <- NULL
+
+      res_all   <- calc_allCoalProbs(seat.distributions, parties_ins, dirichlet.draws,
+                                     strongest_party_coals = spc_ins, cores = cores)
       coalProbs <- res_all$coalProbs
       allShares <- res_all$shares_perSimulation
 
       # ── Filter to realistic coalitions ──────────────────────────────────────
-      realistic_norms <- c(sapply(parties, norm_coal), sapply(coals, norm_coal))
+      realistic_norms <- c(sapply(parties_ins, norm_coal), sapply(coals, norm_coal))
       is_realistic    <- sapply(allShares$coalition, function(x) norm_coal(x) %in% realistic_norms)
       shares          <- allShares[is_realistic, ]
 
@@ -143,10 +151,11 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       res_grouping <- res_all$coalProbs
       # For each YAML coalition find its matching row in res_grouping.
       # Strongest-party coalitions are matched by exact string; all others by sorted party set.
+      # Matched against spc_ins: that is the set res_grouping's rows were built from.
       ids_norm        <- sapply(coals, function(x)
-        if (!is.null(strongest_party_coals) && x %in% strongest_party_coals) x else norm_coal(x))
+        if (!is.null(spc_ins) && x %in% spc_ins) x else norm_coal(x))
       coals_norm_rows <- sapply(res_grouping$coalition, function(x)
-        if (!is.null(strongest_party_coals) && x %in% strongest_party_coals) x else norm_coal(x))
+        if (!is.null(spc_ins) && x %in% spc_ins) x else norm_coal(x))
       indices <- sapply(ids_norm, function(id) {
         idx <- which(coals_norm_rows == id)
         if (length(idx)) idx[1] else NA_integer_
@@ -175,8 +184,8 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       }
 
       # ── Hurdle probabilities ─────────────────────────────────────────────────
-      partyShares    <- allShares[allShares$coalition %in% parties, colnames(allShares) != "coalition"]
-      res_passHurdle <- data.frame("party" = parties,
+      partyShares    <- allShares[allShares$coalition %in% parties_ins, colnames(allShares) != "coalition"]
+      res_passHurdle <- data.frame("party" = parties_ins,
                                    "prob"  = rowMeans(partyShares > hurdle))
 
       # ── Attach pollster/date, subsample simulations, return ─────────────────

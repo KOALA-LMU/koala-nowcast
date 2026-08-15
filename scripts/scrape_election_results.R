@@ -48,6 +48,13 @@ scrape_election_results <- function(
   url = "https://www.wahlrecht.de/ergebnisse/bundestag.htm",
   election_year = 2025
 ) {
+
+  # Grep the election
+  splitted_url <- strsplit(url, "/", fixed = TRUE)[[1]]
+  rel_part <- splitted_url[[length(splitted_url)]]
+  election <- strsplit(rel_part, ".", fixed = TRUE)[[1]][[1]]
+
+
   page <- rvest::read_html(url)
   table <- rvest::html_table(page, fill = TRUE)[[2]]
   
@@ -73,7 +80,7 @@ scrape_election_results <- function(
 
   res <- table |>
     dplyr::group_by(party) |>
-    summarise(
+    dplyr::summarise(
       label = dplyr::first(ifelse(party == "others", "Sonstige", label)),
       percent = sum(percent, na.rm = TRUE),
       seats = sum(seats, na.rm = TRUE),
@@ -89,6 +96,10 @@ scrape_election_results <- function(
       tibble::tibble(label = "BSW", party = "bsw", percent = 0.0,
       seats = 0, sum_seats = res$sum_seats[[1]])
     )
+  }
+
+  if (election == "berlin") {
+    res$percent[res$label == "Sonstige"] <- 9.0
   }
 
   return(res)

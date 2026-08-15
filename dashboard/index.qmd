@@ -218,8 +218,11 @@ party_to_label = Object.fromEntries(
 coalitionParties = label =>
   label.split("-").map(label => label_to_party[label])
 
+partyKey = parties =>
+  parties.slice().sort().join("|")
+
 normCoalition = label =>
-  coalitionParties(label).slice().sort().join("|")
+  partyKey(coalitionParties(label))
 
 labelFromParties = parties =>
   parties.map(party => party_to_label[party] || party).join("-")
@@ -239,6 +242,33 @@ yearTicks = (min, max) => {
 // default number formatting, which renders the year as "2,026".
 formatYear = d => String(d.getUTCFullYear())
 
+// Every number shown to a reader goes through here: toFixed() is locale-blind
+// and would print "11.7". Fixed digits keep a column's decimals aligned.
+formatDe = (value, digits = 1) =>
+  Number(value).toLocaleString("de-DE", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits
+  })
+
+// Ceiling for the Umfrageverlauf Stimmenanteil axes, per election: the derived
+// domain runs to 40 % for the Bundestagswahl, where nothing has polled above 33.
+// Per election because the state series really do reach the low 40s; an election
+// absent here keeps its derived domain.
+//
+// Block with an explicit return rather than `= ({ BTW: 35 })`, for the same
+// reason as election_files below: Quarto's OJS layer evaluates a cell whose body
+// is a parenthesised object literal to undefined.
+voteShareYCap = {
+  return { BTW: 35 }
+}
+
+// Caps `derived`, but never below `dataMax` — a future poll above the cap widens
+// the axis again rather than being drawn outside the frame.
+capYMax = (derived, dataMax, election) => {
+  const cap = voteShareYCap[election]
+  return cap == null ? derived : Math.max(Math.min(derived, cap), dataMax)
+}
+
 // Coalitions that are mathematically possible but politically off the table —
 // no party governs with AfD, and Linke is ruled out by FDP, CDU and BSW alike.
 excludedPairs = [
@@ -247,8 +277,15 @@ excludedPairs = [
   ["left", "bsw"]
 ]
 
+// The single exception to "no party governs with AfD": AfD and BSW on their own,
+// which from here on is treated like any other coalition — no special display
+// rule, so it surfaces wherever the usual thresholds let it. Only that exact
+// pair, though: AfD with any other partner stays off the table, and so does
+// AfD-BSW with a third party joined to it.
+afdBswKey = "afd|bsw"
+
 isViableCoalition = parties =>
-  !(parties.includes("afd") && parties.length > 1) &&
+  (!parties.includes("afd") || parties.length === 1 || partyKey(parties) === afdBswKey) &&
   !excludedPairs.some(([a, b]) => parties.includes(a) && parties.includes(b))
 
 meanBy = (data, keyFn, valueFn) =>
@@ -558,7 +595,7 @@ plotCoalitionDensity = (group, height = 260) => {
     && Number.isFinite(parliamentPresenceN)
     && Number.isFinite(simulationN)
   const parliamentPresenceLabel = hasParliamentPresence
-    ? `${parliamentPresenceN.toFixed(0)} von ${simulationN.toFixed(0)} Durchgängen (${(parliamentPresence * 100).toFixed(1).replace(".", ",")}%)`
+    ? `${formatDe(parliamentPresenceN, 0)} von ${formatDe(simulationN, 0)} Durchgängen (${formatDe(parliamentPresence * 100)}%)`
     : ""
 
   if (dat.length < 2 || !Number.isFinite(d3.max(dat, d => d.density))) {
@@ -574,7 +611,7 @@ plotCoalitionDensity = (group, height = 260) => {
   const hasInterval = Number.isFinite(ciLower) && Number.isFinite(ciUpper)
   const hasSeatInterval = Number.isFinite(ciLowerSeats) && Number.isFinite(ciUpperSeats)
   const intervalLabel = hasSeatInterval
-    ? `${ciLowerSeats.toFixed(0)} - ${ciUpperSeats.toFixed(0)}`
+    ? `${formatDe(ciLowerSeats, 0)} - ${formatDe(ciUpperSeats, 0)}`
     : ""
   const intervalSentence = isSingleParty
     ? html`Für die Partei <b>${label}</b> liegt die Anzahl der Sitze mit 95% Wahrscheinlichkeit im Intervall <b style="color:#f39c12;font-size:1.18rem">${intervalLabel}</b>.`
@@ -595,7 +632,7 @@ plotCoalitionDensity = (group, height = 260) => {
       label: null,
       domain: [0, 1],
       ticks: [0, 0.25, 0.5, 0.75, 1],
-      tickFormat: d => `${(d * 100).toFixed(0)}%`,
+      tickFormat: d => `${formatDe(d * 100, 0)}%`,
       axis: "top"
     },
     y: {
@@ -839,6 +876,11 @@ updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
   day: "2-digit", month: "long", year: "numeric", timeZone: "UTC"
 })
 
+// The selected Umfragebasis, worded as in the selector itself.
+institute_label = institute === "Pooled"
+  ? "Gepoolte Umfrage"
+  : (pollster_names[institute] ?? institute)
+
 coal_source = institute === "Pooled"
   ? cur.coalitions.coalitions
   : cur.pollster_data.per_pollster_coalitions.filter(d => d.pollster === institute)
@@ -1047,7 +1089,11 @@ html`<div style="
 
 # Überblick
 
-## Row {height=50%}
+<!-- Top row weighted below the bottom one: its chart is a fixed height and left
+     empty space, while the Koalitionen card below clipped its "Weitere N
+     Koalitionen anzeigen" toggle. -->
+
+## Row {height=55%}
 
 #### Stimmenanteile
 
@@ -1055,6 +1101,16 @@ html`<div style="
 //| label: chart-vote-shares
 {
   const shares = cleanShares(shares_source, true)
+
+  // Not the sidebar's `updated`, which is election-wide: a selected institute
+  // may last have polled weeks before the newest poll. UTC as for `updated`.
+  const shareDate = d3.max(shares_source, d => new Date(d.date))
+  const shareDateLabel = shareDate
+    ? shareDate.toLocaleDateString("de-DE", {
+      day: "2-digit", month: "long", year: "numeric", timeZone: "UTC"
+    })
+    : updated
+
   const lastResults = cleanShares(cur.last_result_data.last_result || [], true)
   const lastByParty = Object.fromEntries(lastResults.map(d => [d.party, d.percent]))
   const comparison = shares.map((d, i) => ({
@@ -1072,17 +1128,19 @@ html`<div style="
     d.diff == null
       ? ""
       : Math.abs(d.diff) < 0.05
-      ? "±0"
-      : `${d.diff >= 0 ? "+" : ""}${d.diff.toLocaleString("de-DE", {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1
-      })}`
+      ? "±0%"
+      : `${d.diff >= 0 ? "+" : ""}${formatDe(d.diff)}%`
 
   return Plot.plot({
+    title: `${institute_label} - ${shareDateLabel}`,
+    // without this the party names fall back to Plot's 10px default
+    style: { fontSize: "13px" },
+    // see the marginTop note on the Umfrageverlauf trend chart
+    marginTop: 40,
     marginBottom: hasLastResult ? 86 : 55,
     marginLeft: 55,
     marginRight: 25,
-    height: 310,
+    height: 360,
     x: {
       label: null,
       domain: [0, comparison.length],
@@ -1093,7 +1151,7 @@ html`<div style="
       label: "Stimmenanteil (%)",
       grid: true,
       domain: [0, maxY],
-      tickFormat: d => d + "%"
+      tickFormat: d => formatDe(d, 0) + "%"
     },
     marks: [
       ...(hasLastResult ? [
@@ -1119,15 +1177,20 @@ html`<div style="
         strokeDasharray: "4 3",
         strokeWidth: 1.2
       }),
+      // Share and change are right-aligned to a common edge so their "%" signs
+      // line up: same anchor, and a shared dx of half a label width to keep the
+      // block centred under the bars. Centred when the value stands alone.
       Plot.text(comparison, {
         x: d => hasLastResult ? d.index + 0.48 : d.index + 0.5,
         y: 0,
-        text: d => d.percent.toFixed(1) + "%",
-        fill: "#555",
+        text: d => formatDe(d.percent) + "%",
+        // heavier than the change below it: this is the headline number
+        fill: "#333",
         fontSize: 12,
-        fontWeight: 600,
+        fontWeight: 700,
         dy: 45,
-        textAnchor: "middle"
+        dx: hasLastResult ? 20 : 0,
+        textAnchor: hasLastResult ? "end" : "middle"
       }),
       ...(hasLastResult ? [
         Plot.text(comparison, {
@@ -1136,9 +1199,10 @@ html`<div style="
           text: formatDiff,
           fill: d => d.diff > 0 ? "#666" : d.diff < 0 ? "#999" : "#888",
           fontSize: 12,
-          fontWeight: 600,
+          fontWeight: 500,
           dy: 61,
-          textAnchor: "middle"
+          dx: 20,
+          textAnchor: "end"
         })
       ] : []),
       Plot.ruleY([0])
@@ -1147,7 +1211,7 @@ html`<div style="
 }
 ```
 
-## Row {height=50%}
+## Row {height=45%}
 
 ### Column {width=50%}
 
@@ -1284,12 +1348,16 @@ html`<div style="
     style: { fontSize: "13px" },
     marginLeft: 155,
     marginRight: 65,
+    // Plot keeps the x-axis label at the bottom edge of the margin, so the gap
+    // to the ticks is marginBottom minus tick height: at the default 30 the
+    // label overlapped "100%".
+    marginBottom: 48,
     height: Math.max(280, rows.length * 42 + 42),
     x: {
       label: "Koalitionswahrscheinlichkeit",
       domain: [0, 1],
       ticks: [0, 0.25, 0.5, 0.75, 1],
-      tickFormat: d => (d * 100).toFixed(0) + "%"
+      tickFormat: d => formatDe(d * 100, 0) + "%"
     },
     y: {
       label: null,
@@ -1337,7 +1405,7 @@ html`<div style="
       ${plotInfo(html`
         <div style="font-weight:700;margin-bottom:4px">Wahrscheinlichkeiten für Mehrheiten möglicher Koalitionen</div>
         <div style="margin-bottom:6px">
-          Hier wird für alle möglichen Koalitionen die Wahrscheinlichkeit dargestellt, dass - wenn heute Wahl wäre - nach der Wahl eine potenzielle Mehrheit im Parlament besteht. Einbezogen werden hierbei ausschließlich <i>ausgewählte Koalitionen</i>. So wird z.B. eine Koalition der Union und der Linken ebenso wie generelle Koalitionsbeteiligungen der AfD nicht in die Berechnung miteinbezogen.
+          Hier wird für alle möglichen Koalitionen die Wahrscheinlichkeit dargestellt, dass - wenn heute Wahl wäre - nach der Wahl eine potenzielle Mehrheit im Parlament besteht. Einbezogen werden hierbei ausschließlich <i>ausgewählte Koalitionen</i>. So wird z.B. eine Koalition der Union und der Linken nicht in die Berechnung miteinbezogen. Koalitionsbeteiligungen der AfD bleiben ebenfalls außen vor - mit Ausnahme eines Bündnisses aus AfD und BSW.
         </div>
         <div>
           Wichtig: Falls eine Zweierkoalition (z.B. Union-SPD) möglich ist, werden übergeordnete Dreierbündnisse (z.B. Union-Grüne-SPD) in den Berechnungen als nicht möglich gewertet.
@@ -1500,12 +1568,14 @@ html`<div style="
     style: { fontSize: "13px" },
     marginLeft: 80,
     marginRight: 80,
+    // same clearance as the Koalitionen chart above
+    marginBottom: 48,
     height: Math.max(260, hurdles.length * 34 + 40),
     x: {
       label: "Einzugswahrscheinlichkeit",
       domain: [0, 1],
       ticks: [0, 0.25, 0.5, 0.75, 1],
-      tickFormat: d => (d * 100).toFixed(0) + "%"
+      tickFormat: d => formatDe(d * 100, 0) + "%"
     },
     y: {
       label: null,
@@ -1633,7 +1703,7 @@ html`<div style="
 
 # Zeitverlauf
 
-## Row {height=820px}
+## Row {height=860px}
 
 ::: {.card .zeitverlauf-card}
 
@@ -1679,7 +1749,7 @@ viewof hoveredCoalitionRow = {
     marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
-    height: 550,
+    height: 530,
     x: {
       type: "utc",
       label: null,
@@ -1690,10 +1760,10 @@ viewof hoveredCoalitionRow = {
       tickFormat: formatYear
     },
     y: {
-      label: "Wahrscheinlichkeit",
+      label: "Koalitionswahrscheinlichkeit",
       grid: true,
       domain: [0, 1],
-      tickFormat: d => (d * 100) + "%"
+      tickFormat: d => formatDe(d * 100, 0) + "%"
     },
     color: {
       domain: selectedLabels,
@@ -1815,7 +1885,7 @@ viewof hoveredCoalitionRow = {
       it.text.style("display", visible ? null : "none")
       it.link.style("display", "none")
       if (!visible) return
-      it.text.text(`${it.label} ${(match.probability * 100).toFixed(1)}%`)
+      it.text.text(`${it.label} ${formatDe(match.probability * 100)}%`)
     })
 
     // one side for all of them, chosen from the widest label. Deciding per label
@@ -1960,7 +2030,7 @@ viewof selectedCoalitions = {
 
 # Umfragedaten
 
-## Row {height=670px}
+## Row {height=710px}
 
 ### Column {width=65%}
 
@@ -1997,7 +2067,13 @@ viewof hoveredRow = {
   // election's entire pooled history, so it depends on neither the hovered
   // date, the institute selector, nor any date window. Rounding up to the next
   // 5 keeps it from nudging every time a new poll sets a slightly higher high.
-  const yMax = Math.max(30, Math.ceil((d3.max(pooled, d => d.percent) + 3) / 5) * 5)
+  // The scatter is what the axis has to clear, not the lines: a single poll can
+  // sit well above the pooled series it feeds.
+  const yMax = capYMax(
+    Math.max(30, Math.ceil((d3.max(pooled, d => d.percent) + 3) / 5) * 5),
+    d3.max([...raw, ...pooled], d => d.percent) + 1,
+    election
+  )
 
   // The poll series runs across the last actual election (23.02.2025 for the
   // Bundestag), so everything left of that date are Sonntagsfragen for an
@@ -2055,7 +2131,7 @@ viewof hoveredRow = {
     marginBottom: 64,
     marginLeft: 55,
     marginRight: 110,
-    height: 550,
+    height: 500,
     x: {
       type: "utc",
       label: null,
@@ -2068,7 +2144,7 @@ viewof hoveredRow = {
       label: "Stimmenanteil (%)",
       grid: true,
       domain: [0, yMax],
-      tickFormat: d => d + "%"
+      tickFormat: d => formatDe(d, 0) + "%"
     },
     color: {
       domain: labels,
@@ -2105,14 +2181,18 @@ viewof hoveredRow = {
           strokeWidth: 3
         })
       ] : []),
-      // individual polls are background context only — kept faint so the
-      // pooled trend lines stay legible where the scatter is dense
+      // In the pooled view the individual polls are background context only —
+      // kept faint so the pooled trend lines stay legible where the scatter is
+      // dense. With a single institute selected there are no lines, so these
+      // dots are the whole series: full-strength colour, larger radius, and a
+      // white ring to keep polls that land close together apart.
       Plot.dot(raw, {
         x: "date",
         y: "percent",
         fill: "label",
-        fillOpacity: 0.15,
-        r: 2.5
+        ...(showLine
+          ? { fillOpacity: 0.15, r: 2.5 }
+          : { fillOpacity: 1, r: 4.25, stroke: "white", strokeWidth: 1 })
       }),
       ...(showLine ? [
         Plot.line(pooled.filter(d => d.label === party_to_label.fdp), {
@@ -2202,7 +2282,7 @@ viewof hoveredRow = {
       const i = present.indexOf(match)
       it.dot.attr("cx", px).attr("cy", yScale.apply(match.percent))
       it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
-        .text(`${it.label} ${match.percent.toFixed(1)}%`)
+        .text(`${it.label} ${formatDe(match.percent)}%`)
       const w = widthOf(it.text.node())
       const flip = px + 8 + w > svgWidth - pad && px - 8 - w >= pad
       it.text.attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
@@ -2266,21 +2346,35 @@ viewof hoveredRow = {
   const shares = [...party_order, "others"]
     .filter(p => hoveredRow[p] != null)
     .map(p => ({ party: p, percent: hoveredRow[p], label: party_names[p] || p }))
-  const maxY = Math.max(35, d3.max(shares, d => d.percent) + 5)
+
+  // Fixed y domain, following the same rule as the trend chart to its left: per
+  // election, but constant within one. Deriving it from the hovered row instead
+  // made the axis rescale on every crosshair move, so the bars changed height
+  // between two dates that differ by a point — the axis moved, not the poll.
+  // cur_polls.history is the unfiltered series (every institute plus the pooled
+  // one, "others" included), so the selected institute does not shift it either
+  // and no bar can exceed it. Rounding up to the next 5 keeps the ticks clean
+  // and leaves room for the value label sitting above each bar.
+  // +2 on the data max: the value label sits a point above its bar.
+  const maxY = capYMax(
+    Math.max(35, Math.ceil((d3.max(cur_polls.history, d => d.percent) + 3) / 5) * 5),
+    d3.max(cur_polls.history, d => d.percent) + 2,
+    election
+  )
 
   const hoveredDate = hoveredRow.date.toLocaleDateString("de-DE", {
     day: "2-digit", month: "long", year: "numeric"
   })
-  const instituteLabel = institute === "Pooled" ? "Gepoolte Umfrage" : (pollster_names[institute] ?? institute)
-
   return Plot.plot({
-    title: `Umfrage vom ${hoveredDate} (${instituteLabel})`,
+    title: `Umfrage vom ${hoveredDate} (${institute_label})`,
     subtitle: " ",
     style: { fontSize: "14px" },
+    // 40 as on the trend chart to the left, or the y-axis label sits on "40%"
+    marginTop: 40,
     marginBottom: 40,
     marginLeft: 55,
     marginRight: 25,
-    height: 550,
+    height: 500,
     x: {
       label: null,
       domain: shares.map(d => d.label)
@@ -2289,7 +2383,7 @@ viewof hoveredRow = {
       label: "Stimmenanteil (%)",
       grid: true,
       domain: [0, maxY],
-      tickFormat: d => d + "%"
+      tickFormat: d => formatDe(d, 0) + "%"
     },
     marks: [
       Plot.barY(shares, {
@@ -2305,7 +2399,7 @@ viewof hoveredRow = {
       Plot.text(shares, {
         x: "label",
         y: d => d.percent + 1,
-        text: d => d.percent.toFixed(1) + "%",
+        text: d => formatDe(d.percent) + "%",
         fill: "#555",
         fontSize: 12,
         textAnchor: "middle"
