@@ -72,20 +72,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
     filter(date >= scrape_from) %>%
     mutate(election = cfg$id)
 
-  # Drop poll dates where any required party is missing
-  complete_dates <- fresh %>%
-    group_by(date, pollster) %>%
-    summarise(has_all = all(parties_required %in% party), .groups = "drop") %>%
-    group_by(date) %>%
-    summarise(all_complete = all(has_all), .groups = "drop") %>%
-    filter(all_complete) %>%
-    pull(date)
-
-  n_dropped <- length(unique(fresh$date)) - length(complete_dates)
-  if (n_dropped > 0)
-    message(sprintf("[%s] Dropped %d incomplete poll date(s)", cfg$id, n_dropped))
-
-  fresh <- filter(fresh, date %in% complete_dates)
+  fresh <- drop_incomplete_polls(fresh, parties_required, cfg$id)
 
   # Find rows not already in existing data
   if (!is.null(existing)) {
@@ -149,6 +136,27 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   message(sprintf("[%s] Saved to %s", cfg$id, out_file))
 
   invisible(TRUE)
+}
+
+# Drop individual polls where any required party is missing.
+#
+# Scoped to the single poll (pollster + date), NOT the whole date. Two institutes
+# often publish on the same day; if the check were reduced to the date, one
+# incomplete poll would take down every other institute's complete poll that day,
+# and those valid polls would then be missing from every pooling window covering
+# it. A date disappears entirely only when all of its polls are incomplete.
+drop_incomplete_polls <- function(fresh, parties_required, id = "") {
+  poll_completeness <- fresh %>%
+    group_by(date, pollster) %>%
+    summarise(has_all = all(parties_required %in% party), .groups = "drop")
+
+  dropped <- filter(poll_completeness, !has_all)
+  if (nrow(dropped) > 0)
+    message(sprintf("[%s] Dropped %d incomplete poll(s): %s", id, nrow(dropped),
+                    paste(sprintf("%s (%s)", dropped$pollster, dropped$date),
+                          collapse = ", ")))
+
+  semi_join(fresh, filter(poll_completeness, has_all), by = c("date", "pollster"))
 }
 
 impute_polls_for_pooling <- function(raw, cfg) {
