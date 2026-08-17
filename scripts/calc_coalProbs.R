@@ -170,13 +170,16 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       res_grouping      <- res_grouping[, c("coal_type", "prob")]
 
       # ── Biggest-party analyses ───────────────────────────────────────────────
+      # Normalised by the rows actually drawn, not by nsim: draw_from_posterior()
+      # discards draws where the correction pushed a share below 0, which happens
+      # once a party polls under the correction width (0.5pp by default).
       res_biggestParty <- if (!is.null(cfg$analyses$biggest_party)) {
         bind_rows(lapply(seq_along(cfg$analyses$biggest_party), function(i) {
           p_vec        <- intersect(cfg$analyses$biggest_party[[i]]$parties, colnames(dirichlet.draws))
           biggestParty <- p_vec[apply(dirichlet.draws[, p_vec, drop = FALSE], 1, which.max)]
           data.frame("index" = paste0("biggestParty", i),
                      "party" = p_vec,
-                     "prob"  = sapply(p_vec, function(x) sum(biggestParty == x) / nsim, USE.NAMES = FALSE),
+                     "prob"  = sapply(p_vec, function(x) sum(biggestParty == x) / nrow(dirichlet.draws), USE.NAMES = FALSE),
                      stringsAsFactors = FALSE)
         }))
       } else {
