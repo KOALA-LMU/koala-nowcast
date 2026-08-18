@@ -61,16 +61,20 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
     fn_args$address <- cfg$scraper$url
   if ("ind_row_remove" %in% names(formals(fn)) && !is.null(cfg$scraper$ind_row_remove))
     fn_args$ind_row_remove <- -cfg$scraper$ind_row_remove
-  # call function and replace/edit field values based on conventions
+  # call function and replace/edit field values based on conventions.
+  # Date filter runs before folding/pivoting so fold_unmodelled_parties() only
+  # reports polls that reach the output.
   fresh <- do.call(fn, fn_args) %>%
     mutate(
       pollster = replace(pollster, pollster == "infratestdimap", "infratest"),
       pollster = gsub("forschungsgruppewahlen", "fgw", pollster)
     ) %>%
+    filter(date >= scrape_from) %>%
+    fold_unmodelled_parties(parties, cfg$id) %>%
     collapse_parties(parties = parties) %>%
     unnest(survey) %>%
-    filter(date >= scrape_from) %>%
-    mutate(election = cfg$id)
+    mutate(election = cfg$id) %>%
+    warn_off_total(cfg$id)
 
   fresh <- drop_incomplete_polls(fresh, parties_required, cfg$id)
 
@@ -136,6 +140,57 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   message(sprintf("[%s] Saved to %s", cfg$id, out_file))
 
   invisible(TRUE)
+}
+
+# Fold scraped parties the config does not model into others (Sonstige).
+#
+# collapse_parties() pivots only the columns named in `parties`; every other
+# party column is left behind and its share silently disappears, so the poll no
+# longer sums to 100 and Sonstige is understated. wahlrecht breaks small parties
+# out separately in the run-up to an election, so a column that is empty today
+# can start carrying a share mid-campaign. The set is derived, not listed, so a
+# party broken out later needs no code change.
+fold_unmodelled_parties <- function(wide, parties, id = "") {
+  meta       <- c("pollster", "date", "start", "end", "respondents")
+  unmodelled <- setdiff(names(select(wide, where(is.numeric))), c(meta, parties, "others"))
+  if (length(unmodelled) == 0) return(wide)
+
+  if (!"others" %in% names(wide)) {
+    warning(sprintf("[%s] No 'others' column to fold %s into — their share is lost",
+                    id, paste(unmodelled, collapse = ", ")))
+    return(select(wide, -all_of(unmodelled)))
+  }
+
+  extra <- rowSums(wide[unmodelled], na.rm = TRUE)
+  if (any(extra > 0))
+    message(sprintf("[%s] Folded %s into others for %d poll(s): %s", id,
+                    paste(unmodelled, collapse = ", "), sum(extra > 0),
+                    paste(sprintf("%s (%s, +%g)", wide$pollster, wide$date,
+                                  extra)[extra > 0], collapse = ", ")))
+
+  # if_else, not +: a poll reporting no Sonstige keeps its NA instead of a spurious 0%
+  wide %>%
+    mutate(others = if_else(extra > 0, coalesce(others, 0) + extra, others)) %>%
+    select(-all_of(unmodelled))
+}
+
+# Warn about polls whose shares do not add up to ~100.
+#
+# Both scrapers only emit rows summing to exactly 100, so after folding every
+# poll must still hit 100; a deviation means a table shape neither the fold nor
+# the config anticipated. Warn rather than stop: the pipeline runs unattended
+# over all elections, and one odd poll should not block the others' updates.
+warn_off_total <- function(fresh, id = "", tol = 0.5) {
+  off <- fresh %>%
+    group_by(date, pollster) %>%
+    summarise(total = sum(percent, na.rm = TRUE), .groups = "drop") %>%
+    filter(abs(total - 100) > tol)
+
+  if (nrow(off) > 0)
+    warning(sprintf("[%s] %d poll(s) do not sum to 100: %s", id, nrow(off),
+                    paste(sprintf("%s (%s): %g", off$pollster, off$date, off$total),
+                          collapse = ", ")))
+  invisible(fresh)
 }
 
 # Drop individual polls where any required party is missing.
