@@ -1,0 +1,211 @@
+name: Nowcast Pipeline
+
+on:
+  schedule:
+    - cron: '0 2,8,14,20 * * *'   # 4 AM, 10 AM, 4 PM, 10 PM CEST
+
+  workflow_dispatch:
+    inputs:
+      skip_compute:
+        description: 'Redeploy the site without scraping or recomputing'
+        type: boolean
+        default: false
+
+  push:
+    branches:
+      - master
+      - dev
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: koala-pipeline
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
+      # Supabase signs against the project's real region; "auto" fails here.
+      AWS_DEFAULT_REGION: eu-central-1
+      SUPABASE_ENDPOINT: https://agmqujupclwlttjwfnaq.storage.supabase.co/storage/v1/s3
+      # A push changes code, not poll data, so it renders without scraping.
+      RUN_COMPUTE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.skip_compute) }}
+
+    steps:
+      # The site always renders master and dev; compute runs the triggering ref.
+      - name: Check out pipeline code
+        uses: actions/checkout@v4
+        with:
+          path: pipeline
+
+      - name: Check out master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: stable
+
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          path: beta
+
+      # The endpoint carries a path (/storage/v1/s3), which virtual-hosted
+      # addressing would turn into a bucket subdomain that does not exist.
+      - name: Use path-style S3 addressing
+        run: aws configure set default.s3.addressing_style path
+
+      # In full: the upload syncs with --delete, so anything missing here is
+      # dropped from the bucket.
+      - name: Download existing data from Supabase Storage
+        run: |
+          mkdir -p pipeline/data/surveys pipeline/data/results
+          aws s3 sync s3://koala-data/surveys pipeline/data/surveys/ \
+            --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
+          aws s3 sync s3://koala-data/results pipeline/data/results/ \
+            --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -z "$(ls -A pipeline/data/results 2>/dev/null)" ]; then
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: pipeline
+          extra-packages: knitr, rmarkdown
+
+      - name: Scrape and pool polls
+        id: scrape
+        if: env.RUN_COMPUTE == 'true'
+        working-directory: pipeline
+        run: |
+          Rscript -e '
+            source("scripts/scrape_polls.R")
+            configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
+            new_data <- any(sapply(configs, scrape_election))
+            cat(paste0("new_data=", new_data, "\n"), file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
+          '
+
+      # Backup for when a run uploads surveys but not results: the next scrape
+      # sees those polls as present and reports new_raw=FALSE, so the gap never
+      # closes. Comparing scraped against computed dates catches it either way.
+      - name: Check for scraped dates without results
+        id: pending
+        if: env.RUN_COMPUTE == 'true'
+        working-directory: pipeline
+        run: |
+          Rscript -e '
+            source("scripts/pending_configs.R")
+            configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
+            pending <- length(configs_todo(configs)) > 0
+            cat(paste0("pending=", pending, "\n"), file = Sys.getenv("GITHUB_OUTPUT"), append = TRUE)
+          '
+
+      - name: Decide what to compute and render
+        id: gate
+        env:
+          NEW_DATA: ${{ steps.scrape.outputs.new_data }}
+          PENDING: ${{ steps.pending.outputs.pending }}
+          HAS_RESULTS: ${{ steps.check_results.outputs.has_results }}
+        run: |
+          changed=false
+          if [ "$RUN_COMPUTE" = "true" ] &&
+             { [ "$NEW_DATA" = "TRUE" ] || [ "$PENDING" = "TRUE" ] || [ "$HAS_RESULTS" = "false" ]; }; then
+            changed=true
+          fi
+
+          # A schedule rebuilds only when the numbers moved; a push and a
+          # dispatch changed the site itself, so they rebuild regardless.
+          render=$changed
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then render=true; fi
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          echo "render=$render" >> "$GITHUB_OUTPUT"
+          echo "changed=$changed, render=$render" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Compute coalition probabilities
+        if: steps.gate.outputs.changed == 'true'
+        working-directory: pipeline
+        env:
+          FORCE_ALL: ${{ steps.check_results.outputs.has_results == 'false' }}
+        run: |
+          Rscript -e '
+            suppressPackageStartupMessages({ library(coalitions); library(dplyr); library(tidyr); library(yaml); library(jsonlite) })
+            source("scripts/calc_coalProbs_helpers.R")
+            source("scripts/calc_coalProbs.R")
+            source("scripts/pending_configs.R")
+            configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
+            todo <- configs_todo(configs, force_all = Sys.getenv("FORCE_ALL") == "true")
+            invisible(lapply(todo, calc_coalProbs))
+          '
+
+      - name: Upload data to Supabase Storage
+        if: steps.gate.outputs.changed == 'true'
+        run: |
+          aws s3 sync pipeline/data/surveys/ s3://koala-data/surveys \
+            --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
+          aws s3 sync pipeline/data/results/ s3://koala-data/results \
+            --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
+
+      - name: Hand the data to both site checkouts
+        if: steps.gate.outputs.render == 'true'
+        run: |
+          for site in stable beta; do
+            mkdir -p "$site/data"
+            cp -R pipeline/data/. "$site/data/"
+          done
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        if: steps.gate.outputs.render == 'true'
+
+      - name: Prepare stable dashboard data
+        if: steps.gate.outputs.render == 'true'
+        working-directory: stable
+        run: Rscript dashboard/prepare_data.R
+
+      - name: Render stable dashboard
+        if: steps.gate.outputs.render == 'true'
+        working-directory: stable
+        run: quarto render dashboard/index.qmd --output-dir _site
+
+      - name: Prepare beta dashboard data
+        if: steps.gate.outputs.render == 'true'
+        working-directory: beta
+        run: Rscript dashboard/prepare_data.R
+
+      - name: Render beta dashboard
+        if: steps.gate.outputs.render == 'true'
+        working-directory: beta
+        run: quarto render dashboard/index.qmd --output-dir _site
+
+      - name: Assemble GitHub Pages website
+        if: steps.gate.outputs.render == 'true'
+        run: |
+          mkdir -p _site/dev
+          cp -R stable/dashboard/_site/. _site/
+          cp -R beta/dashboard/_site/. _site/dev/
+
+      - name: Upload GitHub Pages artifact
+        if: steps.gate.outputs.render == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy GitHub Pages
+        if: steps.gate.outputs.render == 'true'
+        uses: actions/deploy-pages@v4

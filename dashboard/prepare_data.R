@@ -50,11 +50,11 @@ prepare_election <- function(election_id) {
   dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
   # "Aktualisiert am" on the site: the date of the most recent poll behind this
-  # election's numbers. Not a build timestamp — deploy runs after every compute
-  # run, including the many where no institute published anything, so that would
-  # advance several times a day while the nowcast stands still. The pooled series
-  # is excluded because it carries a row per computed date rather than per
-  # published poll; the newest raw poll is what actually moved the estimate.
+  # election's numbers. Not a build timestamp — a push or a manual dispatch
+  # rebuilds the site without any new poll behind it, so that would advance
+  # while the nowcast stands still. The pooled series is excluded because it
+  # carries a row per computed date rather than per published poll; the newest
+  # raw poll is what actually moved the estimate.
   all_polls  <- fromJSON(file.path(surveys_dir, "polls.json")) %>% mutate(date = as.Date(date))
   raw_polls  <- all_polls %>% filter(pollster != "pooled")
   updated    <- as.character(max(if (nrow(raw_polls) > 0) raw_polls$date else all_polls$date))

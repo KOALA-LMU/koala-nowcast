@@ -23,7 +23,7 @@ Everything is pre-computed in CI; the site is static files on GitHub Pages.
 No statistical computation is made in the browser.
 
 ```
-                 ┌──────────────── GitHub Actions: compute.yml (4×/day) ─────────────────┐
+                 ┌──────────── GitHub Actions: pipeline.yml (4×/day) ────────────────────┐
 wahlrecht.de ──▶ │ scrape_polls.R ──▶ pool ──▶ calc_coalProbs.R (Dirichlet MC + seats)   │
                  └───────┬──────────────────────────────────────────────┬────────────────┘
                          │                                              │
@@ -33,7 +33,7 @@ wahlrecht.de ──▶ │ scrape_polls.R ──▶ pool ──▶ calc_coalProb
                          └──────────▶ Supabase Storage (S3) ◀───────────┘
                                        bucket: koala-data
                                               │
-                 ┌──────────── GitHub Actions: deploy.yml (on compute success) ──────────┐
+                 ┌──────────── same run, only if the numbers moved ──────────────────────┐
                  │ prepare_data.R ──▶ dashboard/data/<id>/*.json ──▶ quarto render       │
                  └──────────────────────────────────┬────────────────────────────────────┘
                                                     ▼
@@ -122,7 +122,7 @@ python3 -m http.server 8765 --directory dashboard/_site
 
 ## Adding an election
 
-Add one file to `config/elections/`; both workflows pick up every `*.yml` there.
+Add one file to `config/elections/`; the workflow picks up every `*.yml` there.
 See an existing config for the full shape — the keys that need thought:
 
 | Key | Note |
@@ -165,16 +165,29 @@ numbers, not a build timestamp.
 
 ## CI/CD
 
-| Workflow | Trigger | Does |
-| --- | --- | --- |
-| [compute.yml](.github/workflows/compute.yml) | `cron 0 2,8,14,20 * * *` (4/10/16/22 CEST) + manual | Pull bucket → scrape + pool → compute pending → sync back |
-| [deploy.yml](.github/workflows/deploy.yml) | Successful `compute.yml` + manual | Pull bucket (skipping `coalProbs.json`) → `prepare_data.R` → `quarto render` → Pages |
+[pipeline.yml](.github/workflows/pipeline.yml) does both halves in a single job:
 
-Compute only runs when the scrape found new polls, when `pending_configs.R`
-reports uncomputed dates, or when the bucket is empty (`FORCE_ALL`). Secrets:
-`SUPABASE_S3_KEY_ID`, `SUPABASE_S3_SECRET`. Both workflows use path-style S3
-addressing and region `eu-central-1`, because Supabase's endpoint carries a path
-(`/storage/v1/s3`) and signs against the project's real region.
+| Trigger | Does |
+| --- | --- |
+| `cron 0 2,8,14,20 * * *` (4/10/16/22 CEST) | Pull bucket → scrape + pool → compute pending → sync back → **rebuild the site only if something changed** |
+| Push to `master` or `dev` | Pull bucket → rebuild the site (no scraping) |
+| Manual | Same as the cron run; tick `skip_compute` to redeploy without scraping |
+
+Compute and deploy share one job because they need the same R library and the
+same bucket data, and a second job would mean a second runner setting up both
+again.
+
+Computation runs when the scrape found new polls, when `pending_configs.R`
+reports uncomputed dates, or when the bucket is empty (`FORCE_ALL`); a scheduled
+run rebuilds the site on exactly those conditions. Pushes and manual runs always
+rebuild, since the site's own code is what changed.
+
+The run checks out `master` as `stable/` and `dev` as `beta/` (served at `/dev`),
+plus the triggering ref as `pipeline/` — so a manual dispatch from a branch
+exercises that branch's scraper while the site still renders from `master` and
+`dev`. Secrets: `SUPABASE_S3_KEY_ID`, `SUPABASE_S3_SECRET`. The workflow uses
+path-style S3 addressing and region `eu-central-1`, because Supabase's endpoint
+carries a path (`/storage/v1/s3`) and signs against the project's real region.
 
 ## Credits
 
