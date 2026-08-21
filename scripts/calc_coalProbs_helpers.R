@@ -111,17 +111,31 @@ calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest
   if (cores == 1) { # no parallel call
     majorities <- lapply(coal_names, function(coal) { calc_oneCoal(coal) })
   } else if (Sys.info()["sysname"] != "Windows") { # parallel call for Linux-based systems
-    majorities <- mclapply(coal_names, function(coal) { calc_oneCoal(coal) }, mc.cores = cores)
+    majorities <- parallel::mclapply(coal_names, function(coal) { calc_oneCoal(coal) }, mc.cores = cores)
   } else { # parallel call for Windows
-    local_cluster <- makePSOCKcluster(rep("localhost", cores)) # create cluster
+    local_cluster <- parallel::makePSOCKcluster(rep("localhost", cores)) # create cluster
     # Export objects to the cluster
-    clusterExport(cl = local_cluster, c("calc_oneCoal","res_shares","res_maj"), envir=environment())
-    clusterEvalQ(cl = local_cluster, c(library(parallel), library(coalishin), library(coalitions), library(dplyr),
+    parallel::clusterExport(cl = local_cluster, c("calc_oneCoal","res_shares","res_maj"), envir=environment())
+    parallel::clusterEvalQ(cl = local_cluster, c(library(parallel), library(coalishin), library(coalitions), library(dplyr),
                                        library(tidyr)))
     
-    majorities <- parLapply(cl = local_cluster, X = coal_names,
+    majorities <- parallel::parLapply(cl = local_cluster, X = coal_names,
                          fun = function(coal) { calc_oneCoal(coal) })
-    stopCluster(cl = local_cluster) # close cluster
+    parallel::stopCluster(cl = local_cluster) # close cluster
+  }
+
+  # mclapply()/parLapply() report a failed worker by returning an error object in
+  # the result list rather than raising. Unchecked, that object gets rbind()-ed in,
+  # coercing the majority matrix to character, and the run dies further down in
+  # rowSums() with "'x' must be numeric or complex". The child's own message never
+  # reaches the parent's output, so this is the only place the cause survives.
+  stopifnot(length(majorities) == length(coal_names))
+  bad <- which(!vapply(majorities, is.numeric, logical(1)))
+  if (length(bad)) {
+    first <- majorities[[bad[1]]]
+    stop(sprintf("calc_allCoalProbs: %d of %d coalitions failed in a parallel worker (first: '%s'): %s",
+                 length(bad), length(coal_names), coal_names[bad[1]],
+                 if (inherits(first, "try-error")) conditionMessage(attr(first, "condition")) else "unexpected return value"))
   }
   
   ### Preparating and returning results
