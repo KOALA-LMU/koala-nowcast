@@ -151,7 +151,7 @@ jobs:
             source("scripts/pending_configs.R")
             configs <- list.files("config/elections", pattern = "\\.yml$", full.names = TRUE)
             todo <- configs_todo(configs, force_all = Sys.getenv("FORCE_ALL") == "true")
-            invisible(lapply(todo, calc_coalProbs))
+            invisible(lapply(todo, calc_coalProbs, cores = 4))
           '
 
       - name: Upload data to Supabase Storage
