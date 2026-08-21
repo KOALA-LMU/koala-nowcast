@@ -184,21 +184,39 @@ jobs:
         run: quarto render dashboard/index.qmd --output-dir _site
 
       - name: Prepare beta dashboard data
+        id: beta_prepare
         if: steps.gate.outputs.render == 'true'
+        continue-on-error: true
         working-directory: beta
         run: Rscript dashboard/prepare_data.R
 
       - name: Render beta dashboard
-        if: steps.gate.outputs.render == 'true'
+        id: beta_render
+        if: steps.gate.outputs.render == 'true' && steps.beta_prepare.outcome == 'success'
+        continue-on-error: true
         working-directory: beta
         run: quarto render dashboard/index.qmd --output-dir _site
 
       - name: Assemble GitHub Pages website
         if: steps.gate.outputs.render == 'true'
+        env:
+          BETA_OK: ${{ steps.beta_render.outcome == 'success' }}
         run: |
           mkdir -p _site/dev
           cp -R stable/dashboard/_site/. _site/
-          cp -R beta/dashboard/_site/. _site/dev/
+
+          if [ "$BETA_OK" = "true" ]; then
+            cp -R beta/dashboard/_site/. _site/dev/
+          else
+            printf '%s\n' \
+              '<!doctype html><meta charset="utf-8">' \
+              '<title>Beta unavailable</title>' \
+              '<h1>Beta build failed</h1>' \
+              '<p>The beta dashboard could not be built for this deployment.' \
+              'The stable site is unaffected.' \
+              '<p><a href="../">Back to the main site</a>' \
+              > _site/dev/index.html
+          fi
 
       - name: Upload GitHub Pages artifact
         if: steps.gate.outputs.render == 'true'
@@ -209,3 +227,9 @@ jobs:
       - name: Deploy GitHub Pages
         if: steps.gate.outputs.render == 'true'
         uses: actions/deploy-pages@v4
+
+      - name: Report a failed beta build
+        if: steps.gate.outputs.render == 'true' && steps.beta_render.outcome != 'success'
+        run: |
+          echo "::error::Beta (dev) dashboard failed to build. Stable was deployed without it; /dev shows a placeholder."
+          exit 1
