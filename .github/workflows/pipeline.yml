@@ -2,7 +2,7 @@ name: Nowcast Pipeline
 
 on:
   schedule:
-    - cron: '0 2,8,14,20 * * *'   # 4 AM, 10 AM, 4 PM, 10 PM CEST
+    - cron: '23 */2 * * *'   # every 2 hours at :23 UTC, off the hour to avoid GitHub's scheduling peak
 
   workflow_dispatch:
     inputs:
