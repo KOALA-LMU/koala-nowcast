@@ -9,7 +9,7 @@
 #' @param config_path path to a YAML election config file (e.g. \code{"config/elections/ltw_be.yml"})
 #' @param nsim number of draws from the posterior
 #' @param correction see argument \code{correction} from \code{coalitions::draw_from_posterior()}
-#' @param cores number of cores to use for parallel processing. Possible for both Linux-based systems and Windows.
+#' @param cores number of cores for parallel processing (fork on Unix, PSOCK on Windows).
 #' @param force_newCalculation If TRUE, recalculate even for dates that were already computed.
 #' @import coalitions dplyr tidyr parallel yaml jsonlite
 #' @export
