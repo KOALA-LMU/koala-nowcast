@@ -15,9 +15,13 @@ newest_per_pollster <- function(dates, pollsters) {
 #' @noRd
 result_pairs <- function(path) {
   txt <- readChar(path, file.size(path), useBytes = TRUE)
-  m   <- regmatches(txt, gregexpr('"pollster":"[^"]*","date":"[0-9]{4}-[0-9]{2}-[0-9]{2}"',
+  # Whitespace-tolerant: write_compact() emits no spaces, write_result() writes
+  # with pretty = TRUE. Matching only the compact form silently skipped
+  # coalProbs_grouping/biggestParty/passHurdle, so a stale copy of the file the
+  # dashboard actually renders was never flagged as pending (#96).
+  m   <- regmatches(txt, gregexpr('"pollster"\\s*:\\s*"[^"]*"\\s*,\\s*"date"\\s*:\\s*"[0-9]{4}-[0-9]{2}-[0-9]{2}"',
                                   txt, useBytes = TRUE))[[1]]
-  data.frame(pollster = sub('^"pollster":"([^"]*).*', "\\1", m),
+  data.frame(pollster = sub('^"pollster"\\s*:\\s*"([^"]*).*', "\\1", m),
              date     = as.Date(substr(m, nchar(m) - 10, nchar(m) - 1)))
 }
 
