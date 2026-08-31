@@ -68,6 +68,8 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
   if (force_newCalculation) {
     dates <- dates_todo
+    # Recomputing everything covers the pending dates too, so the list is spent
+    clear_pending <- file.exists(pending_file)
   } else if (file.exists(pending_file)) {
     # scrape_election wrote exactly which dates have new/updated pooled estimates.
     # The file is cleared only after every result file has been written (see the
