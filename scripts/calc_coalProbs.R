@@ -9,7 +9,7 @@
 #' @param config_path path to a YAML election config file (e.g. \code{"config/elections/ltw_be.yml"})
 #' @param nsim number of draws from the posterior
 #' @param correction see argument \code{correction} from \code{coalitions::draw_from_posterior()}
-#' @param cores number of cores to use for parallel processing. Possible for both Linux-based systems and Windows.
+#' @param cores number of cores for parallel processing (fork on Unix, PSOCK on Windows).
 #' @param force_newCalculation If TRUE, recalculate even for dates that were already computed.
 #' @import coalitions dplyr tidyr parallel yaml jsonlite
 #' @export
@@ -63,15 +63,21 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   }
 
   # ── Determine which dates need (re-)computation ──────────────────────────────
-  pending_file <- file.path("data", "surveys", cfg$id, "pending_dates.json")
+  pending_file  <- file.path("data", "surveys", cfg$id, "pending_dates.json")
+  clear_pending <- FALSE
 
   if (force_newCalculation) {
     dates <- dates_todo
+    # Recomputing everything covers the pending dates too, so the list is spent
+    clear_pending <- file.exists(pending_file)
   } else if (file.exists(pending_file)) {
-    # scrape_election wrote exactly which dates have new/updated pooled estimates
+    # scrape_election wrote exactly which dates have new/updated pooled estimates.
+    # The file is cleared only after every result file has been written (see the
+    # end of this function): clearing it here would lose the list if the
+    # computation or a write failed, and the gap would never be reflagged (#96).
+    clear_pending <- TRUE
     pending <- as.Date(jsonlite::fromJSON(pending_file))
     dates   <- dates_todo[dates_todo %in% pending]
-    file.remove(pending_file)
   } else if (!file.exists(results_file)) {
     dates <- dates_todo
   } else {
@@ -84,6 +90,9 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # post-processing would then fail on the missing columns.
   if (length(dates) == 0) {
     message(sprintf("[%s] no dates to compute", cfg$id))
+    # Still clear it: a pending file that is never removed would keep the
+    # fallback branch above from ever running, hiding genuinely missing dates.
+    if (clear_pending) file.remove(pending_file)
     return(invisible(NULL))
   }
 
@@ -283,4 +292,9 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   write_result(coalProbs_grouping,  "coalProbs_grouping")
   write_result(biggestParty,        "biggestParty")
   write_result(passHurdle,          "passHurdle")
+
+  # Every result file is on disk, so the pending list has served its purpose.
+  # Clearing it only here means a failure anywhere above leaves it in place and
+  # the next run retries those dates (#96).
+  if (clear_pending) file.remove(pending_file)
 }

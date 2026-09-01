@@ -57,6 +57,20 @@ format:
   overflow-y: auto !important;
 }
 
+/* The Überblick charts have fixed pixel heights, so rows sized as a fraction of
+   the viewport shrink below their own chart and the card clips the x-axis. Floor
+   each row at its content height (max-content, so it follows the charts); below
+   that the main area scrolls. bslib sets the tracks inline, hence !important. */
+#überblick > .bslib-grid {
+  grid-template-rows: minmax(max-content, 55fr) minmax(max-content, 45fr) !important;
+}
+
+/* The scaffold around each ojs cell's hidden source stays a fill item, so on a
+   card taller than its chart it takes a share of the space and pushes it down. */
+.card-body > .code-copy-outer-scaffold {
+  flex: 0 0 auto !important;
+}
+
 .card-body svg [aria-label="tick"] text {
   font-size: 13px;
 }

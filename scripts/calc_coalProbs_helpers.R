@@ -21,7 +21,7 @@
 #' values specified here the coalition is only counted as possible it the first party from the coalition
 #' is the leading one. E.g. \code{"cdu|spd"} is only counted as a possible coalition if the coalition
 #' both has a majority and cdu is the leading party in the coalition.
-#' @param cores number of cores to use for parallel processing. Possible for both Linux-based systems and Windows.
+#' @param cores number of cores for parallel processing (fork on Unix, PSOCK on Windows).
 #' @return \code{list} containing the coalition probabilities, the shares of each coalition in each simulation
 #'                     and for each simulation if the coalition has a majority while no subset coalition already has a majority.
 #' @import parallel
@@ -75,7 +75,7 @@ calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest
   names(shares) <- coal_names
   res_shares[,grepl("share", colnames(res_shares))] <- do.call("rbind", shares)
 
-    ### Helper function to calculate coalition majorities (possible using parallelization)
+  ### Helper function to calculate coalition majorities
   calc_oneCoal <- function(coal) {
     # 1) extract the 0/1 vector of possible majorities for the coalition
     maj <- as.data.frame(t(res_shares[res_shares$coalition == coal,names(res_shares) != "coalition"]))
@@ -108,27 +108,24 @@ calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest
   }
   
   ### (Parallel) calculation over all coalitions
-  if (cores == 1) { # no parallel call
+  if (cores == 1) {
     majorities <- lapply(coal_names, function(coal) { calc_oneCoal(coal) })
-  } else if (Sys.info()["sysname"] != "Windows") { # parallel call for Linux-based systems
+  } else if (Sys.info()["sysname"] != "Windows") {
     majorities <- parallel::mclapply(coal_names, function(coal) { calc_oneCoal(coal) }, mc.cores = cores)
-  } else { # parallel call for Windows
-    local_cluster <- parallel::makePSOCKcluster(rep("localhost", cores)) # create cluster
-    # Export objects to the cluster
+  } else { # Windows has no fork(); use a PSOCK cluster
+    local_cluster <- parallel::makePSOCKcluster(rep("localhost", cores))
     parallel::clusterExport(cl = local_cluster, c("calc_oneCoal","res_shares","res_maj"), envir=environment())
     parallel::clusterEvalQ(cl = local_cluster, c(library(parallel), library(coalishin), library(coalitions), library(dplyr),
                                        library(tidyr)))
     
     majorities <- parallel::parLapply(cl = local_cluster, X = coal_names,
                          fun = function(coal) { calc_oneCoal(coal) })
-    parallel::stopCluster(cl = local_cluster) # close cluster
+    parallel::stopCluster(cl = local_cluster)
   }
 
-  # mclapply()/parLapply() report a failed worker by returning an error object in
-  # the result list rather than raising. Unchecked, that object gets rbind()-ed in,
-  # coercing the majority matrix to character, and the run dies further down in
-  # rowSums() with "'x' must be numeric or complex". The child's own message never
-  # reaches the parent's output, so this is the only place the cause survives.
+  # A failed worker comes back as an error object in the result list rather than
+  # raising: unchecked it is rbind()-ed in, coerces the matrix to character, and the
+  # run dies later in rowSums(). The child's message is lost, so report it here.
   stopifnot(length(majorities) == length(coal_names))
   bad <- which(!vapply(majorities, is.numeric, logical(1)))
   if (length(bad)) {
