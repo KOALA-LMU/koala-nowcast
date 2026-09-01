@@ -78,23 +78,41 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
 
   fresh <- drop_incomplete_polls(fresh, parties_required, cfg$id)
 
-  # Find rows not already in existing data
-  if (!is.null(existing)) {
-    new_rows <- anti_join(fresh, existing, by = c("pollster", "date", "party"))
-  } else {
-    new_rows <- fresh
-  }
+  # Rows the stored file does not have yet, plus rows wahlrecht has revised since
+  # the last scrape. Keying on (pollster, date, party) alone makes a corrected
+  # percentage look like a duplicate of the row it corrects, so the stale value
+  # would survive every later scrape; the reported values decide as well.
+  poll_key     <- c("pollster", "date", "party")
+  existing_raw <- if (!is.null(existing)) filter(existing, pollster != "pooled") else NULL
 
-  has_new_raw    <- nrow(new_rows) > 0
+  if (!is.null(existing_raw)) {
+    new_rows     <- anti_join(fresh, existing_raw, by = poll_key)
+    revised_rows <- fresh %>%
+      inner_join(
+        existing_raw %>%
+          select(all_of(poll_key), stored_percent = percent,
+                 stored_respondents = respondents),
+        by = poll_key
+      ) %>%
+      filter(values_differ(percent, stored_percent) |
+               values_differ(respondents, stored_respondents)) %>%
+      select(-stored_percent, -stored_respondents)
+  } else {
+    new_rows     <- fresh
+    revised_rows <- fresh[0, ]
+  }
+  changed_rows <- bind_rows(new_rows, revised_rows)
+
+  has_new_raw    <- nrow(changed_rows) > 0
   has_no_pooled  <- is.null(existing) || !any(existing$pollster == "pooled")
 
-  # new_rows has one row per (pollster, date, party); count/report distinct
+  # changed_rows has one row per (pollster, date, party); count/report distinct
   # polls (pollster+date pairs) rather than raw row count.
-  new_polls      <- distinct(new_rows, pollster, date)
-  new_poll_dates <- sort(unique(new_polls$date))
+  changed_polls      <- distinct(changed_rows, pollster, date)
+  changed_poll_dates <- sort(unique(changed_polls$date))
 
   message(sprintf("[%s] new_raw=%s (%d poll(s)), no_pooled=%s",
-              cfg$id, has_new_raw, nrow(new_polls), has_no_pooled))
+              cfg$id, has_new_raw, nrow(changed_polls), has_no_pooled))
 
   if (!has_new_raw && !has_no_pooled) {
     message(sprintf("[%s] No new polls.", cfg$id))
@@ -102,20 +120,31 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   }
 
   if (has_new_raw)
-    message(sprintf("[%s] %d new poll(s) found: %s", cfg$id, nrow(new_polls),
-                    paste(new_poll_dates, collapse = ", ")))
+    message(sprintf("[%s] %d new/revised poll(s) found: %s", cfg$id, nrow(changed_polls),
+                    paste(changed_poll_dates, collapse = ", ")))
+  # Revisions are otherwise invisible: they change no key, so nothing else in the
+  # log distinguishes a corrected poll from one that was never stored.
+  if (nrow(revised_rows) > 0)
+    message(sprintf("[%s] %d revised value(s) replacing stored ones: %s", cfg$id,
+                    nrow(revised_rows),
+                    paste(sprintf("%s (%s, %s)", revised_rows$pollster,
+                                  revised_rows$date, revised_rows$party),
+                          collapse = ", ")))
   if (has_no_pooled)
     message(sprintf("[%s] No pooled data found, computing pooled estimates", cfg$id))
 
-  # Merge existing raw polls with new rows
+  # Merge existing raw polls with the freshly scraped ones. Upsert, not append:
+  # for every key the re-scrape re-delivers the fresh row wins, so a correction
+  # replaces the stored value. Stored polls the window no longer covers — and
+  # ones wahlrecht has since withdrawn — are carried over untouched.
   raw_updated <- bind_rows(
-    if (!is.null(existing)) existing %>% filter(pollster != "pooled") else NULL,
-    new_rows
+    if (!is.null(existing_raw)) anti_join(existing_raw, fresh, by = poll_key) else NULL,
+    fresh
   ) %>% arrange(desc(date))
 
   # Only recompute pooled from the earliest new poll date forward; recompute all when
   # there is no existing pooled data yet.
-  from_date <- if (has_new_raw && !has_no_pooled) min(unique(new_rows$date)) else NULL
+  from_date <- if (has_new_raw && !has_no_pooled) min(unique(changed_rows$date)) else NULL
   pooled_updated <- compute_pooled(raw_updated, cfg, from_date = from_date)
 
   # Write affected dates so calc_coalProbs knows exactly which dates to recompute.
@@ -140,6 +169,22 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   message(sprintf("[%s] Saved to %s", cfg$id, out_file))
 
   invisible(TRUE)
+}
+
+# TRUE wherever a freshly scraped value disagrees with the stored one.
+#
+# Not `!=`: the stored side has been through a JSON round trip that keeps four
+# decimals (write_json's default), so a value carrying more precision than that
+# comes back slightly changed and exact comparison would report a revision on
+# every run — rewriting the file and recomputing pooled forever. Raw percentages
+# are one-decimal today and survive intact, but the tolerance is what keeps that
+# from being load-bearing: it sits above the 4-decimal rounding and well below
+# the 0.1 a real revision moves by. NA is a value here (a party a pollster does
+# not report), and `!=` answers NA for it instead of a verdict, which would then
+# drop the row from the filter.
+values_differ <- function(new, old, tol = 1e-3) {
+  (is.na(new) != is.na(old)) |
+    (!is.na(new) & !is.na(old) & abs(new - old) > tol)
 }
 
 # Fold scraped parties the config does not model into others (Sonstige).
