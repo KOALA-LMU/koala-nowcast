@@ -65,6 +65,71 @@ format:
 .overview-coalitions svg [aria-label="tick"] text {
   font-size: 14px;
 }
+
+/* Every chart is drawn by responsivePlot() (see the ojs-setup cell), which sizes
+   it to the box it actually sits in and marks that box .plot-narrow once the box
+   is phone-width. The rules below are the parts of the compact layout that only
+   CSS can reach. */
+
+/* The two tick rules above set a size on the text elements themselves, which
+   beats the font-size Plot puts on the <svg> for everything to inherit — so
+   without an equally specific override here, the compact type the narrow charts
+   ask for would never actually apply. */
+.card-body .plot-narrow svg [aria-label="tick"] text,
+.card-body .plot-narrow svg [aria-label="y-axis tick"] text,
+.overview-coalitions .plot-narrow svg [aria-label="tick"] text,
+.overview-coalitions .plot-narrow svg [aria-label="y-axis tick"] text {
+  font-size: 11px;
+}
+
+/* Safety net for any chart that still ends up wider than its box: scale it down
+   instead of letting it push the page into horizontal scrolling. This works only
+   because of the viewBox the script below adds. */
+.responsive-plot svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* The Sitzverteilung chart stretches to fill the viewport. Below 576px Quarto
+   drops the dashboard's height constraint and stacks everything into one
+   scrolling column, where the same rule would just park a screenful of empty
+   space under the chart. */
+.seat-density-fill {
+  min-height: calc(100vh - 170px);
+}
+
+@media (max-width: 575.98px) {
+  .seat-density-fill {
+    min-height: 0;
+  }
+}
+
+/* Between that stacking breakpoint and the desktop layout the dashboard is still
+   height-constrained while the cards have already been squeezed to half width,
+   so a fixed-height chart gets clipped by its card. Let the card scroll instead.
+   Below 576px the rows size to their content and this is a no-op. */
+@media (max-width: 991.98px) {
+  .quarto-dashboard .card > .card-body {
+    overflow-y: auto !important;
+  }
+}
+
+/* Bootstrap stops collapsing the navbar into a hamburger at 768px, but the six
+   German page names plus the logo need 1036px — so on everything from a phone in
+   landscape up to a 1024px tablet the navbar pushed the document wider than the
+   screen and every page scrolled sideways, charts or no charts.
+   min-width lets the collapse actually shrink to the space it has (as a flex item
+   it otherwise refuses to go below its content width), and wrap puts the links on
+   a second row rather than hiding any of them. Deliberately not behind a media
+   query: both are inert while the navbar fits, and the width it needs depends on
+   how many pages and how long their names are, not on a breakpoint. */
+.quarto-dashboard #quarto-dashboard-header .navbar-collapse {
+  min-width: 0;
+}
+
+.quarto-dashboard #quarto-dashboard-header .navbar-nav {
+  flex-wrap: wrap;
+}
 </style>
 
 <script>
@@ -249,6 +314,131 @@ formatDe = (value, digits = 1) =>
     minimumFractionDigits: digits,
     maximumFractionDigits: digits
   })
+
+// Plot draws in its own font rather than inheriting the page's, and the two are
+// not interchangeable here: Cosmo's Source Sans Pro measures some 15% narrower
+// than the system-ui Plot actually renders in, which is the difference between a
+// margin that holds a coalition name and one that slices a character off it. Read
+// the family off a throwaway plot instead of hardcoding it, so this stays correct
+// if Plot changes its default.
+plotFontFamily = {
+  const fallback = "system-ui, sans-serif"
+  try {
+    const probe = Plot.plot({ marks: [] })
+    document.body.append(probe)
+    const svg = probe.tagName === "FIGURE" ? probe.querySelector("svg") : probe
+    const family = svg ? getComputedStyle(svg).fontFamily : fallback
+    probe.remove()
+    return family || fallback
+  } catch (error) {
+    return fallback
+  }
+}
+
+// Measures a string as Plot will actually draw it, for margins that have to hold
+// a label whose width is not knowable from a character count.
+textWidth = {
+  const ctx = document.createElement("canvas").getContext("2d")
+  return (text, fontSize) => {
+    ctx.font = `${fontSize}px ${plotFontFamily}`
+    return ctx.measureText(text).width
+  }
+}
+
+// Box width below which a chart switches to its compact layout: tighter axis
+// margins, smaller type, shorter crosshair labels, less height.
+//
+// This is a threshold on the box rather than on the viewport, so it has to
+// separate two populations that overlap less than they look like they do. A
+// phone in portrait gives a chart box of roughly 270-330px (390-430px of screen,
+// minus the card and its padding, once the dashboard stacks to one column). The
+// narrowest box a 1440px desktop produces is 539px, for the two half-width
+// Überblick cards. 420 sits between them with room on either side, so nothing
+// that renders acceptably today gets pulled into the compact layout on a desktop.
+narrowWidth = 420
+
+// Plot bakes the layout size straight into the SVG's width/height attributes, so
+// a chart built at a desktop card's width simply overflows a phone-width one —
+// there is no CSS that can undo that after the fact. responsivePlot() closes the
+// gap: it returns a full-width box, measures what that box actually got, and
+// calls draw(width, box) to build the figure at exactly that size, redrawing
+// whenever the width changes (orientation flip, page switch, desktop resize).
+//
+// Quarto's own reactive `width` is no use here. It looks like the viewport
+// because this format emits no <main> for Quarto's stdlib override to measure,
+// so it falls through to document.body and reports the window rather than the
+// card. The `cards` reactive does carry per-card widths, but it is keyed by
+// positional ojs-cell ids that shift as soon as a cell is added anywhere above.
+// Measuring the container sidesteps both.
+//
+// draw() gets the box as its second argument so a viewof cell can hang its own
+// .value off it and keep dispatching input across redraws, and the height still
+// free inside the card as its third — the dashboard's rows are a fixed fraction
+// of the viewport, so a card can easily be shorter than the chart it holds, and a
+// chart that overshoots is cut off at the card's edge rather than scrolled to.
+// Distance from the top of a chart's box to the bottom of the card holding it.
+// Only meaningful while the dashboard is height-constrained, which Quarto does
+// from 576px up — below that the page flows and a chart may be as tall as it
+// likes, so this reports Infinity and the caller's own height wins.
+availableHeight = box => {
+  if (!window.matchMedia("(min-width: 576px)").matches) return Infinity
+  const card = box.closest(".card")
+  if (!card) return Infinity
+  // a little clearance, so a chart never sits flush against the card's border
+  return Math.floor(card.getBoundingClientRect().bottom - box.getBoundingClientRect().top - 12)
+}
+
+responsivePlot = {
+  // One observer for the whole dashboard, watching both the chart boxes and the
+  // cards holding them: a card changes height on its own (the rows are a
+  // fraction of the viewport) without the box's width moving at all, and the
+  // chart's height depends on it. Targets go stale on every cell re-render — the
+  // sidebar's election and institute selectors do that constantly — so detached
+  // ones are dropped here rather than accumulating for the life of the session.
+  const observer = new ResizeObserver(entries => {
+    for (const { target } of entries) {
+      if (!target.isConnected) { observer.unobserve(target); continue }
+      if (target.classList.contains("responsive-plot")) target.render()
+      else target.querySelectorAll(".responsive-plot").forEach(box => box.render())
+    }
+  })
+
+  return draw => {
+    const box = html`<div class="responsive-plot" style="width:100%;min-width:0"></div>`
+    let lastWidth = -1
+    let lastHeight = -1
+    box.render = () => {
+      // Floor the measurement, so a fractional box width can never round the SVG
+      // up past the box it was measured from and feed a wider reading back into
+      // the observer on the next pass.
+      const width = Math.floor(box.clientWidth)
+      // 0 while the card is hidden: every dashboard page but the active one is
+      // display:none at load, and drawing then would bake in a useless width.
+      // The observer fires again when the page is shown and the box gains size.
+      if (width === 0) return
+      const card = box.closest(".card")
+      if (card) observer.observe(card)
+      const available = availableHeight(box)
+      // Height is part of the guard, not just width: cards measure 0px tall on
+      // the first paint, and a chart sized against that would otherwise stay
+      // stuck at its minimum height for the life of the page. The tolerance
+      // keeps sub-pixel jitter from redrawing on every frame.
+      if (width === lastWidth && Math.abs(available - lastHeight) < 8) return
+      lastWidth = width
+      lastHeight = available
+      box.classList.toggle("plot-narrow", width < narrowWidth)
+      box.replaceChildren(draw(width, box, available))
+    }
+    // Forces a redraw at the current size, for callers that change what is drawn
+    // rather than how much room it has (the Sitzverteilung party selector).
+    box.refresh = () => {
+      lastWidth = -1
+      box.render()
+    }
+    observer.observe(box)
+    return box
+  }
+}
 
 // Ceiling for the Umfrageverlauf Stimmenanteil axes, per election: the derived
 // domain runs to 40 % for the Bundestagswahl, where nothing has polled above 33.
@@ -583,7 +773,8 @@ normalizeDensityCurve = group => {
     .sort((a, b) => d3.ascending(a.seat_share, b.seat_share))
 }
 
-plotCoalitionDensity = (group, height = 260) => {
+plotCoalitionDensity = (group, height = 260, width = 900) => {
+  const narrow = width < narrowWidth
   const dat = normalizeDensityCurve(group)
   const label = group?.label ?? ""
   const coalition = group?.coalition ?? ""
@@ -623,11 +814,13 @@ plotCoalitionDensity = (group, height = 260) => {
   const showSeatCountNotice = election !== "BTW"
   const plot = Plot.plot({
     height,
-    width: Math.max(900, window.innerWidth - 430),
+    width,
     marginTop: 56,
-    marginRight: 42,
+    // the left and right margins only have to hold half of the outermost x tick
+    // ("0%" / "100%"), so they give most of their width back on a narrow card
+    marginRight: narrow ? 26 : 42,
     marginBottom: 42,
-    marginLeft: 42,
+    marginLeft: narrow ? 26 : 42,
     x: {
       label: null,
       domain: [0, 1],
@@ -689,13 +882,13 @@ plotCoalitionDensity = (group, height = 260) => {
       </div>
       ${plot}
       ${hasSeatInterval ? html`
-        <p style="margin:10px 0 0 34px;color:#333;font-size:1.08rem;line-height:1.35;white-space:nowrap">
+        <p style="margin:10px 0 0 ${narrow ? 4 : 34}px;color:#333;font-size:1.08rem;line-height:1.35;${narrow ? "" : "white-space:nowrap"}">
           ${intervalSentence}
         </p>
       ` : ""}
       ${hasParliamentPresence ? html`
         <div style="
-          margin:10px 34px 0 34px;
+          margin:10px ${narrow ? 4 : 34}px 0 ${narrow ? 4 : 34}px;
           padding:10px 12px;
           border-left:4px solid #2b6cb0;
           background:#f7f9fc;
@@ -1131,20 +1324,35 @@ html`<div style="
       ? "±0%"
       : `${d.diff >= 0 ? "+" : ""}${formatDe(d.diff)}%`
 
+  return responsivePlot((width, box, available) => {
+  const narrow = width < narrowWidth
+
   return Plot.plot({
     title: `${institute_label} - ${shareDateLabel}`,
-    // without this the party names fall back to Plot's 10px default
-    style: { fontSize: "13px" },
+    width,
+    // without this the party names fall back to Plot's 10px default. 10px when
+    // narrow: eight parties share the width of a phone, and the longest name
+    // ("CDU/CSU") only clears its band at that size
+    style: { fontSize: narrow ? "10px" : "13px" },
     // see the marginTop note on the Umfrageverlauf trend chart
     marginTop: 40,
-    marginBottom: hasLastResult ? 86 : 55,
-    marginLeft: 55,
-    marginRight: 25,
-    height: 360,
+    // Narrow drops one of the two label rows below the axis (the share moves on
+    // top of its own bar) but has to make room for the rotated party names.
+    marginBottom: narrow ? (hasLastResult ? 78 : 62) : (hasLastResult ? 86 : 55),
+    marginLeft: narrow ? 44 : 55,
+    marginRight: narrow ? 12 : 25,
+    // capped at what the card can actually show: this row is a fraction of the
+    // viewport, so on a short screen the preferred height runs past its bottom
+    // edge and the party names and values below the axis are simply cut off
+    height: Math.max(220, Math.min(available, narrow ? 320 : 360)),
     x: {
       label: null,
       domain: [0, comparison.length],
       ticks: comparison.map(d => d.index + 0.5),
+      // Eight or nine parties share a phone's width, which leaves each name about
+      // 30px of band — less than "Sonstige" needs, so horizontal names run into
+      // each other. Rotating them costs vertical space and nothing else.
+      tickRotate: narrow ? -45 : 0,
       tickFormat: d => comparison[Math.floor(d)]?.label || ""
     },
     y: {
@@ -1180,33 +1388,42 @@ html`<div style="
       // Share and change are right-aligned to a common edge so their "%" signs
       // line up: same anchor, and a shared dx of half a label width to keep the
       // block centred under the bars. Centred when the value stands alone.
+      //
+      // Both rows sat under the axis, each about as wide as a whole band once the
+      // card is phone-width, so side by side they ran together into an unreadable
+      // string of digits. Narrow lifts the share onto the top of its own bar,
+      // where the bars' differing heights keep neighbours apart, and leaves the
+      // change on its own under the axis with the full band to itself.
       Plot.text(comparison, {
-        x: d => hasLastResult ? d.index + 0.48 : d.index + 0.5,
-        y: 0,
+        x: d => hasLastResult ? (narrow ? d.index + 0.63 : d.index + 0.48) : d.index + 0.5,
+        y: narrow ? "percent" : 0,
         text: d => formatDe(d.percent) + "%",
         // heavier than the change below it: this is the headline number
         fill: "#333",
-        fontSize: 12,
+        // 9px, not 10: at 10 two parties polling within a point of each other
+        // put their labels at the same height and they touched
+        fontSize: narrow ? 9 : 12,
         fontWeight: 700,
-        dy: 45,
-        dx: hasLastResult ? 20 : 0,
-        textAnchor: hasLastResult ? "end" : "middle"
+        dy: narrow ? -7 : 45,
+        dx: hasLastResult && !narrow ? 20 : 0,
+        textAnchor: hasLastResult && !narrow ? "end" : "middle"
       }),
       ...(hasLastResult ? [
         Plot.text(comparison, {
-          x: d => d.index + 0.48,
+          x: d => narrow ? d.index + 0.5 : d.index + 0.48,
           y: 0,
           text: formatDiff,
           fill: d => d.diff > 0 ? "#666" : d.diff < 0 ? "#999" : "#888",
-          fontSize: 12,
+          fontSize: narrow ? 9 : 12,
           fontWeight: 500,
-          dy: 61,
-          dx: 20,
-          textAnchor: "end"
+          dy: narrow ? 62 : 61,
+          dx: narrow ? 0 : 20,
+          textAnchor: narrow ? "middle" : "end"
         })
       ] : []),
       Plot.ruleY([0])
     ]
+  })
   })
 }
 ```
@@ -1290,6 +1507,8 @@ html`<div style="
   }
 
   const topN = 6
+  // survives the redraws a resize triggers; see the disclosure below
+  let moreOpen = false
   const ranked = leading_variants.slice().sort((a, b) =>
     d3.descending(a.vote_share, b.vote_share) || d3.descending(a.probability, b.probability)
   )
@@ -1342,17 +1561,35 @@ html`<div style="
     </div>
   </details>`
 
-  const coalitionPlot = (rows, title = null) => {
+  // The left margin carries the coalition names, so on a narrow card it is a
+  // bigger claim on the width than the bars are. Measured rather than assumed:
+  // at 11px the gap between "Union-SPD" and "Union-SPD-Grüne-FDP" is some 70px,
+  // which is the difference between a readable chart and one with its labels
+  // sliced off at the left edge. Capped at half the box so the bars always keep
+  // something. The "Weitere Koalitionen" disclosure indents itself to match,
+  // hence a shared helper rather than a literal in the plot options.
+  const leftMarginFor = (width, rows) => {
+    if (width >= narrowWidth) return 155
+    const longest = d3.max(rows, d => textWidth(d.label, 11)) ?? 0
+    return Math.min(Math.round(width * 0.5), Math.ceil(longest) + 14)
+  }
+
+  // available is Infinity for the plot inside the "Weitere Koalitionen"
+  // disclosure: that one lives in a card it is expected to outgrow.
+  const coalitionPlot = (rows, width, available, title = null) => {
+    const narrow = width < narrowWidth
     const plot = Plot.plot({
     ...(title ? { title } : {}),
-    style: { fontSize: "13px" },
-    marginLeft: 155,
-    marginRight: 65,
+    width,
+    style: { fontSize: narrow ? "11px" : "13px" },
+    marginLeft: leftMarginFor(width, rows),
+    marginRight: narrow ? 28 : 65,
     // Plot keeps the x-axis label at the bottom edge of the margin, so the gap
     // to the ticks is marginBottom minus tick height: at the default 30 the
     // label overlapped "100%".
     marginBottom: 48,
-    height: Math.max(280, rows.length * 42 + 42),
+    // see the height note on the Stimmenanteile chart above
+    height: Math.max(160, Math.min(available, Math.max(narrow ? 220 : 280, rows.length * (narrow ? 34 : 42) + 42))),
     x: {
       label: "Koalitionswahrscheinlichkeit",
       domain: [0, 1],
@@ -1412,17 +1649,33 @@ html`<div style="
         </div>
       `)}
       ${plotHeading("Wahrscheinlichkeit, dass die Koalition eine Mehrheit der Sitze erreicht.")}
-      ${coalitionPlot(coal)}
-      ${remaining.length ? html`
-        <details style="margin:8px 0 0 155px;font-size:0.9em;color:#555">
-          <summary style="cursor:pointer;font-weight:700">
-            Weitere ${remaining.length} Koalitionen anzeigen
-          </summary>
-          <div style="margin-top:8px;margin-left:-155px">
-            ${coalitionPlot(remaining, "Weitere Koalitionen")}
-          </div>
-        </details>
-      ` : ""}
+      ${responsivePlot((width, plotBox, available) => {
+        const leftMargin = leftMarginFor(width, coal)
+        const stack = html`<div></div>`
+        // The disclosure below sits inside this box, so the chart has to leave it
+        // room: this page's row heights were picked so that toggle stays visible
+        // (see the comment above the Überblick rows) and it is the first thing a
+        // chart sized to the whole card pushes over the edge.
+        stack.append(coalitionPlot(coal, width, available - (remaining.length ? 34 : 0)))
+        if (remaining.length) {
+          // indented to start where the bars do, then pulled back so the second
+          // chart still gets the full width to lay itself out in
+          const more = html`<details style="margin:8px 0 0 ${leftMargin}px;font-size:0.9em;color:#555">
+            <summary style="cursor:pointer;font-weight:700">
+              Weitere ${remaining.length} Koalitionen anzeigen
+            </summary>
+            <div style="margin-top:8px;margin-left:${-leftMargin}px">
+              ${coalitionPlot(remaining, width, Infinity, "Weitere Koalitionen")}
+            </div>
+          </details>`
+          // a resize rebuilds this subtree, which would otherwise snap the
+          // disclosure shut under the reader
+          more.open = moreOpen
+          more.ontoggle = () => { moreOpen = more.open }
+          stack.append(more)
+        }
+        return stack
+      })}
     </div>
   `
 }
@@ -1564,13 +1817,20 @@ html`<div style="
     </div>
   </details>`
 
+  const chart = responsivePlot((width, box, available) => {
+  const narrow = width < narrowWidth
+
   const plot = Plot.plot({
-    style: { fontSize: "13px" },
-    marginLeft: 80,
-    marginRight: 80,
+    width,
+    style: { fontSize: narrow ? "11px" : "13px" },
+    // party names are short, so the left margin gives up less than the coalition
+    // chart's does; the right one only holds half of "100%"
+    marginLeft: narrow ? 56 : 80,
+    marginRight: narrow ? 24 : 80,
     // same clearance as the Koalitionen chart above
     marginBottom: 48,
-    height: Math.max(260, hurdles.length * 34 + 40),
+    // see the height note on the Stimmenanteile chart on the Überblick page
+    height: Math.max(160, Math.min(available, Math.max(narrow ? 200 : 260, hurdles.length * (narrow ? 30 : 34) + 40))),
     x: {
       label: "Einzugswahrscheinlichkeit",
       domain: [0, 1],
@@ -1614,6 +1874,9 @@ html`<div style="
     ]
   })
 
+  return withProbabilityTooltip(plot, hurdles, "prob_above_hurdle")
+  })
+
   return html`
     ${plotInfo(html`
       <div style="font-weight:700;margin-bottom:4px">Wahrscheinlichkeiten für den Einzug ins Parlament</div>
@@ -1625,7 +1888,7 @@ html`<div style="
       `Wahrscheinlichkeit, dass die Partei in den ${election === "BTW" ? "Bundestag" : "Landtag"} einzieht.`,
       "(Es werden nur Parteien mit einer Einzugswahrscheinlichkeit von unter 100% angezeigt)"
     )}
-    ${withProbabilityTooltip(plot, hurdles, "prob_above_hurdle")}
+    ${chart}
   `
 }
 ```
@@ -1649,20 +1912,24 @@ html`<div style="
     .map(d => ({ label: d.label, value: densityByKey.get(d.coalition_key) }))
     .filter(d => d.value != null)
 
-  const container = html`<div style="
+  // the fill-the-viewport height lives in the stylesheet, where a media query can
+  // drop it once the dashboard stops being height-constrained on a phone
+  const container = html`<div class="seat-density-fill" style="
     box-sizing:border-box;
-    min-height:calc(100vh - 170px);
     padding:4px 10px 0 10px;
     display:flex;
     flex-direction:column;
     justify-content:flex-start;
   "></div>`
+  // wraps rather than overflows: label and select do not fit on one line once the
+  // card is phone-width
   const controls = html`<div style="
     display:flex;
+    flex-wrap:wrap;
     align-items:center;
     gap:10px;
     margin:0 0 4px 0;
-    max-width:420px;
+    max-width:100%;
   "></div>`
   const label = html`<label style="
     margin:0;
@@ -1671,31 +1938,29 @@ html`<div style="
     white-space:nowrap;
   ">Betrachtete Parteikombination</label>`
   const select = html`<select style="
-    width:220px;
-    max-width:220px;
+    flex:1 1 220px;
+    max-width:260px;
+    min-width:0;
     height:30px;
     padding:2px 6px;
     font-size:0.9rem;
   "></select>`
-  const plotArea = html`<div></div>`
 
   for (const option of options) {
     select.append(html`<option value=${option.value}>${option.label}</option>`)
   }
 
-  const draw = () => {
+  const plotArea = responsivePlot(width => {
     const group = source.find(d => d.coalition === select.value)
-    plotArea.replaceChildren(
-      group
-        ? plotCoalitionDensity(group, 380)
-        : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Parteikombination gefunden.</div>`
-    )
-  }
+    return group
+      ? plotCoalitionDensity(group, width < narrowWidth ? 300 : 380, width)
+      : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Parteikombination gefunden.</div>`
+  })
 
-  select.onchange = draw
+  // the width has not changed, only which curve belongs in it
+  select.onchange = () => plotArea.refresh()
   controls.append(label, select)
   container.append(controls, plotArea)
-  draw()
 
   return container
 }
@@ -1739,17 +2004,29 @@ viewof hoveredCoalitionRow = {
     .sort((a, b) => a.date - b.date)
   const lastRow = wide.at(-1)
 
+  return responsivePlot((width, box) => {
+  const narrow = width < narrowWidth
+  // The crosshair prints one label per selected coalition beside the line. On a
+  // phone the names do not fit next to the chart at all, so only the value is
+  // shown there — which line it belongs to is carried by the colour it shares
+  // with the button that selected it.
+  const crosshairLabel = (label, probability) =>
+    narrow ? `${formatDe(probability * 100)}%` : `${label} ${formatDe(probability * 100)}%`
+
   const plot = Plot.plot({
     title: "Koalitionswahrscheinlichkeit über die Zeit",
     subtitle: "In wie viel Prozent der Simulationen erreicht das Bündnis eine Mehrheit, ohne dass eine kleinere Teilkoalition daraus bereits eine hätte",
-    style: { fontSize: "14px" },
+    width,
+    style: { fontSize: narrow ? "11px" : "14px" },
     marginTop: 40,
     // 64 rather than 55: the crosshair's date label sits below the year tick
     // and needs the extra room (see dateLabel's y offset in the overlay)
     marginBottom: 64,
-    marginLeft: 55,
-    marginRight: 110,
-    height: 530,
+    marginLeft: narrow ? 42 : 55,
+    // the wide right margin exists to park the crosshair labels outside the
+    // series; the narrow labels are short enough to flip inside it instead
+    marginRight: narrow ? 16 : 110,
+    height: narrow ? 380 : 530,
     x: {
       type: "utc",
       label: null,
@@ -1796,9 +2073,10 @@ viewof hoveredCoalitionRow = {
   const svg    = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
   const xScale = plot.scale("x")
   const yScale = plot.scale("y")
-  // vertical distance between two stacked labels, in pixels: the 13px font plus
+  // vertical distance between two stacked labels, in pixels: the label font plus
   // enough room that the white halo of one does not bite into the next
-  const labelGap = 18
+  const labelFontSize = narrow ? 10 : 13
+  const labelGap = narrow ? 14 : 18
 
   const overlay = d3.select(svg).append("g").style("pointer-events", "none")
   const crosshair = overlay.append("line")
@@ -1819,13 +2097,13 @@ viewof hoveredCoalitionRow = {
       .attr("stroke", color).attr("stroke-width", 1).attr("stroke-opacity", 0.5)
     const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", color)
     const text = labelLayer.append("text").attr("dx", 8).attr("dy", "0.32em")
-      .attr("fill", color).attr("font-size", 13).attr("font-weight", "bold")
+      .attr("fill", color).attr("font-size", labelFontSize).attr("font-weight", "bold")
       .attr("paint-order", "stroke")
       .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
     return { key: label, label, link, dot, text }
   })
   const dateLabel = overlay.append("text")
-    .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
+    .attr("text-anchor", "middle").attr("font-size", narrow ? 11 : 14).attr("fill", "#333")
     .attr("paint-order", "stroke")
     .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
 
@@ -1873,7 +2151,7 @@ viewof hoveredCoalitionRow = {
     const pad = 4
     const widthOf = node => {
       const w = node.getComputedTextLength ? node.getComputedTextLength() : 0
-      return w || node.textContent.length * 7.2
+      return w || node.textContent.length * labelFontSize * 0.55
     }
 
     // fill the labels first: their widths decide which side of the crosshair the
@@ -1885,7 +2163,7 @@ viewof hoveredCoalitionRow = {
       it.text.style("display", visible ? null : "none")
       it.link.style("display", "none")
       if (!visible) return
-      it.text.text(`${it.label} ${formatDe(match.probability * 100)}%`)
+      it.text.text(crosshairLabel(it.label, match.probability))
     })
 
     // one side for all of them, chosen from the widest label. Deciding per label
@@ -1926,9 +2204,13 @@ viewof hoveredCoalitionRow = {
     return best
   }
 
+  // The box responsivePlot returns is what the viewof exposes, so the value has
+  // to live there rather than on the plot a resize throws away. A redraw runs
+  // this with lastRow again, which resets the crosshair to the latest date and
+  // tells the dependent cells about it.
   const setValue = row => {
-    plot.value = row
-    plot.dispatchEvent(new Event("input"))
+    box.value = row
+    box.dispatchEvent(new Event("input"))
   }
 
   position(lastRow)
@@ -1946,6 +2228,7 @@ viewof hoveredCoalitionRow = {
     })
 
   return plot
+  })
 }
 ```
 
@@ -2115,12 +2398,20 @@ viewof hoveredRow = {
   const wideActive = showLine || wideRaw.length === 0 ? wide : wideRaw
   const lastRow    = wideActive.at(-1) ?? wide.at(-1)
 
+  return responsivePlot((width, box) => {
+  const narrow = width < narrowWidth
+  // as on the Zeitverlauf chart: on a phone the crosshair prints the value only,
+  // and the colour says which party it belongs to
+  const crosshairLabel = (label, percent) =>
+    narrow ? `${formatDe(percent)}%` : `${label} ${formatDe(percent)}%`
+
   const plot = Plot.plot({
     title: "Umfrageergebnisse über die Zeit",
     subtitle: showLine
       ? "Punkte: einzelne Umfragen aller Institute · Linie: gepoolte Umfrage"
       : `Punkte: einzelne Umfragen (${pollster_names[institute] ?? institute})`,
-    style: { fontSize: "14px" },
+    width,
+    style: { fontSize: narrow ? "11px" : "14px" },
     // Plot pins the y-axis label near the top of the SVG while the frame starts
     // at marginTop, so the gap between the label and the topmost tick is
     // marginTop - 3.5. At the default 20 the label almost touches "30%"; 40
@@ -2129,9 +2420,10 @@ viewof hoveredRow = {
     // 64 rather than 55: the crosshair's date label sits below the year tick
     // and needs the extra room (see dateLabel's y offset in the overlay)
     marginBottom: 64,
-    marginLeft: 55,
-    marginRight: 110,
-    height: 500,
+    marginLeft: narrow ? 42 : 55,
+    // see the same margin on the Zeitverlauf chart
+    marginRight: narrow ? 16 : 110,
+    height: narrow ? 360 : 500,
     x: {
       type: "utc",
       label: null,
@@ -2176,7 +2468,7 @@ viewof hoveredRow = {
           dx: electionLabelRight ? 6 : -6,
           dy: 10,
           fill: "#333",
-          fontSize: 12,
+          fontSize: narrow ? 10 : 12,
           stroke: "white",
           strokeWidth: 3
         })
@@ -2228,16 +2520,17 @@ viewof hoveredRow = {
   // label paints above every dot (see the same split in the Zeitverlauf overlay)
   const dotLayer   = overlay.append("g")
   const labelLayer = overlay.append("g")
+  const labelFontSize = narrow ? 10 : 13
   const items = partyIds.map((partyId, i) => {
     const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", colors[i])
     const text = labelLayer.append("text").attr("dx", 8).attr("dy", "0.32em")
-      .attr("fill", colors[i]).attr("font-size", 13).attr("font-weight", "bold")
+      .attr("fill", colors[i]).attr("font-size", labelFontSize).attr("font-weight", "bold")
       .attr("paint-order", "stroke")
       .attr("stroke", partyId === "fdp" ? "#999" : "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
     return { partyId, label: labels[i], dot, text }
   })
   const dateLabel = overlay.append("text")
-    .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
+    .attr("text-anchor", "middle").attr("font-size", narrow ? 11 : 14).attr("fill", "#333")
     .attr("paint-order", "stroke")
     .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
 
@@ -2270,7 +2563,7 @@ viewof hoveredRow = {
     const pad = 4
     const widthOf = node => {
       const w = node.getComputedTextLength ? node.getComputedTextLength() : 0
-      return w || node.textContent.length * 7.2
+      return w || node.textContent.length * labelFontSize * 0.55
     }
 
     items.forEach(it => {
@@ -2282,7 +2575,7 @@ viewof hoveredRow = {
       const i = present.indexOf(match)
       it.dot.attr("cx", px).attr("cy", yScale.apply(match.percent))
       it.text.attr("x", px).attr("y", yScale.apply(labelY[i]))
-        .text(`${it.label} ${formatDe(match.percent)}%`)
+        .text(crosshairLabel(it.label, match.percent))
       const w = widthOf(it.text.node())
       const flip = px + 8 + w > svgWidth - pad && px - 8 - w >= pad
       it.text.attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
@@ -2310,9 +2603,10 @@ viewof hoveredRow = {
     return best
   }
 
+  // on the box rather than the plot, for the reason given on the Zeitverlauf chart
   const setValue = row => {
-    plot.value = row
-    plot.dispatchEvent(new Event("input"))
+    box.value = row
+    box.dispatchEvent(new Event("input"))
   }
 
   position(lastRow)
@@ -2333,6 +2627,7 @@ viewof hoveredRow = {
     })
 
   return plot
+  })
 }
 ```
 
@@ -2365,18 +2660,26 @@ viewof hoveredRow = {
   const hoveredDate = hoveredRow.date.toLocaleDateString("de-DE", {
     day: "2-digit", month: "long", year: "numeric"
   })
+  return responsivePlot(width => {
+  const narrow = width < narrowWidth
+
   return Plot.plot({
     title: `Umfrage vom ${hoveredDate} (${institute_label})`,
     subtitle: " ",
-    style: { fontSize: "14px" },
+    width,
+    style: { fontSize: narrow ? "10px" : "14px" },
     // 40 as on the trend chart to the left, or the y-axis label sits on "40%"
     marginTop: 40,
-    marginBottom: 40,
-    marginLeft: 55,
-    marginRight: 25,
-    height: 500,
+    // room for the rotated names
+    marginBottom: narrow ? 62 : 40,
+    marginLeft: narrow ? 44 : 55,
+    marginRight: narrow ? 12 : 25,
+    height: narrow ? 340 : 500,
     x: {
       label: null,
+      // as on the Stimmenanteile chart on the Überblick page: the party names do
+      // not fit side by side in a phone's width
+      tickRotate: narrow ? -45 : 0,
       domain: shares.map(d => d.label)
     },
     y: {
@@ -2401,11 +2704,12 @@ viewof hoveredRow = {
         y: d => d.percent + 1,
         text: d => formatDe(d.percent) + "%",
         fill: "#555",
-        fontSize: 12,
+        fontSize: narrow ? 10 : 12,
         textAnchor: "middle"
       }),
       Plot.ruleY([0])
     ]
+  })
   })
 }
 ```
