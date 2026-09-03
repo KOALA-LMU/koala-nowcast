@@ -243,10 +243,10 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # which are already in post-processed format) ──────────────────────────────────
   coalProbs <- coalProbs %>%
     select(-starts_with("coal_maj")) %>%
-    mutate(coal_prob = coal_prob * 100, log.odds = log(coal_prob / (100 - coal_prob))) %>%
+    mutate(coal_prob = coal_prob * 100) %>%
     rename(size = coal_size, prob = coal_prob)
   coalProbs_grouping <- coalProbs_grouping %>%
-    mutate(prob = prob * 100, log.odds = log(prob / (100 - prob)))
+    mutate(prob = prob * 100)
   biggestParty <- biggestParty %>% mutate(prob = prob * 100)
   passHurdle   <- passHurdle   %>% mutate(prob = prob * 100)
 
