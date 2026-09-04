@@ -344,10 +344,17 @@ capYMax = (derived, dataMax, election) => {
 }
 
 // Coalitions that are mathematically possible but politically off the table —
-// no party governs with AfD, and Linke is ruled out by BSW.
-excludedPairs = [
-  ["left", "bsw"]
-]
+// no party governs with AfD, and Linke is ruled out by BSW. FDP and CDU rule
+// Linke out federally only: on Landtag level those two pairings are in play, so
+// the Bundestagswahl carries them and the state elections do not.
+//
+// Block with an explicit return rather than a bare ternary, for the same reason
+// as voteShareYCap above.
+excludedPairs = {
+  return election === "BTW"
+    ? [["left", "fdp"], ["left", "cdu"], ["left", "bsw"]]
+    : [["left", "bsw"]]
+}
 
 // The single exception to "no party governs with AfD": AfD and BSW on their own,
 // which from here on is treated like any other coalition — no special display
