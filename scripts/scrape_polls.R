@@ -269,7 +269,6 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
   # are used only for the pooling calculation — raw rows in polls.json stay clean)
   raw_for_pooling <- raw
   if (!is.null(from_date)) {
-    period_extended <- cfg$pooling$period_extended
     impute_from <- from_date - if (is.null(period_extended)) period else period_extended
 
     raw_for_pooling <- raw %>%
