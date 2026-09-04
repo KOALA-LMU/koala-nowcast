@@ -774,9 +774,9 @@ html`<details style="
     border-left:3px solid #2b6cb0;
     background:#f7f9fc;
   ">
-    <div><b>Überblick:</b> aktuelle Stimmenanteile, Koalitionschancen und Hürdenwahrscheinlichkeiten.</div>
-    <div style="margin-top:5px"><b>Sitzverteilung:</b> Verteilung möglicher Sitzanteile ausgewählter Koalitionen.</div>
-    <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Koalitionswahrscheinlichkeiten über die Zeit.</div>
+    <div><b>Überblick:</b> aktuelle Stimmenanteile, Mehrheitschancen und Hürdenwahrscheinlichkeiten.</div>
+    <div style="margin-top:5px"><b>Sitzverteilung:</b> Verteilung möglicher Sitzanteile ausgewählter Parteikombinationen.</div>
+    <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Mehrheitswahrscheinlichkeiten über die Zeit.</div>
     <div style="margin-top:5px"><b>Umfragedaten:</b> Umfragen, gepoolte Schätzung und Parteienwerte im Verlauf.</div>
     <div style="margin-top:5px"><b>Methodik:</b> Erklärung der statistischen Methoden.</div>
   </div>
@@ -972,7 +972,7 @@ methodik_steps = [
     title: "Wahrscheinlichkeit",
     lead: `Ausgezählt wird, in wie vielen Simulationen ein Bündnis mindestens
            ${cur_meta.majority} Sitze erreicht — ohne dass eine kleinere
-           Teilkoalition daraus schon eine Mehrheit hätte.`
+           Teilkombination daraus schon eine Mehrheit hätte.`
   }
 ]
 ```
@@ -1246,12 +1246,10 @@ html`<div style="
   )
 
   const hoverProbability = probability =>
-    probability < 0.001
-      ? "<0,1%"
-      : (probability * 100).toLocaleString("de-DE", {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 2
-      }) + "%"
+    (probability * 100).toLocaleString("de-DE", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 2
+    }) + "%"
   const withProbabilityTooltip = (plot, rows, valueKey) => {
     const wrapper = html`<div style="position:relative"></div>`
     const tooltip = html`<div style="
@@ -1310,9 +1308,11 @@ html`<div style="
   }
 
   const topN = 6
-  const ranked = leading_variants.slice().sort((a, b) =>
-    d3.descending(a.vote_share, b.vote_share) || d3.descending(a.probability, b.probability)
-  )
+  const ranked = leading_variants
+    .filter(d => d.probability > 0)
+    .sort((a, b) =>
+      d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
+    )
   const coal = sortCoalitions(ranked.slice(0, topN))
   const remaining = sortCoalitions(ranked.slice(topN))
   const plotHeading = (line1, line2 = null) => html`<div style="
@@ -1373,8 +1373,12 @@ html`<div style="
     // label overlapped "100%".
     marginBottom: 48,
     height: Math.max(280, rows.length * 42 + 42),
+    // Plot defaults to 640px, which left the right third of the card empty. The
+    // card is one of two columns beside the sidebar, so mirror the density
+    // chart's viewport arithmetic and halve it; never below the old default.
+    width: Math.max(640, (window.innerWidth - 430) / 2 - 40),
     x: {
-      label: "Koalitionswahrscheinlichkeit",
+      label: "Mehrheitswahrscheinlichkeit",
       domain: [0, 1],
       ticks: [0, 0.25, 0.5, 0.75, 1],
       tickFormat: d => formatDe(d * 100, 0) + "%"
@@ -1423,15 +1427,18 @@ html`<div style="
   return html`
     <div class="overview-coalitions">
       ${plotInfo(html`
-        <div style="font-weight:700;margin-bottom:4px">Wahrscheinlichkeiten für Mehrheiten möglicher Koalitionen</div>
+        <div style="font-weight:700;margin-bottom:4px">Wahrscheinlichkeiten für Mehrheiten möglicher Parteikombinationen</div>
         <div style="margin-bottom:6px">
-          Hier wird für alle möglichen Koalitionen die Wahrscheinlichkeit dargestellt, dass - wenn heute Wahl wäre - nach der Wahl eine potenzielle Mehrheit im Parlament besteht. Einbezogen werden hierbei ausschließlich <i>ausgewählte Koalitionen</i>. So wird z.B. eine Koalition der Union und der Linken nicht in die Berechnung miteinbezogen. Koalitionsbeteiligungen der AfD bleiben ebenfalls außen vor - mit Ausnahme eines Bündnisses aus AfD und BSW.
+          Hier wird für alle möglichen Parteikombinationen die Wahrscheinlichkeit dargestellt, dass - wenn heute Wahl wäre - nach der Wahl eine potenzielle Mehrheit im Parlament besteht. Einbezogen werden hierbei ausschließlich <i>ausgewählte Parteikombinationen</i>.
         </div>
         <div>
-          Wichtig: Falls eine Zweierkoalition (z.B. Union-SPD) möglich ist, werden übergeordnete Dreierbündnisse (z.B. Union-Grüne-SPD) in den Berechnungen als nicht möglich gewertet.
+          Wichtig: Falls eine Zweierkoalition (z.B. Union-SPD) möglich ist, wird übergeordneten Dreierbündnissen (z.B. Union-Grüne-SPD) in den Berechnungen eine Wahrscheinlichkeit von 0% zugeordnet.
         </div>
       `)}
-      ${plotHeading("Wahrscheinlichkeit, dass die Koalition eine Mehrheit der Sitze erreicht.")}
+      ${plotHeading(
+        "Wahrscheinlichkeit, dass die Parteikombination eine Mehrheit der Sitze erreicht.",
+        "(Es werden nur Parteikombinationen angezeigt, die eine Wahrscheinlichkeit von über 0% haben)"
+      )}
       ${coalitionPlot(coal)}
       ${remaining.length ? html`
         <details style="margin:8px 0 0 155px;font-size:0.9em;color:#555">
@@ -1474,12 +1481,10 @@ html`<div style="
   }
 
   const hoverProbability = probability =>
-    probability < 0.001
-      ? "<0,1%"
-      : (probability * 100).toLocaleString("de-DE", {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 2
-      }) + "%"
+    (probability * 100).toLocaleString("de-DE", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 2
+    }) + "%"
   const withProbabilityTooltip = (plot, rows, valueKey) => {
     const wrapper = html`<div style="position:relative"></div>`
     const tooltip = html`<div style="
@@ -1760,8 +1765,8 @@ viewof hoveredCoalitionRow = {
   const lastRow = wide.at(-1)
 
   const plot = Plot.plot({
-    title: "Koalitionswahrscheinlichkeit über die Zeit",
-    subtitle: "In wie viel Prozent der Simulationen erreicht das Bündnis eine Mehrheit, ohne dass eine kleinere Teilkoalition daraus bereits eine hätte",
+    title: "Mehrheitswahrscheinlichkeit über die Zeit",
+    subtitle: "In wie viel Prozent der Simulationen erreicht die Parteikombination eine Mehrheit, ohne dass eine kleinere Teilkombination daraus bereits eine hätte",
     style: { fontSize: "14px" },
     marginTop: 40,
     // 64 rather than 55: the crosshair's date label sits below the year tick
@@ -1780,7 +1785,7 @@ viewof hoveredCoalitionRow = {
       tickFormat: formatYear
     },
     y: {
-      label: "Koalitionswahrscheinlichkeit",
+      label: "Mehrheitswahrscheinlichkeit",
       grid: true,
       domain: [0, 1],
       tickFormat: d => formatDe(d * 100, 0) + "%"
@@ -1982,7 +1987,7 @@ viewof selectedCoalitions = {
   // width:100% makes the label consume a whole flex line, so the buttons wrap
   // onto the rows beneath it instead of sitting next to it.
   const form = html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-    <span style="width:100%;font-size:0.85em;color:#666">Betrachtete Koalitionen</span>
+    <span style="width:100%;font-size:0.85em;color:#666">Betrachtete Kombinationen</span>
   </div>`
 
   const style = (btn, color, isActive) => {
@@ -2649,7 +2654,7 @@ html`
       <p style="margin:0">
         Eine Koalitionswahrscheinlichkeit von 60 % heißt: In 6 von 10 simulierten
         Wahlausgängen hätte das Bündnis eine Mehrheit — und keine kleinere
-        Teilkoalition daraus schon allein. Ein größeres Bündnis kann deshalb einen
+        Teilkombination daraus schon allein. Ein größeres Bündnis kann deshalb einen
         niedrigen Wert haben, obwohl es rechnerisch fast immer reichen würde. Über
         das politische Zustandekommen einer Koalition sagt das nichts.
       </p>
