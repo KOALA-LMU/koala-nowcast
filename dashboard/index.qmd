@@ -288,11 +288,7 @@ capYMax = (derived, dataMax, election) => {
   return cap == null ? derived : Math.max(Math.min(derived, cap), dataMax)
 }
 
-// Coalitions that are mathematically possible but politically off the table —
-// no party governs with AfD, and Linke is ruled out by BSW. FDP and CDU rule
-// Linke out federally only: on Landtag level those two pairings are in play, so
-// the Bundestagswahl carries them and the state elections do not.
-//
+// Coalitions that are mathematically possible but politically off the table
 // Block with an explicit return rather than a bare ternary, for the same reason
 // as voteShareYCap above.
 excludedPairs = {
