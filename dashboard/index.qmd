@@ -344,10 +344,8 @@ capYMax = (derived, dataMax, election) => {
 }
 
 // Coalitions that are mathematically possible but politically off the table —
-// no party governs with AfD, and Linke is ruled out by FDP, CDU and BSW alike.
+// no party governs with AfD, and Linke is ruled out by BSW.
 excludedPairs = [
-  ["left", "fdp"],
-  ["left", "cdu"],
   ["left", "bsw"]
 ]
 
