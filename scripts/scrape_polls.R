@@ -78,10 +78,8 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
 
   fresh <- drop_incomplete_polls(fresh, parties_required, cfg$id)
 
-  # Rows the stored file does not have yet, plus rows wahlrecht has revised since
-  # the last scrape. Keying on (pollster, date, party) alone makes a corrected
-  # percentage look like a duplicate of the row it corrects, so the stale value
-  # would survive every later scrape; the reported values decide as well.
+  # New rows plus rows wahlrecht has revised. On the key alone a corrected
+  # percentage looks like a duplicate, so the values decide as well.
   poll_key     <- c("pollster", "date", "party")
   existing_raw <- if (!is.null(existing)) filter(existing, pollster != "pooled") else NULL
 
@@ -122,8 +120,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   if (has_new_raw)
     message(sprintf("[%s] %d new/revised poll(s) found: %s", cfg$id, nrow(changed_polls),
                     paste(changed_poll_dates, collapse = ", ")))
-  # Revisions are otherwise invisible: they change no key, so nothing else in the
-  # log distinguishes a corrected poll from one that was never stored.
+  # Revisions change no key, so nothing else in the log would show them.
   if (nrow(revised_rows) > 0)
     message(sprintf("[%s] %d revised value(s) replacing stored ones: %s", cfg$id,
                     nrow(revised_rows),
@@ -133,10 +130,8 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   if (has_no_pooled)
     message(sprintf("[%s] No pooled data found, computing pooled estimates", cfg$id))
 
-  # Merge existing raw polls with the freshly scraped ones. Upsert, not append:
-  # for every key the re-scrape re-delivers the fresh row wins, so a correction
-  # replaces the stored value. Stored polls the window no longer covers — and
-  # ones wahlrecht has since withdrawn — are carried over untouched.
+  # Upsert, not append: the fresh row wins for every key it re-delivers, so a
+  # correction replaces the stored value. Polls outside the window are kept.
   raw_updated <- bind_rows(
     if (!is.null(existing_raw)) anti_join(existing_raw, fresh, by = poll_key) else NULL,
     fresh
@@ -173,15 +168,10 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
 
 # TRUE wherever a freshly scraped value disagrees with the stored one.
 #
-# Not `!=`: the stored side has been through a JSON round trip that keeps four
-# decimals (write_json's default), so a value carrying more precision than that
-# comes back slightly changed and exact comparison would report a revision on
-# every run — rewriting the file and recomputing pooled forever. Raw percentages
-# are one-decimal today and survive intact, but the tolerance is what keeps that
-# from being load-bearing: it sits above the 4-decimal rounding and well below
-# the 0.1 a real revision moves by. NA is a value here (a party a pollster does
-# not report), and `!=` answers NA for it instead of a verdict, which would then
-# drop the row from the filter.
+# Not `!=`: the stored side is rounded to 4 decimals by write_json, so exact
+# comparison could flag a revision on every run; the tolerance sits above that
+# rounding and well below the 0.1 a real revision moves by. NA is a value here
+# (a party a pollster does not report), and `!=` returns NA rather than a verdict.
 values_differ <- function(new, old, tol = 1e-3) {
   (is.na(new) != is.na(old)) |
     (!is.na(new) & !is.na(old) & abs(new - old) > tol)
