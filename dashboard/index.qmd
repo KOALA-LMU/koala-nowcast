@@ -52,6 +52,12 @@ resources:
   margin-bottom: 16px !important;
 }
 
+/* The Stimmenanteile card sets the election name above Plot's own title, and
+   the two read as one block: drop the space a heading normally opens with. */
+.shares-header figure > h2 {
+  margin-top: 0 !important;
+}
+
 /* Cards built from multiple ojs cells (via ::: {.card} fences) get one
    .cell.card-body wrapper per cell, stacked as flex siblings that each grow
    to an equal share of the card's height by default. Shrink every cell to
@@ -926,7 +932,7 @@ election_date_label = {
     (Date.parse(`${cur_meta.next_election_date}T00:00:00Z`)
       - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000
   ))
-  return `Wahltermin am ${cur_meta.next_election} – Noch `
+  return `Wahltermin am ${cur_meta.next_election} · Noch `
     + `${days.toLocaleString("de-DE")} ${days === 1 ? "Tag" : "Tage"} zur Wahl`
 }
 
@@ -1185,7 +1191,7 @@ html`<div style="
       ? "±0%"
       : `${d.diff >= 0 ? "+" : ""}${formatDe(d.diff)}%`
 
-  return Plot.plot({
+  const plot = Plot.plot({
     title: `${institute_label} - ${shareDateLabel}`,
     subtitle: election_date_label,
     // without this the party names fall back to Plot's 10px default
@@ -1273,6 +1279,20 @@ html`<div style="
       Plot.ruleY([0])
     ]
   })
+
+  // The election this card is about, above the Umfragebasis line: the card
+  // opens the Überblick tab, and the sidebar names the election only inside the
+  // collapsed "Infos zur Wahl".
+  return html`<div class="shares-header">
+    <div style="
+      margin:0 0 5px 0;
+      color:#333;
+      font-size:1.35rem;
+      font-weight:700;
+      line-height:1.25;
+    ">${cur_meta.title}</div>
+    ${plot}
+  </div>`
 }
 ```
 
@@ -1448,11 +1468,45 @@ html`<div style="
 
   const rowHeight = 42
 
+  // The names live in the left margin, so that margin has to hold the longest
+  // of them: at a fixed 155px the four-party labels were cut off at the card
+  // edge, and a canvas estimate of their width stayed a few pixels short —
+  // these ticks are not drawn in the body font the estimate assumed. So they
+  // are measured as the browser really draws them: a probe plot is mounted
+  // hidden, under the class the stylesheet keys the tick font off, and its own
+  // tick labels are read back. Both plots take the result, which is what keeps
+  // their bars aligned, and so does the toggle between them.
+  const axisMargin = (() => {
+    const rows = [...coal, ...remaining]
+    const probe = Plot.plot({
+      style: { fontSize: "13px" },
+      marginLeft: 300,
+      height: rows.length * 20 + 40,
+      x: { axis: null, domain: [0, 1] },
+      y: { label: null, domain: rows.map(d => d.label), tickSize: 0, tickPadding: 8 },
+      marks: [Plot.barX(rows, { y: "label", x: "probability" })]
+    })
+    const holder = html`<div class="overview-coalitions" style="
+      position:absolute;
+      top:0;
+      left:-9999px;
+      visibility:hidden;
+    "></div>`
+    holder.append(probe)
+    document.body.append(holder)
+    const widest = d3.max(
+      probe.querySelectorAll('[aria-label="y-axis tick label"] text'),
+      node => node.getComputedTextLength()
+    ) ?? 0
+    holder.remove()
+    return Math.round(Math.min(300, Math.max(155, widest + 20)))
+  })()
+
   const coalitionPlot = (rows, title = null) => {
     const plot = Plot.plot({
     ...(title ? { title } : {}),
     style: { fontSize: "13px" },
-    marginLeft: 155,
+    marginLeft: axisMargin,
     marginRight: 65,
     // Plot keeps the x-axis label at the bottom edge of the margin, so the gap
     // to the ticks is marginBottom minus tick height: at the default 30 the
@@ -1521,7 +1575,18 @@ html`<div style="
     return withProbabilityTooltip(withGroupCards(plot, rows), rows, "probability")
   }
 
-  return html`
+  const moreToggle = remaining.length
+    ? html`<details class="more-coalitions" style="margin:8px 0 0 ${axisMargin}px;font-size:0.9em;color:#555">
+        <summary style="cursor:pointer;font-weight:700">
+          Weitere ${remaining.length} Parteikombinationen anzeigen
+        </summary>
+        <div style="margin-top:8px;margin-left:${-axisMargin}px">
+          ${coalitionPlot(remaining, "Weitere Parteikombinationen")}
+        </div>
+      </details>`
+    : null
+
+  const card = html`
     <div class="overview-coalitions">
       ${plotInfo(html`
         <div style="font-weight:700;margin-bottom:4px">Wahrscheinlichkeiten für Mehrheiten möglicher Parteikombinationen</div>
@@ -1537,18 +1602,39 @@ html`<div style="
         "(Es werden nur Parteikombinationen angezeigt, die eine Wahrscheinlichkeit von über 0% haben)"
       )}
       ${coalitionPlot(coal)}
-      ${remaining.length ? html`
-        <details style="margin:8px 0 0 155px;font-size:0.9em;color:#555">
-          <summary style="cursor:pointer;font-weight:700">
-            Weitere ${remaining.length} Koalitionen anzeigen
-          </summary>
-          <div style="margin-top:8px;margin-left:-155px">
-            ${coalitionPlot(remaining, "Weitere Koalitionen")}
-          </div>
-        </details>
-      ` : ""}
+      ${moreToggle ?? ""}
     </div>
   `
+
+  const details = card.querySelector("details.more-coalitions")
+  if (details) {
+    // Kept open across re-renders of this cell — switching the Umfragebasis, or a
+    // reload under `quarto preview` — which would otherwise silently collapse the
+    // section again while it is being read. sessionStorage, so it lasts for the
+    // tab and no longer.
+    const openKey = "koala:weitere-parteikombinationen"
+    try { details.open = sessionStorage.getItem(openKey) === "1" } catch (error) {}
+
+    // The card grows past its Überblick grid row and the dashboard's main area is
+    // what scrolls, so the second plot opens below the fold: nothing about the
+    // page appears to change and the button reads as dead. Scroll the summary —
+    // one line, so "start" puts it at the top edge and the plot fills the space
+    // under it — rather than the opened block, which is taller than the viewport
+    // and would be aligned by its bottom edge, taking the button out of view with
+    // it. Twice, because the grid row resizes after the open and moves it again.
+    // Only after a click: restoring the state on build must not move the page.
+    let clicked = false
+    const toTop = () => details.querySelector("summary").scrollIntoView({ block: "start" })
+    details.querySelector("summary").addEventListener("click", () => { clicked = true })
+    details.addEventListener("toggle", () => {
+      try { sessionStorage.setItem(openKey, details.open ? "1" : "0") } catch (error) {}
+      if (!details.open || !clicked) return
+      toTop()
+      setTimeout(toTop, 200)
+    })
+  }
+
+  return card
 }
 ```
 
@@ -1688,9 +1774,37 @@ html`<div style="
     </div>
   </details>`
 
+  // as in the Koalitionen chart, and for the same reason: wide enough for the
+  // longest party name, which "Freie Wähler" already overran at a fixed 80px,
+  // measured off a hidden probe rather than estimated.
+  const axisMargin = (() => {
+    const probe = Plot.plot({
+      style: { fontSize: "13px" },
+      marginLeft: 200,
+      height: hurdles.length * 20 + 40,
+      x: { axis: null, domain: [0, 1] },
+      y: { label: null, domain: hurdles.map(d => d.label) },
+      marks: [Plot.barX(hurdles, { y: "label", x: "prob_above_hurdle" })]
+    })
+    const holder = html`<div class="card-body" style="
+      position:absolute;
+      top:0;
+      left:-9999px;
+      visibility:hidden;
+    "></div>`
+    holder.append(probe)
+    document.body.append(holder)
+    const widest = d3.max(
+      probe.querySelectorAll('[aria-label="y-axis tick label"] text'),
+      node => node.getComputedTextLength()
+    ) ?? 0
+    holder.remove()
+    return Math.round(Math.min(200, Math.max(80, widest + 20)))
+  })()
+
   const plot = Plot.plot({
     style: { fontSize: "13px" },
-    marginLeft: 80,
+    marginLeft: axisMargin,
     marginRight: 80,
     // same clearance as the Koalitionen chart above
     marginBottom: 48,
