@@ -1246,14 +1246,18 @@ html`<div style="
       ? "±0%"
       : `${d.diff >= 0 ? "+" : ""}${formatDe(d.diff)}%`
 
-  const plot = Plot.plot({
+  const buildPlot = rotateTicks => Plot.plot({
     title: `${institute_label} - ${shareDateLabel}`,
     subtitle: election_date_label,
     // without this the party names fall back to Plot's 10px default
     style: { fontSize: "13px" },
     // see the marginTop note on the Umfrageverlauf trend chart
     marginTop: 40,
-    marginBottom: hasLastResult ? 86 : 55,
+    // tickRotate does not grow the margin, so the diagonal names would be cut
+    // off at the frame; the value rows under them move down by the same amount
+    marginBottom: rotateTicks
+      ? (hasLastResult ? 110 : 80)
+      : (hasLastResult ? 86 : 55),
     // no y-axis to leave room for, just enough that the leftmost bar does not
     // sit flush against the card edge
     marginLeft: 20,
@@ -1339,6 +1343,34 @@ html`<div style="
       Plot.ruleY([0])
     ]
   })
+
+  // Whether the names fit side by side depends on the election: eight parties
+  // leave each band about 74px, which "Freie Wähler" alone overruns. Rather than
+  // guess at their width — these ticks are drawn in Plot's font, not the body's —
+  // the chart is built flat, measured hidden, and rebuilt on the diagonal only if
+  // its own labels came out wider than a band. The SVG is scaled to the card, so
+  // measuring it at its natural width settles the question at every card width.
+  const collides = plot => {
+    const holder = html`<div class="card-body" style="
+      position:absolute;
+      top:0;
+      left:-9999px;
+      visibility:hidden;
+    "></div>`
+    holder.append(plot)
+    document.body.append(holder)
+    const svg = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
+    const widest = d3.max(
+      svg.querySelectorAll('[aria-label="x-axis tick label"] text'),
+      node => node.getComputedTextLength()
+    ) ?? 0
+    const band = ((+svg.getAttribute("width") || 640) - 45) / comparison.length
+    holder.remove()
+    return widest + 6 > band
+  }
+
+  const flat = buildPlot(false)
+  const plot = collides(flat) ? buildPlot(true) : flat
 
   // The election this card is about, above the Umfragebasis line: the card
   // opens the Überblick tab, and the sidebar names the election only inside the
