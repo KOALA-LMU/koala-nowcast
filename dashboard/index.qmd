@@ -787,7 +787,7 @@ plotCoalitionDensity = (group, height = 260) => {
       </div>
       ${plot}
       ${hasSeatInterval ? html`
-        <p style="margin:10px 0 0 34px;color:#333;font-size:1.08rem;line-height:1.35;white-space:nowrap">
+        <p style="margin:10px 34px 0 34px;color:#333;font-size:1.08rem;line-height:1.35">
           ${intervalSentence}
         </p>
       ` : ""}
@@ -1246,6 +1246,14 @@ html`<div style="
       ? "±0%"
       : `${d.diff >= 0 ? "+" : ""}${formatDe(d.diff)}%`
 
+  // The card holds 55% of the viewport height, so a fixed 360px chart left a
+  // third of it empty on a tall screen and overflowed a short one. Take the
+  // height from the viewport instead — less the header block over the plot and
+  // the dashboard's own chrome — inside bounds that keep the bars readable
+  // either way.
+  const chartHeight = Math.max(300, Math.min(620,
+    Math.round((window.innerHeight - 100) * 0.55) - 110))
+
   const buildPlot = rotateTicks => Plot.plot({
     title: `${institute_label} - ${shareDateLabel}`,
     subtitle: election_date_label,
@@ -1262,7 +1270,7 @@ html`<div style="
     // sit flush against the card edge
     marginLeft: 20,
     marginRight: 25,
-    height: 360,
+    height: chartHeight,
     x: {
       label: null,
       domain: [0, comparison.length],
@@ -1594,11 +1602,27 @@ html`<div style="
     return Math.round(Math.min(300, Math.max(155, widest + 20)))
   })()
 
+  // Both Überblick charts are drawn at this width, so their type ends up the
+  // same size: the card scales the SVG it is given, and one drawn wider than its
+  // card shrinks with everything on it — at Plot's default 640 this chart came
+  // out at 0.48 scale on a zoomed-in browser, its 13px labels down at 6px, next
+  // to a chart still at full size. Half the room beside the sidebar, floored so
+  // it stays legible on a phone.
+  const chartWidth = Math.max(320, (window.innerWidth - 310) / 2 - 30)
+
+  // Ticks every 25% need about 420px; below that they run into one another, so
+  // the axis falls back to 0/50/100 and the grid lines follow it.
+  const ticks = chartWidth < 420 ? [0, 0.5, 1] : [0, 0.25, 0.5, 0.75, 1]
+
+  // Half the chart at most goes to the names: on a narrow card the full label
+  // margin left the bars almost no room.
+  const labelMargin = Math.min(axisMargin, Math.round(chartWidth * 0.5))
+
   const coalitionPlot = (rows, title = null) => {
     const plot = Plot.plot({
     ...(title ? { title } : {}),
     style: { fontSize: "13px" },
-    marginLeft: axisMargin,
+    marginLeft: labelMargin,
     marginRight: 65,
     // Plot keeps the x-axis label at the bottom edge of the margin, so the gap
     // to the ticks is marginBottom minus tick height: at the default 30 the
@@ -1609,14 +1633,11 @@ html`<div style="
     // bars thicker than the ones above the toggle.
     marginTop: 20,
     height: rows.length * rowHeight + 68,
-    // Plot defaults to 640px, which left the right third of the card empty. The
-    // card is one of two columns beside the sidebar, so mirror the density
-    // chart's viewport arithmetic and halve it; never below the old default.
-    width: Math.max(640, (window.innerWidth - 430) / 2 - 40),
+    width: chartWidth,
     x: {
       label: "Mehrheitswahrscheinlichkeit",
       domain: [0, 1],
-      ticks: [0, 0.25, 0.5, 0.75, 1],
+      ticks,
       tickFormat: d => formatDe(d * 100, 0) + "%"
     },
     y: {
@@ -1635,7 +1656,7 @@ html`<div style="
     },
     marks: [
       Plot.ruleX([0], { stroke: "#aaa" }),
-      Plot.ruleX([0.25, 0.5, 0.75], {
+      Plot.ruleX(ticks.slice(1, -1), {
         stroke: "#e5e7eb",
         strokeWidth: 1
       }),
@@ -1667,12 +1688,15 @@ html`<div style="
     return withProbabilityTooltip(withGroupCards(plot, rows), rows, "probability")
   }
 
+  // Indented enough to read as belonging under the chart, but nowhere near the
+  // axis labels: at their margin the button sat almost in the middle of the card.
+  const toggleIndent = Math.min(32, Math.round(labelMargin / 4))
   const moreToggle = remaining.length
-    ? html`<details class="more-coalitions" style="margin:8px 0 0 ${axisMargin}px;font-size:0.9em;color:#555">
+    ? html`<details class="more-coalitions" style="margin:8px 0 0 ${toggleIndent}px;padding-right:36px;font-size:0.9em;color:#555">
         <summary style="cursor:pointer;font-weight:700">
           Weitere ${remaining.length} Parteikombinationen anzeigen
         </summary>
-        <div style="margin-top:8px;margin-left:${-axisMargin}px">
+        <div style="margin-top:8px;margin-left:${-toggleIndent}px">
           ${coalitionPlot(remaining, "Weitere Parteikombinationen")}
         </div>
       </details>`
@@ -1894,10 +1918,17 @@ html`<div style="
     return Math.round(Math.min(200, Math.max(80, widest + 20)))
   })()
 
+  // the same width and the same tick rule as the Koalitionen chart beside it, so
+  // the two cards' type comes out at one size
+  const chartWidth = Math.max(320, (window.innerWidth - 310) / 2 - 30)
+  const ticks = chartWidth < 420 ? [0, 0.5, 1] : [0, 0.25, 0.5, 0.75, 1]
+  const labelMargin = Math.min(axisMargin, Math.round(chartWidth * 0.4))
+
   const plot = Plot.plot({
     style: { fontSize: "13px" },
-    marginLeft: axisMargin,
+    marginLeft: labelMargin,
     marginRight: 80,
+    width: chartWidth,
     // same clearance as the Koalitionen chart above
     marginBottom: 48,
     // and the same height per row, so the bars come out as thick as the ones
@@ -1907,7 +1938,7 @@ html`<div style="
     x: {
       label: "Einzugswahrscheinlichkeit",
       domain: [0, 1],
-      ticks: [0, 0.25, 0.5, 0.75, 1],
+      ticks,
       tickFormat: d => formatDe(d * 100, 0) + "%"
     },
     y: {
@@ -1920,7 +1951,7 @@ html`<div style="
     },
     marks: [
       Plot.ruleX([0], { stroke: "#aaa" }),
-      Plot.ruleX([0.25, 0.5, 0.75], {
+      Plot.ruleX(ticks.slice(1, -1), {
         stroke: "#e5e7eb",
         strokeWidth: 1
       }),
@@ -2701,11 +2732,13 @@ viewof hoveredRow = {
     title: `Umfrage vom ${hoveredDate} (${institute_label})`,
     subtitle: " ",
     style: { fontSize: "14px" },
-    // 40 as on the trend chart to the left, or the y-axis label sits on "40%"
+    // 40 as on the trend chart to the left, so the two line up
     marginTop: 40,
     // room for the names on the diagonal
     marginBottom: 72,
-    marginLeft: 55,
+    // no y-axis to leave room for, just enough that the leftmost bar does not
+    // sit flush against the card edge
+    marginLeft: 20,
     marginRight: 25,
     height: 500,
     x: {
@@ -2718,17 +2751,28 @@ viewof hoveredRow = {
       tickRotate: -45,
       domain: shares.map(d => d.label)
     },
+    // No axis: every bar already carries its share as a label above it, so the
+    // ticks only repeated what the numbers say. The grid stays on as the
+    // background reference, and the domain still sets how the bars scale.
     y: {
-      label: "Stimmenanteil (%)",
-      grid: true,
-      domain: [0, maxY],
-      tickFormat: d => formatDe(d, 0) + "%"
+      axis: null,
+      domain: [0, maxY]
     },
     marks: [
+      // Drawn as rules rather than left to the scale's own `grid`, which the
+      // axis takes with it, and kept first in the list so the bars sit on top.
+      Plot.ruleY(d3.ticks(0, maxY, 7), {
+        stroke: "#e5e7eb",
+        strokeWidth: 1
+      }),
       Plot.barY(shares, {
         x: "label",
         y: "percent",
-        fill: d => party_colors[d.party] || "#aaa"
+        fill: d => party_colors[d.party] || "#aaa",
+        // the pale party colours (FDP yellow, AfD light blue) have no edge of
+        // their own against the white card
+        stroke: "#999",
+        strokeWidth: 1
       }),
       Plot.ruleY([5], {
         stroke: "#555",
