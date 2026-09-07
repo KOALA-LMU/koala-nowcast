@@ -36,12 +36,19 @@ resources:
   padding-top: 0.5rem !important;
 }
 
+/* Plot renders a figure's title and subtitle as sibling headings, so the space
+   between them is h2's padding plus the larger of the two margins — some 26px,
+   which read as an empty band under the rule. Tighten it so the subtitle sits
+   with the title it belongs to. */
 .card-body figure > h2 {
   font-size: 1.15rem !important;
+  margin-bottom: 4px !important;
+  padding-bottom: 4px !important;
 }
 
 .card-body figure > h3 {
   font-size: 0.95rem !important;
+  margin-top: 0 !important;
   margin-bottom: 16px !important;
 }
 
@@ -155,6 +162,8 @@ ojs_define(
   # parliament$hurdle and pooling$period in config/elections/*.yml — the values
   # the nowcast actually runs with. Keep them in sync when a config changes;
   # the Methodik page states them as the method in use.
+  # next_election_date is the ISO form of next_election, and only the header
+  # countdown reads it; an election without a fixed date leaves it out.
   election_meta = list(
     ST = list(
       title = "Landtagswahl in Sachsen-Anhalt 2026",
@@ -162,6 +171,7 @@ ojs_define(
       majority = 42L,
       last_election = "6. Juni 2021",
       next_election = "6. September 2026",
+      next_election_date = "2026-09-06",
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
       pooling_days = 14L
@@ -172,6 +182,7 @@ ojs_define(
       majority = 36L,
       last_election = "26. September 2021",
       next_election = "20. September 2026",
+      next_election_date = "2026-09-20",
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
       pooling_days = 14L
@@ -182,6 +193,7 @@ ojs_define(
       majority = 66L,
       last_election = "12. Februar 2023",
       next_election = "20. September 2026",
+      next_election_date = "2026-09-20",
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
       pooling_days = 14L
@@ -192,6 +204,8 @@ ojs_define(
       majority = 316L,
       last_election = "23. Februar 2025",
       next_election = "26. Januar bis 25. März 2029, Termin offen",
+      # deliberately no next_election_date: the Bundestag term only fixes a
+      # window, so the header shows that window instead of a countdown
       seat_method = "Sainte-Laguë/Schepers",
       hurdle = "5 %",
       pooling_days = 14L
@@ -224,7 +238,10 @@ ojs_define(
 //| label: ojs-setup
 //| output: false
 d3 = require("d3@7")
-party_order = ["left", "spd", "bsw", "greens", "fdp", "fw", "cdu", "afd"]
+// Left to right by seating order in the Bundestag; Freie Wähler, who do not
+// sit there, keep their place between FDP and Union. "others" is not listed
+// and sorts last wherever this order is applied.
+party_order = ["bsw", "left", "spd", "greens", "fdp", "fw", "cdu", "afd"]
 
 label_to_party = Object.fromEntries(
   Object.entries(party_names).map(([party, label]) => [label, party])
@@ -896,6 +913,23 @@ updated  = new Date(cur.coalitions.updated).toLocaleDateString("de-DE", {
   day: "2-digit", month: "long", year: "numeric", timeZone: "UTC"
 })
 
+// Headline line under the Stimmenanteile title. Whole calendar days from today,
+// floored at zero so an election that has passed reads "Noch 0 Tage" instead of
+// counting into the negative — local today against the date parsed as UTC
+// midnight, as for `updated`. An election without a fixed date (the Bundestag
+// term only fixes a window) states the window instead of a countdown.
+election_date_label = {
+  if (!cur_meta.next_election_date) return `Wahltermin: ${cur_meta.next_election}`
+
+  const now = new Date()
+  const days = Math.max(0, Math.round(
+    (Date.parse(`${cur_meta.next_election_date}T00:00:00Z`)
+      - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000
+  ))
+  return `Wahltermin am ${cur_meta.next_election} – Noch `
+    + `${days.toLocaleString("de-DE")} ${days === 1 ? "Tag" : "Tage"} zur Wahl`
+}
+
 // The selected Umfragebasis, worded as in the selector itself.
 institute_label = institute === "Pooled"
   ? "Gepoolte Umfrage"
@@ -1153,12 +1187,15 @@ html`<div style="
 
   return Plot.plot({
     title: `${institute_label} - ${shareDateLabel}`,
+    subtitle: election_date_label,
     // without this the party names fall back to Plot's 10px default
     style: { fontSize: "13px" },
     // see the marginTop note on the Umfrageverlauf trend chart
     marginTop: 40,
     marginBottom: hasLastResult ? 86 : 55,
-    marginLeft: 55,
+    // no y-axis to leave room for, just enough that the leftmost bar does not
+    // sit flush against the card edge
+    marginLeft: 20,
     marginRight: 25,
     height: 360,
     x: {
@@ -1167,11 +1204,13 @@ html`<div style="
       ticks: comparison.map(d => d.index + 0.5),
       tickFormat: d => comparison[Math.floor(d)]?.label || ""
     },
+    // Axis and grid dropped: every bar already carries its share as a label
+    // underneath, so the ticks only repeated what the numbers say. The domain
+    // still sets how the bars scale, and the 5% rule stays as the one reference
+    // line that is not readable off the bars themselves.
     y: {
-      label: "Stimmenanteil (%)",
-      grid: true,
-      domain: [0, maxY],
-      tickFormat: d => formatDe(d, 0) + "%"
+      axis: null,
+      domain: [0, maxY]
     },
     marks: [
       ...(hasLastResult ? [
@@ -1181,7 +1220,10 @@ html`<div style="
           y1: 0,
           y2: "last_percent",
           fill: d => party_colors[d.party] || "#aaa",
-          fillOpacity: 0.28
+          fillOpacity: 0.28,
+          stroke: "#999",
+          strokeWidth: 1,
+          strokeOpacity: 0.45
         })
       ] : []),
       Plot.rectY(comparison, {
@@ -1190,7 +1232,10 @@ html`<div style="
         y1: 0,
         y2: "percent",
         fill: d => party_colors[d.party] || "#aaa",
-        fillOpacity: d => d.party === "fdp" ? 1 : 0.9
+        fillOpacity: d => d.party === "fdp" ? 1 : 0.9,
+        // the pale party colours have no edge of their own against the card
+        stroke: "#999",
+        strokeWidth: 1
       }),
       Plot.ruleY([5], {
         stroke: "#555",
@@ -1241,15 +1286,20 @@ html`<div style="
 //| label: chart-coalition-probabilities
 
 {
-  const sortCoalitions = rows => rows.slice().sort((a, b) =>
-    d3.ascending(a.probability, b.probability) || d3.ascending(a.vote_share, b.vote_share)
-  )
-
   const hoverProbability = probability =>
     (probability * 100).toLocaleString("de-DE", {
       minimumFractionDigits: 1,
       maximumFractionDigits: 2
     }) + "%"
+
+  // A value under 0,05% would print as "0,0%" beside a dot that is plainly
+  // there, so name it as the small number it is. The tooltip keeps the detail.
+  // The "<" is escaped: as a literal it ends the ojs chunk's parse right here.
+  const labelProbability = probability =>
+    probability > 0 && probability * 100 < 0.05
+      ? "\u003C0,1%"
+      : formatDe(probability * 100) + "%"
+
   const withProbabilityTooltip = (plot, rows, valueKey) => {
     const wrapper = html`<div style="position:relative"></div>`
     const tooltip = html`<div style="
@@ -1284,21 +1334,14 @@ html`<div style="
     }
     const hide = () => { tooltip.style.display = "none" }
 
-    overlay.selectAll("line").data(active).join("line")
-      .attr("x1", xScale.apply(0))
-      .attr("x2", d => xScale.apply(d[valueKey]))
-      .attr("y1", d => yScale.apply(d.label))
-      .attr("y2", d => yScale.apply(d.label))
-      .attr("stroke", "transparent")
-      .attr("stroke-width", 16)
-      .style("pointer-events", "stroke")
-      .on("pointermove", show)
-      .on("pointerleave", hide)
-
-    overlay.selectAll("circle").data(active).join("circle")
-      .attr("cx", d => xScale.apply(d[valueKey]))
-      .attr("cy", d => yScale.apply(d.label))
-      .attr("r", 9)
+    // One target per row rather than one per bar: the value sits past the end of
+    // its bar and has to be hoverable too. On the band scale the bars now use,
+    // `apply` gives the top of a row and `bandwidth` its height.
+    overlay.selectAll("rect").data(active).join("rect")
+      .attr("x", xScale.apply(0))
+      .attr("y", d => yScale.apply(d.label))
+      .attr("width", xScale.apply(1) - xScale.apply(0))
+      .attr("height", yScale.bandwidth)
       .attr("fill", "transparent")
       .style("pointer-events", "all")
       .on("pointermove", show)
@@ -1307,14 +1350,55 @@ html`<div style="
     return wrapper
   }
 
-  const topN = 6
+  // The card behind a leadership block. Drawn straight into the SVG rather than
+  // as a mark: it has to span two rows of a band scale and sit behind
+  // everything, including the names in the left margin.
+  const withGroupCards = (plot, rows) => {
+    const svg = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
+    const yScale = plot.scale("y")
+    const blocks = Array.from(d3.group(rows, d => d.coalition_key).values())
+      .filter(block => block.length > 1)
+    if (!blocks.length) return plot
+
+    const pad = 5
+    const top = block => d3.min(block, d => yScale.apply(d.label)) - pad
+    d3.select(svg).insert("g", ":first-child")
+      .selectAll("rect").data(blocks).join("rect")
+      .attr("x", 6)
+      .attr("width", (+svg.getAttribute("width") || 0) - 12)
+      .attr("y", top)
+      .attr("height", block =>
+        d3.max(block, d => yScale.apply(d.label)) + yScale.bandwidth + pad - top(block))
+      .attr("rx", 6)
+      .attr("fill", "#eef0f3")
+    return plot
+  }
+
+  const maxRows = 5
   const ranked = leading_variants
     .filter(d => d.probability > 0)
     .sort((a, b) =>
       d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
     )
-  const coal = sortCoalitions(ranked.slice(0, topN))
-  const remaining = sortCoalitions(ranked.slice(topN))
+  // The same parties under a different leader are one block: the flipped
+  // variant is drawn directly under its counterpart instead of wherever its own
+  // probability would rank it, and the two share a grey card. Blocks keep the
+  // ranking of their strongest variant, and a block is never split across the
+  // toggle — the first one that no longer fits sends it and everything weaker
+  // below, so the order stays monotone.
+  const blocks = Array.from(
+    d3.group(ranked, d => d.coalition_key).values(),
+    rows => rows.slice().sort((a, b) => d3.descending(a.probability, b.probability))
+  ).sort((a, b) =>
+    d3.descending(a[0].probability, b[0].probability) ||
+    d3.descending(a[0].vote_share, b[0].vote_share)
+  )
+  const split = blocks.findIndex((block, i) =>
+    d3.sum(blocks.slice(0, i + 1), b => b.length) > maxRows
+  )
+  const shown = split < 0 ? blocks : blocks.slice(0, split)
+  const coal = shown.flat()
+  const remaining = (split < 0 ? [] : blocks.slice(split)).flat()
   const plotHeading = (line1, line2 = null) => html`<div style="
     margin:0 0 6px 0;
     color:#555;
@@ -1362,6 +1446,8 @@ html`<div style="
     </div>
   </details>`
 
+  const rowHeight = 42
+
   const coalitionPlot = (rows, title = null) => {
     const plot = Plot.plot({
     ...(title ? { title } : {}),
@@ -1372,7 +1458,11 @@ html`<div style="
     // to the ticks is marginBottom minus tick height: at the default 30 the
     // label overlapped "100%".
     marginBottom: 48,
-    height: Math.max(280, rows.length * 42 + 42),
+    // A fixed height per row, not a floor on the whole chart: the "Weitere
+    // Koalitionen" plot has fewer rows, and a floor would have stretched its
+    // bars thicker than the ones above the toggle.
+    marginTop: 20,
+    height: rows.length * rowHeight + 68,
     // Plot defaults to 640px, which left the right third of the card empty. The
     // card is one of two columns beside the sidebar, so mirror the density
     // chart's viewport arithmetic and halve it; never below the old default.
@@ -1385,9 +1475,17 @@ html`<div style="
     },
     y: {
       label: null,
-      domain: rows.map(d => d.label).reverse(),
+      // already in display order, strongest block first, each block's variants
+      // together
+      domain: rows.map(d => d.label),
       tickSize: 0,
-      tickPadding: 8
+      tickPadding: 8,
+      // A band scale now that the rows are bars. The outer padding is set apart
+      // from the inner one so that it does not grow with the number of rows:
+      // that keeps the step at exactly rowHeight, hence the bars in both plots
+      // the same thickness.
+      paddingInner: 0.3,
+      paddingOuter: 0.15
     },
     marks: [
       Plot.ruleX([0], { stroke: "#aaa" }),
@@ -1395,33 +1493,32 @@ html`<div style="
         stroke: "#e5e7eb",
         strokeWidth: 1
       }),
-      Plot.ruleY(rows.filter(d => d.first_party === "fdp"), {
-        y: "label",
-        x1: 0,
-        x2: "probability",
-        stroke: "#999",
-        strokeWidth: 5,
-        strokeOpacity: 0.8
-      }),
-      Plot.ruleY(rows, {
-        y: "label",
-        x1: 0,
-        x2: "probability",
-        stroke: d => party_colors[d.first_party] || "#aaa",
-        strokeWidth: 3,
-        strokeOpacity: 0.75
-      }),
-      Plot.dot(rows, {
+      Plot.barX(rows, {
         y: "label",
         x: "probability",
         fill: d => party_colors[d.first_party] || "#aaa",
-        stroke: d => d.first_party === "fdp" ? "#999" : "white",
-        strokeWidth: d => d.first_party === "fdp" ? 1.8 : 1.5,
-        r: 5
+        fillOpacity: 0.9,
+        // the pale party colours (FDP yellow, AfD light blue) have no edge of
+        // their own against the white card
+        stroke: "#999",
+        strokeWidth: 1
+      }),
+      // The value at the end of each bar, so the chart is readable without
+      // hovering. The tooltip stays for the second decimal; the right margin
+      // already holds the widest label ("100,0%") clear of the plot area.
+      Plot.text(rows, {
+        y: "label",
+        x: "probability",
+        text: d => labelProbability(d.probability),
+        textAnchor: "start",
+        dx: 12,
+        fill: "#333",
+        fontSize: 12,
+        fontWeight: 700
       })
     ]
   })
-    return withProbabilityTooltip(plot, rows, "probability")
+    return withProbabilityTooltip(withGroupCards(plot, rows), rows, "probability")
   }
 
   return html`
@@ -1485,6 +1582,15 @@ html`<div style="
       minimumFractionDigits: 1,
       maximumFractionDigits: 2
     }) + "%"
+
+  // A value under 0,05% would print as "0,0%" beside a dot that is plainly
+  // there, so name it as the small number it is. The tooltip keeps the detail.
+  // The "<" is escaped: as a literal it ends the ojs chunk's parse right here.
+  const labelProbability = probability =>
+    probability > 0 && probability * 100 < 0.05
+      ? "\u003C0,1%"
+      : formatDe(probability * 100) + "%"
+
   const withProbabilityTooltip = (plot, rows, valueKey) => {
     const wrapper = html`<div style="position:relative"></div>`
     const tooltip = html`<div style="
@@ -1519,21 +1625,14 @@ html`<div style="
     }
     const hide = () => { tooltip.style.display = "none" }
 
-    overlay.selectAll("line").data(active).join("line")
-      .attr("x1", xScale.apply(0))
-      .attr("x2", d => xScale.apply(d[valueKey]))
-      .attr("y1", d => yScale.apply(d.label))
-      .attr("y2", d => yScale.apply(d.label))
-      .attr("stroke", "transparent")
-      .attr("stroke-width", 16)
-      .style("pointer-events", "stroke")
-      .on("pointermove", show)
-      .on("pointerleave", hide)
-
-    overlay.selectAll("circle").data(active).join("circle")
-      .attr("cx", d => xScale.apply(d[valueKey]))
-      .attr("cy", d => yScale.apply(d.label))
-      .attr("r", 9)
+    // One target per row rather than one per bar: the value sits past the end of
+    // its bar and has to be hoverable too. On the band scale the bars now use,
+    // `apply` gives the top of a row and `bandwidth` its height.
+    overlay.selectAll("rect").data(active).join("rect")
+      .attr("x", xScale.apply(0))
+      .attr("y", d => yScale.apply(d.label))
+      .attr("width", xScale.apply(1) - xScale.apply(0))
+      .attr("height", yScale.bandwidth)
       .attr("fill", "transparent")
       .style("pointer-events", "all")
       .on("pointermove", show)
@@ -1595,7 +1694,10 @@ html`<div style="
     marginRight: 80,
     // same clearance as the Koalitionen chart above
     marginBottom: 48,
-    height: Math.max(260, hurdles.length * 34 + 40),
+    // and the same height per row, so the bars come out as thick as the ones
+    // over there
+    marginTop: 20,
+    height: hurdles.length * 42 + 68,
     x: {
       label: "Einzugswahrscheinlichkeit",
       domain: [0, 1],
@@ -1604,7 +1706,11 @@ html`<div style="
     },
     y: {
       label: null,
-      domain: hurdles.map(d => d.label)
+      domain: hurdles.map(d => d.label),
+      // as in the Koalitionen chart: a band scale whose outer padding does not
+      // grow with the number of rows, so the step stays at the row height
+      paddingInner: 0.3,
+      paddingOuter: 0.15
     },
     marks: [
       Plot.ruleX([0], { stroke: "#aaa" }),
@@ -1612,29 +1718,24 @@ html`<div style="
         stroke: "#e5e7eb",
         strokeWidth: 1
       }),
-      Plot.ruleY(hurdles.filter(d => d.party === "fdp"), {
-        y: "label",
-        x1: 0,
-        x2: "prob_above_hurdle",
-        stroke: "#999",
-        strokeWidth: 5,
-        strokeOpacity: 0.8
-      }),
-      Plot.ruleY(hurdles, {
-        y: "label",
-        x1: 0,
-        x2: "prob_above_hurdle",
-        stroke: d => party_colors[d.party] || "#aaa",
-        strokeWidth: 3,
-        strokeOpacity: 0.8
-      }),
-      Plot.dot(hurdles, {
+      Plot.barX(hurdles, {
         y: "label",
         x: "prob_above_hurdle",
         fill: d => party_colors[d.party] || "#aaa",
-        stroke: d => d.party === "fdp" ? "#999" : "white",
-        strokeWidth: d => d.party === "fdp" ? 1.8 : 1.5,
-        r: 5
+        fillOpacity: 0.9,
+        stroke: "#999",
+        strokeWidth: 1
+      }),
+      // as in the Koalitionen chart: the value is shown, not only hovered
+      Plot.text(hurdles, {
+        y: "label",
+        x: "prob_above_hurdle",
+        text: d => labelProbability(d.prob_above_hurdle),
+        textAnchor: "start",
+        dx: 12,
+        fill: "#333",
+        fontSize: 12,
+        fontWeight: 700
       })
     ]
   })
