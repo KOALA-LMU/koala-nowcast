@@ -5,8 +5,10 @@ fixture_path <- function(...) {
   normalizePath(file.path("..", "fixtures", ...), mustWork = TRUE)
 }
 
-test_that("scrape_politbarometer() parses saved HTML and folds FW into others", {
-  got <- scrape_politbarometer(fixture_path("wahlrecht", "politbarometer.html"))
+test_that("scrape_wahlrecht() parses the saved Politbarometer HTML and folds FW into others", {
+  # The local fork this used to exercise is gone: coalitions 0.6.28 reads the page
+  # again (KOALA-LMU/coalitions#146), so the upstream scraper is what to test.
+  got <- scrape_wahlrecht(fixture_path("wahlrecht", "politbarometer.html"))
 
   expect_equal(nrow(got), 2)
   expect_named(got, c("date", "start", "end", "cdu", "spd", "greens", "fdp",

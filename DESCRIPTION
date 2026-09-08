@@ -9,7 +9,7 @@ Description:
 License: MIT + file LICENSE
 Encoding: UTF-8
 Imports:
-    coalitions (>= 0.6.27),
+    coalitions (>= 0.6.28),
     dplyr (>= 1.2.1),
     jsonlite (>= 2.0.0),
     tidyr,
@@ -17,3 +17,7 @@ Imports:
 Suggests:
     testthat (>= 3.0.0),
     withr
+# 0.6.28 carries the wahlrecht scraper fix (KOALA-LMU/coalitions#146) and is not
+# on CRAN yet; drop this line once it is released.
+Remotes:
+    KOALA-LMU/coalitions
