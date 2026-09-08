@@ -8,6 +8,11 @@ format:
   dashboard:
     theme: cosmo
     logo: Koala_Logo_Schrift.png
+# The BERD logo is referenced from inside an ojs html`` template, which Quarto
+# does not scan for resources, so it would never be copied into _site. List it
+# explicitly.
+resources:
+  - berd-nfdi-logo.svg
 ---
 
 ```{=html}
@@ -55,6 +60,20 @@ format:
 .methodik-publications-card > .cell.card-body,
 .projekt-card > .cell.card-body {
   overflow-y: auto !important;
+}
+
+/* The Überblick charts have fixed pixel heights, so rows sized as a fraction of
+   the viewport shrink below their own chart and the card clips the x-axis. Floor
+   each row at its content height (max-content, so it follows the charts); below
+   that the main area scrolls. bslib sets the tracks inline, hence !important. */
+#überblick > .bslib-grid {
+  grid-template-rows: minmax(max-content, 55fr) minmax(max-content, 45fr) !important;
+}
+
+/* The scaffold around each ojs cell's hidden source stays a fill item, so on a
+   card taller than its chart it takes a share of the space and pushes it down. */
+.card-body > .code-copy-outer-scaffold {
+  flex: 0 0 auto !important;
 }
 
 .card-body svg [aria-label="tick"] text {
@@ -2767,6 +2786,22 @@ html`
     }
     .projekt-legal address { margin: 0; font-style: normal; }
     .projekt-small { color: var(--muted); font-size: 0.87rem; }
+
+    /* Funding acknowledgement: logo beside the funder's mandated wording. Wraps
+       to stacked on narrow screens so the statement stays readable. */
+    .projekt-funding {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 18px 24px;
+    }
+    .projekt-funding img {
+      width: 240px;
+      max-width: 100%;
+      height: auto;
+      flex: 0 0 auto;
+    }
+    .projekt-funding-text { flex: 1 1 320px; min-width: 260px; }
   </style>
 
   <div class="projekt-hero">
@@ -2849,6 +2884,28 @@ html`
       <a href="https://www.wahlrecht.de" target="_blank" rel="noopener noreferrer">wahlrecht.de</a>
       für die zuverlässige und zeitnahe Bereitstellung neuer Umfragedaten.
     </p>
+  </section>
+
+  <section class="projekt-section">
+    <h3>Förderung</h3>
+    <div class="projekt-funding">
+      <a href="https://www.berd-nfdi.de/" target="_blank" rel="noopener noreferrer">
+        <img src="berd-nfdi-logo.svg"
+             alt="BERD@NFDI – Gefördert durch die Deutsche Forschungsgemeinschaft (DFG)">
+      </a>
+      <div class="projekt-funding-text">
+        <p>
+          Die Neuaufsetzung von KOALA wird im Rahmen von
+          <a href="https://www.berd-nfdi.de/" target="_blank" rel="noopener noreferrer">BERD@NFDI</a>
+          gefördert:
+        </p>
+        <p class="projekt-small" style="margin-top:8px">
+          Funded by the Deutsche Forschungsgemeinschaft (DFG, German Research
+          Foundation) under the National Research Data Infrastructure –
+          NFDI 27/1-2026, project number 460037581.
+        </p>
+      </div>
+    </div>
   </section>
 
   <section class="projekt-section">
