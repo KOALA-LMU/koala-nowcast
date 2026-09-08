@@ -78,9 +78,17 @@ resources:
 /* The Überblick charts have fixed pixel heights, so rows sized as a fraction of
    the viewport shrink below their own chart and the card clips the x-axis. Floor
    each row at its content height (max-content, so it follows the charts); below
-   that the main area scrolls. bslib sets the tracks inline, hence !important. */
-#überblick > .bslib-grid {
-  grid-template-rows: minmax(max-content, 55fr) minmax(max-content, 45fr) !important;
+   that the main area scrolls. bslib sets the tracks inline, hence !important.
+
+   Only from bslib's sm breakpoint up: under it the cards are stacked in one
+   column and Quarto sizes every row at minmax(1em, max-content), which this rule
+   — an id, so it outweighs Quarto's own !important — used to override. The two
+   fractions were then handed to a column of cards that no longer fill them, and
+   each card was left with a band of empty space under its chart. */
+@media (min-width: 576px) {
+  #überblick > .bslib-grid {
+    grid-template-rows: minmax(max-content, 55fr) minmax(max-content, 45fr) !important;
+  }
 }
 
 /* The scaffold around each ojs cell's hidden source stays a fill item, so on a
@@ -1278,15 +1286,24 @@ html`<div style="
       tickRotate: rotateTicks ? -45 : 0,
       tickFormat: d => comparison[Math.floor(d)]?.label || ""
     },
-    // Axis and grid dropped: every bar already carries its share as a label
-    // underneath, so the ticks only repeated what the numbers say. The domain
-    // still sets how the bars scale, and the 5% rule stays as the one reference
-    // line that is not readable off the bars themselves.
+    // Axis dropped: every bar already carries its share as a label underneath,
+    // so the ticks only repeated what the numbers say. The domain still sets how
+    // the bars scale, and the 5% rule stays as the one reference line that is not
+    // readable off the bars themselves.
     y: {
       axis: null,
       domain: [0, maxY]
     },
     marks: [
+      // Grid without the axis it usually belongs to: unlabelled lines to compare
+      // bar heights against, not values to read off. Every 5 points, from the
+      // first one above the baseline that Plot.ruleY([0]) already draws, in the
+      // same grey as the Koalitionen grid — and first in the marks, so the bars
+      // sit on top of it.
+      Plot.ruleY(d3.range(5, maxY, 5), {
+        stroke: "#e5e7eb",
+        strokeWidth: 1
+      }),
       ...(hasLastResult ? [
         Plot.rectY(comparison.filter(d => Number.isFinite(d.last_percent)), {
           x1: d => d.index + 0.18,
@@ -1530,7 +1547,14 @@ html`<div style="
     <div>${line1}</div>
     ${line2 ? html`<div>${line2}</div>` : html`<div style="visibility:hidden">&nbsp;</div>`}
   </div>`
-  const plotInfo = content => html`<details style="
+  // Kept open across re-renders of this cell: the chart is built once as soon as
+  // its own data is there and again when the inputs it shares with the rest of
+  // the page settle, and switching the Umfragebasis rebuilds it too. A click in
+  // between built a new, closed box over the opened one, so the section appeared
+  // to snap shut on its own. sessionStorage, so the state lasts for the tab and
+  // no longer.
+  const plotInfo = (content, key) => {
+    const box = html`<details style="
     margin:0 0 8px 0;
     padding:7px 9px;
     border:1px solid #d1d5db;
@@ -1565,6 +1589,18 @@ html`<div style="
       ${content}
     </div>
   </details>`
+    const remember = open => {
+      try { sessionStorage.setItem(key, open ? "1" : "0") } catch (error) {}
+    }
+    try { box.open = sessionStorage.getItem(key) === "1" } catch (error) {}
+    // `toggle` fires in a task of its own, late enough for a rebuild to land
+    // between the click and it and read the old state back — so the click is
+    // recorded as it happens, with the state it is about to produce, and the
+    // toggle listener is left to cover any other way the box is opened.
+    box.querySelector("summary").addEventListener("click", () => remember(!box.open))
+    box.addEventListener("toggle", () => remember(box.open))
+    return box
+  }
 
   const rowHeight = 42
 
@@ -1618,6 +1654,12 @@ html`<div style="
   // margin left the bars almost no room.
   const labelMargin = Math.min(axisMargin, Math.round(chartWidth * 0.5))
 
+  // A bar of a few tenths of a percent comes out thinner than its own outline,
+  // so all that is left of it is the grey stroke — a stray mark hanging off the
+  // axis next to the row. Below the width at which the fill itself shows, the
+  // row is left to its value label alone.
+  const minVisibleProbability = 2 / Math.max(1, chartWidth - labelMargin - 65)
+
   const coalitionPlot = (rows, title = null) => {
     const plot = Plot.plot({
     ...(title ? { title } : {}),
@@ -1660,7 +1702,7 @@ html`<div style="
         stroke: "#e5e7eb",
         strokeWidth: 1
       }),
-      Plot.barX(rows, {
+      Plot.barX(rows.filter(d => d.probability >= minVisibleProbability), {
         y: "label",
         x: "probability",
         fill: d => party_colors[d.first_party] || "#aaa",
@@ -1712,7 +1754,7 @@ html`<div style="
         <div>
           Wichtig: Falls eine Zweierkoalition (z.B. Union-SPD) möglich ist, wird übergeordneten Dreierbündnissen (z.B. Union-Grüne-SPD) in den Berechnungen eine Wahrscheinlichkeit von 0% zugeordnet.
         </div>
-      `)}
+      `, "koala:info-parteikombinationen")}
       ${plotHeading(
         "Wahrscheinlichkeit, dass die Parteikombination eine Mehrheit der Sitze erreicht.",
         "(Es werden nur Parteikombinationen angezeigt, die eine Wahrscheinlichkeit von über 0% haben)"
@@ -1854,7 +1896,14 @@ html`<div style="
     <div>${line1}</div>
     ${line2 ? html`<div>${line2}</div>` : html`<div style="visibility:hidden">&nbsp;</div>`}
   </div>`
-  const plotInfo = content => html`<details style="
+  // Kept open across re-renders of this cell: the chart is built once as soon as
+  // its own data is there and again when the inputs it shares with the rest of
+  // the page settle, and switching the Umfragebasis rebuilds it too. A click in
+  // between built a new, closed box over the opened one, so the section appeared
+  // to snap shut on its own. sessionStorage, so the state lasts for the tab and
+  // no longer.
+  const plotInfo = (content, key) => {
+    const box = html`<details style="
     margin:0 0 8px 0;
     padding:7px 9px;
     border:1px solid #d1d5db;
@@ -1889,6 +1938,18 @@ html`<div style="
       ${content}
     </div>
   </details>`
+    const remember = open => {
+      try { sessionStorage.setItem(key, open ? "1" : "0") } catch (error) {}
+    }
+    try { box.open = sessionStorage.getItem(key) === "1" } catch (error) {}
+    // `toggle` fires in a task of its own, late enough for a rebuild to land
+    // between the click and it and read the old state back — so the click is
+    // recorded as it happens, with the state it is about to produce, and the
+    // toggle listener is left to cover any other way the box is opened.
+    box.querySelector("summary").addEventListener("click", () => remember(!box.open))
+    box.addEventListener("toggle", () => remember(box.open))
+    return box
+  }
 
   // as in the Koalitionen chart, and for the same reason: wide enough for the
   // longest party name, which "Freie Wähler" already overran at a fixed 80px,
@@ -1983,7 +2044,7 @@ html`<div style="
       <div>
         Hier wird für Parteien dargestellt, wie wahrscheinlich es ist, dass sie nach einer Wahl im ${election === "BTW" ? "Bundestag" : "Landtag"} vertreten wären, wenn heute Wahl wäre. Angezeigt werden nur Parteien, deren Einzugswahrscheinlichkeit unter 100% liegt, weil bei diesen Parteien noch Unsicherheit darüber besteht, ob sie tatsächlich ins Parlament einziehen würden.
       </div>
-    `)}
+    `, "koala:info-einzugswahrscheinlichkeiten")}
     ${plotHeading(
       `Wahrscheinlichkeit, dass die Partei in den ${election === "BTW" ? "Bundestag" : "Landtag"} einzieht.`,
       "(Es werden nur Parteien mit einer Einzugswahrscheinlichkeit von unter 100% angezeigt)"
