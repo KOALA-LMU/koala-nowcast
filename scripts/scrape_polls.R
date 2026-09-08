@@ -130,12 +130,7 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   if (has_no_pooled)
     message(sprintf("[%s] No pooled data found, computing pooled estimates", cfg$id))
 
-  # Upsert, not append: the fresh row wins for every key it re-delivers, so a
-  # correction replaces the stored value. Polls outside the window are kept.
-  raw_updated <- bind_rows(
-    if (!is.null(existing_raw)) anti_join(existing_raw, fresh, by = poll_key) else NULL,
-    fresh
-  ) %>% arrange(desc(date))
+  raw_updated <- upsert_polls(existing_raw, fresh, poll_key)
 
   # Only recompute pooled from the earliest new poll date forward; recompute all when
   # there is no existing pooled data yet.
@@ -164,6 +159,26 @@ scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   message(sprintf("[%s] Saved to %s", cfg$id, out_file))
 
   invisible(TRUE)
+}
+
+# Merge the freshly scraped window into the stored history.
+#
+# Upsert, not append: for every key the scrape re-delivers, the fresh row wins,
+# so a corrected percentage replaces the stored one instead of being dropped as
+# a duplicate.
+#
+# Two kinds of stored row survive untouched, and the distinction matters:
+#   - polls older than the re-scrape window, which the scrape cannot speak to;
+#   - polls inside the window that wahlrecht no longer lists.
+# The second is deliberate: a poll that disappears upstream (withdrawn, or moved
+# behind a layout change we failed to parse) stays in our history rather than
+# vanishing from the series. The cost is that a genuine retraction is never
+# reflected. Revisit if wahlrecht starts retracting polls in practice.
+upsert_polls <- function(existing_raw, fresh, poll_key) {
+  bind_rows(
+    if (!is.null(existing_raw)) anti_join(existing_raw, fresh, by = poll_key) else NULL,
+    fresh
+  ) %>% arrange(desc(date))
 }
 
 # TRUE wherever a freshly scraped value disagrees with the stored one.

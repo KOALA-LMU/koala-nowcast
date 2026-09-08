@@ -79,3 +79,102 @@ test_that("a poll summing to 100 passes quietly and is returned unchanged", {
   expect_silent(out <- warn_off_total(fresh, "test"))
   expect_equal(out, fresh)
 })
+
+# ── values_differ (#99) ──────────────────────────────────────────────────────
+# Decides whether wahlrecht has revised a value we already stored. Keying on
+# (pollster, date, party) alone made a correction look like a duplicate, so the
+# stale value survived every later scrape.
+
+test_that("a revised percentage counts as different", {
+  expect_true(values_differ(31, 29))
+  expect_true(values_differ(29.4, 29.5))
+})
+
+test_that("an unchanged value does not", {
+  expect_false(values_differ(29, 29))
+  expect_false(values_differ(0, 0))
+})
+
+test_that("differences below the JSON rounding are ignored", {
+  # write_json keeps 4 decimals, so the stored side comes back slightly changed;
+  # without a tolerance every run would report a revision, rewrite the file and
+  # recompute pooled forever.
+  expect_false(values_differ(29.00001, 29))
+  # ... while the tolerance still sits well below what a real revision moves by
+  expect_true(values_differ(29.1, 29))
+})
+
+test_that("NA is treated as a value, not as unknown", {
+  # A party the pollster does not report. `!=` would answer NA here, which drops
+  # the row from the filter instead of deciding.
+  expect_true(values_differ(NA, 5))
+  expect_true(values_differ(5, NA))
+  expect_false(values_differ(NA, NA))
+})
+
+test_that("values_differ is vectorised over columns", {
+  expect_equal(values_differ(c(29, 30, NA), c(29, 31, NA)),
+               c(FALSE, TRUE, FALSE))
+})
+
+# ── upsert_polls (#99) ───────────────────────────────────────────────────────
+
+test_that("a re-delivered key takes the freshly scraped value", {
+  key      <- c("pollster", "date", "party")
+  existing <- make_long_poll("forsa", "2026-08-01", c("cdu", "spd"), c(29, 20))
+  fresh    <- make_long_poll("forsa", "2026-08-01", c("cdu", "spd"), c(31, 20))
+
+  got <- upsert_polls(existing, fresh, key)
+
+  expect_equal(nrow(got), 2)                                  # replaced, not appended
+  expect_equal(got$percent[got$party == "cdu"], 31)           # the correction won
+})
+
+test_that("polls outside the re-scraped window are kept", {
+  key      <- c("pollster", "date", "party")
+  existing <- rbind(
+    make_long_poll("forsa", "2026-01-15", c("cdu", "spd"), c(25, 22)),  # before the window
+    make_long_poll("forsa", "2026-08-01", c("cdu", "spd"), c(29, 20))
+  )
+  fresh <- make_long_poll("forsa", "2026-08-01", c("cdu", "spd"), c(31, 20))
+
+  got <- upsert_polls(existing, fresh, key)
+
+  expect_equal(nrow(got), 4)
+  expect_equal(got$percent[got$date == as.Date("2026-01-15") & got$party == "cdu"], 25)
+})
+
+test_that("a stored poll the scrape no longer lists is retained", {
+  # Deliberate: a poll that disappears upstream stays in our history rather than
+  # vanishing from the series. Pinned here so the choice is visible if it changes.
+  key      <- c("pollster", "date", "party")
+  existing <- rbind(
+    make_long_poll("forsa", "2026-08-01", c("cdu", "spd"), c(29, 20)),
+    make_long_poll("insa",  "2026-08-01", c("cdu", "spd"), c(30, 19))   # gone upstream
+  )
+  fresh <- make_long_poll("forsa", "2026-08-01", c("cdu", "spd"), c(29, 20))
+
+  got <- upsert_polls(existing, fresh, key)
+
+  expect_true("insa" %in% got$pollster)
+  expect_equal(nrow(got), 4)
+})
+
+test_that("with no stored history the scrape is taken as-is", {
+  key   <- c("pollster", "date", "party")
+  fresh <- make_long_poll("forsa", "2026-08-01", c("cdu", "spd"), c(29, 20))
+
+  expect_equal(nrow(upsert_polls(NULL, fresh, key)), 2)
+})
+
+test_that("results come back newest first", {
+  key   <- c("pollster", "date", "party")
+  fresh <- rbind(
+    make_long_poll("forsa", "2026-07-01", "cdu", 28),
+    make_long_poll("forsa", "2026-08-01", "cdu", 29)
+  )
+
+  got <- upsert_polls(NULL, fresh, key)
+
+  expect_equal(got$date, sort(got$date, decreasing = TRUE))
+})
