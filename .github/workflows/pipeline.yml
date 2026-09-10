@@ -28,11 +28,11 @@ concurrency:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
-      # Supabase signs against the project's real region; "auto" fails here.
-      AWS_DEFAULT_REGION: eu-central-1
       SUPABASE_ENDPOINT: https://agmqujupclwlttjwfnaq.storage.supabase.co/storage/v1/s3
       # A push changes code, not poll data, so it renders without scraping.
       RUN_COMPUTE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.skip_compute) }}
@@ -64,6 +64,11 @@ jobs:
       # In full: the upload syncs with --delete, so anything missing here is
       # dropped from the bucket.
       - name: Download existing data from Supabase Storage
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
+          # Supabase signs against the project's real region; "auto" fails here.
+          AWS_DEFAULT_REGION: eu-central-1
         run: |
           mkdir -p pipeline/data/surveys pipeline/data/results
           aws s3 sync s3://koala-data/surveys pipeline/data/surveys/ \
@@ -156,6 +161,11 @@ jobs:
 
       - name: Upload data to Supabase Storage
         if: steps.gate.outputs.changed == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
+          # Supabase signs against the project's real region; "auto" fails here.
+          AWS_DEFAULT_REGION: eu-central-1
         run: |
           aws s3 sync pipeline/data/surveys/ s3://koala-data/surveys \
             --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
@@ -225,6 +235,7 @@ jobs:
           path: _site
 
       - name: Deploy GitHub Pages
+        id: deploy
         if: steps.gate.outputs.render == 'true'
         uses: actions/deploy-pages@v4
 
