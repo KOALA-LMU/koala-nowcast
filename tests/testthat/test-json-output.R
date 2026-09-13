@@ -85,7 +85,6 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
   result_dir <- "data/results/test-election"
 
   expected_files <- c(
-    "coalProbs.json",
     "coalProbs_grouping.json",
     "biggestParty.json",
     "passHurdle.json",
@@ -96,24 +95,13 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
     all(file.exists(file.path(result_dir, expected_files)))
   )
 
-  ## Test the json files
-  # coalProbs
-  coal_probs <- jsonlite::fromJSON(file.path(result_dir, expected_files[[1]]))
-  testthat::expect_true(
-    all(c("pollster", "date", "coalition", "size", "prob") %in% colnames(coal_probs))
-  )
-  character_cols <- c("pollster", "coalition")
-  for (col in character_cols) {
-    testthat::expect_type(coal_probs[[col]], "character")
-  }
-  testthat::expect_type(coal_probs$size, "integer")
-  testthat::expect_true(is.numeric(coal_probs$prob))
-  testthat::expect_true(
-    all(coal_probs$prob >= 0 & coal_probs$prob <= 100)
-  )
+  # coalProbs.json is no longer written (#129): the dashboard reads
+  # coalProbs_grouping.json instead.
+  testthat::expect_false(file.exists(file.path(result_dir, "coalProbs.json")))
 
+  ## Test the json files
   # coalProbs_grouping
-  grouping <- jsonlite::fromJSON(file.path(result_dir, expected_files[[2]]))
+  grouping <- jsonlite::fromJSON(file.path(result_dir, expected_files[[1]]))
   testthat::expect_true(
     all(c("pollster", "date", "coal_type", "prob") %in% colnames(grouping))
   )
@@ -127,7 +115,7 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
   )
 
   # biggestParty
-  biggest <- jsonlite::fromJSON(file.path(result_dir, expected_files[[3]]))
+  biggest <- jsonlite::fromJSON(file.path(result_dir, expected_files[[2]]))
   testthat::expect_true(
     all(c("pollster", "date", "index", "party", "prob") %in% colnames(biggest))
   )
@@ -141,7 +129,7 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
   )
 
   # passHurdle
-  hurdle <- jsonlite::fromJSON(file.path(result_dir, expected_files[[4]]))
+  hurdle <- jsonlite::fromJSON(file.path(result_dir, expected_files[[3]]))
   testthat::expect_true(
     all(c("pollster", "date", "party", "prob") %in% colnames(hurdle))
   )
@@ -150,7 +138,7 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
   testthat::expect_true(all(hurdle$prob >= 0 & hurdle$prob <= 100))
 
   # shares
-  shares <- jsonlite::fromJSON(file.path(result_dir, expected_files[[5]]))
+  shares <- jsonlite::fromJSON(file.path(result_dir, expected_files[[4]]))
   testthat::expect_true(
     all(c("pollster", "date", "coalition") %in% colnames(shares))
   )
