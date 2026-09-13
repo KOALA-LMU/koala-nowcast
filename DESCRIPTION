@@ -11,6 +11,8 @@ Encoding: UTF-8
 Imports:
     coalitions (>= 0.6.27),
     dplyr (>= 1.2.1),
+    ggplot2,
     jsonlite (>= 2.0.0),
+    rvest,
     tidyr,
     yaml (>= 2.3.10)
