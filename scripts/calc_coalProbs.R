@@ -101,7 +101,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     survey_byTime <- surveys_byTime %>% filter(pollster == p)
     dates_ins     <- unique(survey_byTime$date[survey_byTime$date %in% dates])
     if (length(dates_ins) == 0) {
-      return(list("sharesSim" = NULL, "shares" = NULL,
+      return(list("shares" = NULL,
                   "coalProbs_grouping" = NULL, "biggestParty" = NULL,
                   "passHurdle" = NULL))
     }
@@ -200,7 +200,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
                                    "prob"  = rowMeans(partyShares > hurdle))
 
       # ── Attach pollster/date, subsample simulations, return ─────────────────
-      dirichlet.draws  <- as.data.frame(dirichlet.draws) %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
       shares           <- shares           %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
       res_grouping     <- res_grouping     %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
       res_biggestParty <- res_biggestParty %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
@@ -214,7 +213,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
         colnames(shares)[which(coal_share_columns)[seq_len(n)]] <- paste0("coal_share", seq_len(n))
       }
 
-      list("sharesSim" = dirichlet.draws, "shares" = shares,
+      list("shares" = shares,
            "coalProbs_grouping" = res_grouping, "biggestParty" = res_biggestParty,
            "passHurdle" = res_passHurdle)
     }
@@ -223,7 +222,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     results[sapply(results, is.null)] <- NULL
 
     list(
-      "sharesSim"          = bind_rows(lapply(results, `[[`, "sharesSim")),
       "shares"             = bind_rows(lapply(results, `[[`, "shares")),
       "coalProbs_grouping" = bind_rows(lapply(results, `[[`, "coalProbs_grouping")),
       "biggestParty"       = bind_rows(lapply(results, `[[`, "biggestParty")),
