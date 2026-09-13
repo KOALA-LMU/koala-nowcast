@@ -209,7 +209,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       # We only use 1000 simulations
       n <- 1000
       if (nrow(dirichlet.draws) > n) {
-        dirichlet.draws    <- dirichlet.draws[sample(seq_len(nrow(dirichlet.draws)), n), ]
         coal_share_columns <- grepl("coal_share", colnames(shares))
         shares             <- shares[, c(which(!coal_share_columns), sample(which(coal_share_columns), n))]
         colnames(shares)[which(coal_share_columns)[seq_len(n)]] <- paste0("coal_share", seq_len(n))
@@ -241,7 +240,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # ── Post-processing of new results (must happen before merging with saved results
   # which are already in post-processed format) ──────────────────────────────────
   coalProbs_grouping <- coalProbs_grouping %>%
-    mutate(prob = prob * 100, log.odds = log(prob / (100 - prob)))
+    mutate(prob = prob * 100)
   biggestParty <- biggestParty %>% mutate(prob = prob * 100)
   passHurdle   <- passHurdle   %>% mutate(prob = prob * 100)
 

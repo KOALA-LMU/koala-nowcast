@@ -14,3 +14,6 @@ Imports:
     jsonlite (>= 2.0.0),
     tidyr,
     yaml (>= 2.3.10)
+Suggests:
+    testthat (>= 3.0.0),
+    withr

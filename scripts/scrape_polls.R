@@ -214,7 +214,7 @@ drop_incomplete_polls <- function(fresh, parties_required, id = "") {
   semi_join(fresh, filter(poll_completeness, has_all), by = c("date", "pollster"))
 }
 
-impute_polls_for_pooling <- function(raw, cfg) {
+impute_polls_for_pooling <- function(raw, cfg, reference_raw = raw) {
   parties_all      <- sapply(cfg$parties, `[[`, "id")
   parties_to_check <- parties_all[parties_all != "others"]
 
@@ -225,7 +225,7 @@ impute_polls_for_pooling <- function(raw, cfg) {
       missing_pts <- parties_to_check[!parties_to_check %in% poll$party[!is.na(poll$percent)]]
       if (length(missing_pts) == 0) return(poll)
 
-      ref <- raw %>%
+      ref <- reference_raw %>%
         filter(pollster != "pooled", date < key$date, !is.na(percent), percent > 0) %>%
         mutate(same_pollster = pollster == key$pollster)
 
@@ -267,7 +267,18 @@ compute_pooled <- function(raw, cfg, from_date = NULL) {
 
   # Impute missing parties in individual polls before pooling (imputed values
   # are used only for the pooling calculation — raw rows in polls.json stay clean)
-  raw_imputed <- impute_polls_for_pooling(raw, cfg)
+  raw_for_pooling <- raw
+  if (!is.null(from_date)) {
+    impute_from <- from_date - if (is.null(period_extended)) period else period_extended
+
+    raw_for_pooling <- raw %>%
+      filter(date >= impute_from)
+  }
+  raw_imputed <- impute_polls_for_pooling(
+    raw_for_pooling,
+    cfg,
+    reference_raw = raw
+  )
 
   # Reconstruct nested format expected by pool_surveys()
   surveys_nested <- raw_imputed %>%
