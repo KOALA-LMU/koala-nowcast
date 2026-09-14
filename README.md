@@ -7,7 +7,7 @@ distributions, threshold crossings and coalition majorities.
 **Live site: <https://koala.stat.uni-muenchen.de/>**
 
 The statistical engine is [`adibender/coalitions`](https://github.com/adibender/coalitions),
-consumed as a dependency; this repo is the pipeline around it. One YAML config
+consumed as a dependency. This repo is the pipeline around it. One YAML config
 per election in [config/elections/](config/elections/):
 
 | Election | ID | Seats | Allocation |
