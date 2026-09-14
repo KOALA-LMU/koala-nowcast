@@ -142,13 +142,24 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
   testthat::expect_true(
     all(c("pollster", "date", "coalition") %in% colnames(shares))
   )
-  testthat::expect_true(any(grepl("^coal_share", colnames(shares))))
+  testthat::expect_true(
+    all(c("parliament_presence_n", "simulation_n", "bw") %in% colnames(shares))
+  )
+  # The per-simulation columns are gone (#145); a quantile grid stands in.
+  testthat::expect_false(any(grepl("^coal_share", colnames(shares))))
   character_cols <- c("pollster", "coalition")
   for (col in character_cols) {
     testthat::expect_type(shares[[col]], "character")
   }
-  coal_share_cols <- colnames(shares)[grep("^coal_share", colnames(shares))]
-  for (col in coal_share_cols) {
+  q_cols <- colnames(shares)[grep("^q[0-9]+$", colnames(shares))]
+  testthat::expect_gt(length(q_cols), 1)
+  for (col in q_cols) {
     testthat::expect_type(shares[[col]], "double")
+    testthat::expect_true(all(shares[[col]] >= 0 & shares[[col]] <= 1))
   }
+  # Quantiles, so non-decreasing along the grid.
+  testthat::expect_true(all(apply(as.matrix(shares[, q_cols]), 1, function(x) !is.unsorted(x))))
+  testthat::expect_true(
+    all(shares$parliament_presence_n >= 0 & shares$parliament_presence_n <= shares$simulation_n)
+  )
 })

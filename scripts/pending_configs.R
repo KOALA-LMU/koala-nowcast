@@ -9,9 +9,9 @@ newest_per_pollster <- function(dates, pollsters) {
 
 #' Pollster/date pairs of a result file, read without parsing it
 #'
-#' shares.json carries one column per simulation draw, so fromJSON() needs
+#' shares.json used to carry one column per simulation draw, so fromJSON() needed
 #' minutes on it; every record starts with these two fields, so scanning for
-#' that prefix answers the same question in about a second.
+#' that prefix answers the same question in about a second, whatever the layout.
 #' @noRd
 result_pairs <- function(path) {
   txt <- readChar(path, file.size(path), useBytes = TRUE)
