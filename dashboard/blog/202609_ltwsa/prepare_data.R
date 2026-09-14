@@ -55,7 +55,6 @@ coalition_specs <- list(
 )
 
 plot_titles <- list(
-  latest_polls = "Letzte Wahlumfragen und KOALA-Sch\u00e4tzung vor der Wahl",
   election_result = paste(
     "Vorl\u00e4ufiges Ergebnis der Landtagswahl Sachsen-Anhalt 2026",
     "Zweitstimmenanteile der Parteien",

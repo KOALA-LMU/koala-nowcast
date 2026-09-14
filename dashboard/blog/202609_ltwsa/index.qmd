@@ -38,10 +38,6 @@ Die Landtagswahl in Sachsen-Anhalt fand am 6. September 2026 statt. Für den Ver
 
 :::
 
-Die folgende Abbildung zeigt die jeweils letzte veröffentlichte Wahlumfrage der vier Institute sowie die letzte gepoolte KOALA-Schätzung vor der Wahl.
-
-![Letzte Wahlumfragen und KOALA-Schätzung vor der Landtagswahl in Sachsen-Anhalt 2026.](latest_polls.png){#fig-latest-polls width="100%"}
-
 Als Vergleichsmaßstab verwenden wir das von Wahlrecht ausgewiesene vorläufige Zweitstimmenergebnis auf Landesebene. Wahlrecht führt die Freien Wähler mit 1,2 Prozent und die übrigen Parteien mit zusammen 3,2 Prozent getrennt auf. Da die Freien Wähler im KOALA-Modell nicht als eigene Partei geführt werden, fassen wir beide Werte für alle Vergleiche zur Kategorie „Sonstige“ mit 4,4 Prozent zusammen.
 
 ![Vorläufiges Zweitstimmenergebnis der Landtagswahl Sachsen-Anhalt 2026. Quelle: wahlrecht.de.](election_result.png){#fig-election-result width="100%"}
@@ -64,7 +60,7 @@ Für einen kompakten Gesamtvergleich verwenden wir den mittleren absoluten Fehle
 
 In diesem deskriptiven Vergleich hat Infratest dimap mit 1,91 Prozentpunkten den niedrigsten MAE. Es folgen INSA mit 2,16, KOALA mit 2,18 und die Forschungsgruppe Wahlen mit 2,29 Prozentpunkten. Pollytix liegt bei 2,56 Prozentpunkten; dessen letzte berücksichtigte Umfrage war allerdings bereits 25 Tage vor der Wahl erschienen. Die Werte vergleichen deshalb nicht die Institute unter identischen zeitlichen Bedingungen.
 
-## Koalitions- und Hürdenwahrscheinlichkeiten
+## Mehrheits- und Hürdenwahrscheinlichkeiten
 
 Betrachtet man die veröffentlichten Wahlumfragen probabilistisch, bestand Unsicherheit darüber, ob CDU, Linke, SPD und Grüne gemeinsam eine Sitzmehrheit erreichen würden. Ausgehend von der gepoolten KOALA-Schätzung ergab sich dafür eine modellbasierte Wahrscheinlichkeit von 87,7 Prozent. Die Wahrscheinlichkeit, dass diese Kombination zugleich eine minimale Sitzmehrheit bildet, lag bei 79,5 Prozent. Eine minimale Sitzmehrheit liegt vor, wenn das Bündnis eine Mehrheit erreicht, aber keine kleinere Teilkoalition aus seinen Parteien bereits über genügend Sitze verfügt.
 
@@ -78,5 +74,5 @@ Für die FDP lag die auf eine Nachkommastelle gerundete Hürdenwahrscheinlichkei
 
 ## Quellen
 
-- [Wahlumfragen zur Landtagswahl in Sachsen-Anhalt](https://www.wahlrecht.de/umfragen/landtage/sachsen-anhalt.htm)
-- [Ergebnisse der Landtagswahl in Sachsen-Anhalt](https://www.wahlrecht.de/ergebnisse/sachsen-anhalt.htm)
+- [Wahlumfragen zur Landtagswahl in Sachsen-Anhalt](https://www.wahlrecht.de/umfragen/landtage/sachsen-anhalt.htm) (Stand: 14. September 2026)
+- [Ergebnisse der Landtagswahl in Sachsen-Anhalt](https://www.wahlrecht.de/ergebnisse/sachsen-anhalt.htm) (Stand: 14. September 2026)
