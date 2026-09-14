@@ -184,8 +184,6 @@ jobs:
         run: |
           for post in dashboard/blog/*/index.qmd; do
             [ -e "$post" ] || continue
-            prepare="$(dirname "$post")/prepare_data.R"
-            [ ! -e "$prepare" ] || Rscript "$prepare"
             quarto render "$post"
           done
           quarto render dashboard/index.qmd --output-dir _site
@@ -205,8 +203,6 @@ jobs:
         run: |
           for post in dashboard/blog/*/index.qmd; do
             [ -e "$post" ] || continue
-            prepare="$(dirname "$post")/prepare_data.R"
-            [ ! -e "$prepare" ] || Rscript "$prepare"
             quarto render "$post"
           done
           quarto render dashboard/index.qmd --output-dir _site
