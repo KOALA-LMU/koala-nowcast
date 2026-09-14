@@ -553,31 +553,6 @@ blog_faceted_theme <- function(base_size = 13) {
     )
 }
 
-blog_plot_estimates <- function(plot_data, party_labels, party_colors,
-                                title, facet_rows = 2, y_step = 10) {
-  upper <- max(y_step, ceiling(max(plot_data$percent) / y_step) * y_step)
-
-  ggplot2::ggplot(
-    plot_data,
-    ggplot2::aes(x = .data$pollster, y = .data$percent, fill = .data$party)
-  ) +
-    ggplot2::geom_col(width = 0.88, alpha = 0.95) +
-    ggplot2::facet_wrap(
-      ggplot2::vars(.data$party),
-      nrow = facet_rows,
-      labeller = ggplot2::as_labeller(party_labels)
-    ) +
-    ggplot2::scale_fill_manual(values = party_colors, drop = FALSE) +
-    ggplot2::scale_y_continuous(
-      limits = c(0, upper),
-      breaks = seq(0, upper, by = y_step),
-      labels = function(x) paste0(x, "%"),
-      expand = ggplot2::expansion(mult = c(0, 0.02))
-    ) +
-    ggplot2::labs(title = title, x = "Sch\u00e4tzung", y = "Stimmenanteil") +
-    blog_faceted_theme()
-}
-
 blog_plot_differences <- function(plot_data, party_labels, party_colors,
                                   title, facet_rows = 2, y_step = 5) {
   limit <- max(y_step, ceiling(max(abs(plot_data$diff)) / y_step) * y_step)
@@ -850,13 +825,6 @@ prepare_election_blog <- function(election_id, election_date, config_path,
     if (is.null(value)) fallback else value
   }
   plots <- list(
-    latest_polls = blog_plot_estimates(
-      plot_data,
-      party_labels,
-      party_colors,
-      title = title_or("latest_polls", "Letzte Wahlumfragen und KOALA-Sch\u00e4tzung"),
-      facet_rows = facet_rows
-    ),
     election_result = blog_plot_result(
       election_result,
       party_order,
@@ -879,13 +847,6 @@ prepare_election_blog <- function(election_id, election_date, config_path,
     )
   )
 
-  blog_save_plot(
-    plots$latest_polls,
-    file.path(blog_dir, "latest_polls.png"),
-    width = 9,
-    height = 6.5,
-    dpi = dpi
-  )
   blog_save_plot(
     plots$election_result,
     file.path(blog_dir, "election_result.png"),
