@@ -2,6 +2,9 @@ id: btw
 name: Bundestagswahl 2029
 hashtag: "#btwwahl"
 
+# election_date: the Bundestag term only fixes a window (26 January to
+# 25 March 2029), so there is no date to archive on yet.
+
 last_result:
   url: https://www.wahlrecht.de/ergebnisse/bundestag.htm
   year: 2025

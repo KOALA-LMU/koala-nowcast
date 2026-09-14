@@ -226,21 +226,30 @@ for (loc in c("en_US.UTF-8", "C.UTF-8", "en_US.utf8")) {
 # parse it and serialise it back out — for the ~90 MB across all four elections
 # that round trip costs minutes of render time and inlines every byte of it
 # into index.html, which every visitor then downloads before anything appears.
-ojs_define(
-  # seat_method / hurdle / pooling_days mirror parliament$seat_allocation,
-  # parliament$hurdle and pooling$period in config/elections/*.yml — the values
-  # the nowcast actually runs with. Keep them in sync when a config changes;
-  # the Methodik page states them as the method in use.
-  # next_election_date is the ISO form of next_election, and only the header
-  # countdown reads it; an election without a fixed date leaves it out.
-  election_meta = list(
+# The one date the countdown and the archiving share: election_date in
+# config/elections/*.yml is also what stops scraping and pooling once it has
+# passed (election_is_over() in scripts/pending_configs.R), so the site cannot
+# count down to a day other than the one it archives on. A config without the
+# key — the Bundestagswahl, whose term fixes a window rather than a day —
+# yields NULL, which the Filter() below drops, and the header then shows
+# next_election as text instead of a countdown.
+# Rendered from dashboard/, hence the ".." — nothing else here reads the repo.
+election_date <- function(id)
+  yaml::yaml.load_file(file.path("..", "config", "elections", paste0(id, ".yml")))$election_date
+
+# seat_method / hurdle / pooling_days mirror parliament$seat_allocation,
+# parliament$hurdle and pooling$period in config/elections/*.yml — the values
+# the nowcast actually runs with. Keep them in sync when a config changes;
+# the Methodik page states them as the method in use.
+election_meta <- lapply(
+  list(
     ST = list(
       title = "Landtagswahl in Sachsen-Anhalt 2026",
       seats = 83L,
       majority = 42L,
       last_election = "6. Juni 2021",
       next_election = "6. September 2026",
-      next_election_date = "2026-09-06",
+      next_election_date = election_date("ltw_st"),
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
       pooling_days = 14L
@@ -251,7 +260,7 @@ ojs_define(
       majority = 36L,
       last_election = "26. September 2021",
       next_election = "20. September 2026",
-      next_election_date = "2026-09-20",
+      next_election_date = election_date("ltw_mv"),
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
       pooling_days = 14L
@@ -262,7 +271,7 @@ ojs_define(
       majority = 66L,
       last_election = "12. Februar 2023",
       next_election = "20. September 2026",
-      next_election_date = "2026-09-20",
+      next_election_date = election_date("ltw_be"),
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
       pooling_days = 14L
@@ -273,13 +282,17 @@ ojs_define(
       majority = 316L,
       last_election = "23. Februar 2025",
       next_election = "26. Januar bis 25. März 2029, Termin offen",
-      # deliberately no next_election_date: the Bundestag term only fixes a
-      # window, so the header shows that window instead of a countdown
+      next_election_date = election_date("btw"),
       seat_method = "Sainte-Laguë/Schepers",
       hurdle = "5 %",
       pooling_days = 14L
     )
   ),
+  function(m) Filter(Negate(is.null), m)
+)
+
+ojs_define(
+  election_meta = election_meta,
   party_colors = list(
     cdu = "#1c1c1b", spd = "#e3000f", afd = "#82caff",
     greens = "#46962b", fdp = "#ffed00", fw = "#005fa3",

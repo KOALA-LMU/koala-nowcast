@@ -128,6 +128,7 @@ See an existing config for the full shape — the keys that need thought:
 | Key | Note |
 | --- | --- |
 | `id` | Directory under `data/` and `dashboard/data/` (`ltw_` stripped for the latter) |
+| `election_date` | Scraping and pooling stop the day after it; omit when only a window is fixed (as for `btw`) |
 | `scraper.function` | `scrape_ltw` (with `url`, `ind_row_remove`) or `scrape_btw` |
 | `scraper.oldest_date` | Set ≥ `period_extended` days before the first date you want shown — earlier dates pool over an incompletely scraped window and are hidden |
 | `parliament.majority` | Display value only; the simulation derives majority from seat counts |

@@ -52,6 +52,25 @@ missing_dates <- function(id) {
   sort(unique(do.call(c, miss)))
 }
 
+#' Check whether an election has already been held
+#'
+#' Once the election date has passed there is nothing left to nowcast, so
+#' scraping and pooling stop and the data stays as it stood on election day. A
+#' config without an \code{election_date} — the Bundestagswahl, whose term only
+#' fixes a window rather than a day — is never over.
+#'
+#' @param cfg_path path to a YAML election config file
+#' @param today date to compare the election date against
+#' @import yaml
+#' @export
+election_is_over <- function(cfg_path, today = Sys.Date()) {
+  # Same UTF-8-safe read as has_pending(); see the note there.
+  cfg <- yaml::yaml.load(paste(readLines(cfg_path, encoding = "UTF-8", warn = FALSE), collapse = "\n"))
+  if (is.null(cfg$election_date)) return(FALSE)
+  # yaml reads the date as a plain string, as it does scraper$oldest_date.
+  as.Date(today) > as.Date(as.character(cfg$election_date))
+}
+
 #' Check whether an election still needs (re-)computation
 #'
 #' An election is pending if it has an explicit \code{pending_dates.json}
@@ -84,9 +103,22 @@ has_pending <- function(cfg_path) {
 
 #' Get the election configs that need (re-)computation
 #'
+#' Elections whose date has passed are dropped in either mode; see
+#' \code{\link{election_is_over}}.
+#'
 #' @param configs character vector of paths to election YAML config files
-#' @param force_all if TRUE, return all configs regardless of pending state
+#' @param force_all if TRUE, return all still-upcoming configs regardless of
+#'   pending state
 #' @export
 configs_todo <- function(configs, force_all = FALSE) {
+  # Past elections drop out before force_all is honoured: a rebuild from an
+  # empty bucket should recompute the live elections, not resurrect the ones
+  # whose date has passed.
+  over <- vapply(configs, election_is_over, logical(1))
+  if (any(over))
+    message(sprintf("Skipping %d past election(s): %s", sum(over),
+                    paste(basename(configs[over]), collapse = ", ")))
+  configs <- configs[!over]
+
   if (force_all) configs else Filter(has_pending, configs)
 }

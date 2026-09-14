@@ -6,9 +6,19 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 source("scripts/scrape_btw.R")
+source("scripts/pending_configs.R")  # election_is_over()
 
 scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   cfg <- read_yaml(config_path)
+
+  # Nothing left to nowcast once the election has been held: stop scraping and
+  # pooling so the stored polls stay as they stood on election day.
+  if (election_is_over(config_path)) {
+    message(sprintf("\n[%s] Election on %s has passed — not scraping.",
+                    cfg$id, cfg$election_date))
+    return(invisible(FALSE))
+  }
+
   message(sprintf("\n[%s] Scraping polls for %s...", cfg$id, cfg$name))
 
   # How far back a from-scratch scrape reaches. Per election, because the useful
