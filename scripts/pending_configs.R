@@ -25,6 +25,18 @@ result_pairs <- function(path) {
              date     = as.Date(substr(m, nchar(m) - 10, nchar(m) - 1)))
 }
 
+#' Whether shares.json was written in the quantile layout (#145)
+#'
+#' A file left over from the per-simulation layout has no \code{simulation_n}
+#' field; calc_coalProbs() drops such rows on its next run and coalition_density()
+#' cannot read them at all, so the election counts as fully stale until it is
+#' recomputed. Scanned as text for the same reason result_pairs() is.
+#' @noRd
+has_quantile_layout <- function(path) {
+  txt <- readChar(path, file.size(path), useBytes = TRUE)
+  grepl('"simulation_n"', txt, fixed = TRUE, useBytes = TRUE)
+}
+
 #' Scraped dates that any result file is missing
 #'
 #' All result files are checked, not only \code{coalProbs_grouping.json}: the upload
@@ -44,6 +56,7 @@ missing_dates <- function(id) {
     if (!file.exists(p)) return(dates)
     got <- result_pairs(p)
     if (nrow(got) == 0) return(dates[0])  # empty analysis, or a layout we cannot read
+    if (grepl("shares", p) && !has_quantile_layout(p)) return(dates)
     have   <- newest_per_pollster(got$date, got$pollster)[names(newest)]
     behind <- unname(newest[is.na(have) | have < newest])
     # shares.json keeps only each pollster's newest date, the rest a full history
