@@ -13,6 +13,10 @@ format:
 # explicitly.
 resources:
   - berd-nfdi-logo.svg
+  # Blog posts are rendered before the dashboard; copy their self-contained
+  # HTML and the preview images used by the static post list.
+  - blog/**/index.html
+  - blog/**/*.png
 ---
 
 ```{=html}
@@ -220,6 +224,120 @@ resources:
   overflow-y: auto !important;
 }
 
+/* The blog is global dashboard content. It is plain HTML rather than an OJS
+   cell, so changing the selected election never rebuilds or replaces it. */
+.blog-index {
+  --blog-ink: #1f2933;
+  --blog-muted: #6b7280;
+  --blog-accent: #2b6cb0;
+  --blog-line: #dfe3e8;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 12px 6px 32px;
+  color: var(--blog-ink);
+}
+
+.blog-card {
+  overflow-y: auto !important;
+}
+
+.blog-card > .blog-index {
+  width: 100%;
+  flex: 0 0 auto !important;
+}
+
+.blog-index-header {
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--blog-accent);
+}
+
+.blog-index-header h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.blog-index-header p {
+  margin: 6px 0 0;
+  color: var(--blog-muted);
+  font-size: 0.94rem;
+}
+
+.blog-list {
+  margin: 0;
+  padding: 0;
+}
+
+.blog-post {
+  display: grid;
+  grid-template-columns: minmax(180px, 230px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--blog-line);
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-post:hover,
+.blog-post:focus-visible {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-post:focus-visible {
+  outline: 3px solid rgba(43, 108, 176, 0.28);
+  outline-offset: 5px;
+}
+
+.blog-post-media {
+  display: flex;
+  aspect-ratio: 16 / 10;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--blog-line);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.blog-post-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.blog-post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 6px;
+  color: var(--blog-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.blog-post h3 {
+  margin: 0;
+  color: var(--blog-ink);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.blog-post:hover h3 {
+  color: var(--blog-accent);
+}
+
+.blog-post-summary {
+  margin: 7px 0 0;
+  color: var(--blog-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
 /* The Überblick charts have fixed pixel heights, so rows sized as a fraction of
    the viewport shrink below their own chart and the card clips the x-axis. Floor
    each row at its content height (max-content, so it follows the charts); below
@@ -260,6 +378,12 @@ resources:
     max-height: 34px;
   }
 
+  #quarto-dashboard-header .navbar-nav .nav-link {
+    padding-right: 0.55rem;
+    padding-left: 0.55rem;
+    font-size: 0.9rem;
+  }
+
   .quarto-dashboard .card-header {
     font-size: 0.95rem;
   }
@@ -275,11 +399,17 @@ resources:
 
 @media (max-width: 900px) {
   #quarto-dashboard-header .navbar-subtitle {
-    font-size: 0.78rem;
+    display: none;
   }
 
   #quarto-dashboard-header .navbar-logo {
     max-height: 28px;
+  }
+
+  #quarto-dashboard-header .navbar-nav .nav-link {
+    padding-right: 0.42rem;
+    padding-left: 0.42rem;
+    font-size: 0.82rem;
   }
 
   .quarto-dashboard .card-header {
@@ -298,6 +428,27 @@ resources:
      that has itself shrunk with the viewport */
   .card-body svg [aria-label="tick"] text {
     font-size: 11px;
+  }
+
+  .blog-post {
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .blog-index {
+    padding: 6px 2px 24px;
+  }
+
+  .blog-post {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 20px 0;
+  }
+
+  .blog-post-media {
+    width: min(100%, 440px);
   }
 }
 
@@ -1014,6 +1165,7 @@ html`<details style="
     <div style="margin-top:5px"><b>Sitzverteilung:</b> Verteilung möglicher Sitzanteile ausgewählter Parteikombinationen.</div>
     <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Mehrheitswahrscheinlichkeiten über die Zeit.</div>
     <div style="margin-top:5px"><b>Umfragedaten:</b> Umfragen, gepoolte Schätzung und Parteienwerte im Verlauf.</div>
+    <div style="margin-top:5px"><b>Blog:</b> Analysen zu abgeschlossenen Wahlen.</div>
     <div style="margin-top:5px"><b>Methodik:</b> Erklärung der statistischen Methoden.</div>
   </div>
 </details>`
@@ -3175,6 +3327,43 @@ viewof hoveredRow = {
   })
 }
 ```
+
+# Blog
+
+## Row
+
+::: {.card .blog-card}
+
+```{=html}
+<div class="blog-index">
+  <header class="blog-index-header">
+    <h2>Analysen zu den Wahlen</h2>
+    <p>Einordnung von Umfragen, KOALA-Schätzungen und amtlichen Ergebnissen.</p>
+  </header>
+
+  <div class="blog-list" aria-label="Blogbeiträge">
+    <a class="blog-post" href="blog/202609_ltwsa/index.html">
+      <div class="blog-post-media">
+        <img src="blog/202609_ltwsa/election_result.png"
+             alt="Vorläufiges Zweitstimmenergebnis der Landtagswahl in Sachsen-Anhalt 2026">
+      </div>
+      <div>
+        <div class="blog-post-meta">
+          <time datetime="2026-09-10">10. September 2026</time>
+          <span>Landtagswahl</span>
+        </div>
+        <h3>Landtagswahl in Sachsen-Anhalt</h3>
+        <p class="blog-post-summary">
+          Wie gut lagen die letzten Wahlumfragen und die KOALA-Schätzung im
+          Vergleich zum vorläufigen Wahlergebnis?
+        </p>
+      </div>
+    </a>
+  </div>
+</div>
+```
+
+:::
 
 # Methodik
 
