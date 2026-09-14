@@ -391,3 +391,47 @@ testthat::test_that("compute_pooled works with a single pollster", {
   testthat::expect_setequal(unique(out$date), as.Date("2026-08-01"))
   testthat::expect_true(all(out$election == "test-election"))
 })
+# archive_shares() keeps the election-day draws before the next run overwrites
+# them: shares.json holds only each pollster's newest date, so without the
+# snapshot the numbers behind the final result are gone for good.
+
+# A results dir holding a shares.json dated as given.
+local_shares <- function(dates, env = parent.frame()) {
+  dir <- withr::local_tempdir(.local_envir = env)
+  jsonlite::write_json(data.frame(pollster = "insa", date = dates, coal_share1 = 0.5),
+                       file.path(dir, "shares.json"), auto_unbox = TRUE)
+  dir
+}
+
+test_that("archive_shares() snapshots once, and only after the election", {
+  cfg  <- list(id = "test", election_date = "2026-09-06")
+  dir  <- local_shares("2026-08-10")
+  snap <- file.path(dir, "shares_2026-09-06.json")
+
+  expect_null(archive_shares(cfg, dir, as.Date("2026-09-06")))  # election day still updates
+  expect_false(file.exists(snap))
+
+  expect_equal(archive_shares(cfg, dir, as.Date("2026-09-07")), snap)
+  before <- readLines(snap, warn = FALSE)
+
+  # The next run replaces shares.json; the snapshot must survive untouched,
+  # otherwise the archive would drift along with the live file.
+  jsonlite::write_json(data.frame(pollster = "insa", date = "2026-09-20", coal_share1 = 0.9),
+                       file.path(dir, "shares.json"), auto_unbox = TRUE)
+  expect_null(archive_shares(cfg, dir, as.Date("2026-10-01")))
+  expect_identical(readLines(snap, warn = FALSE), before)
+})
+
+test_that("archive_shares() refuses to save post-election draws as the snapshot", {
+  # Pipeline down across election day: shares.json has already moved on, so
+  # there is nothing worth archiving and saving it would mislabel it as final.
+  cfg <- list(id = "test", election_date = "2026-09-06")
+  dir <- local_shares("2026-09-20")
+
+  expect_warning(archive_shares(cfg, dir, as.Date("2026-09-21")), "no election-day draws")
+  expect_false(file.exists(file.path(dir, "shares_2026-09-06.json")))
+})
+
+test_that("an election with no fixed date is never archived", {
+  expect_null(archive_shares(list(id = "btw"), local_shares("2026-08-10"), as.Date("2030-01-01")))
+})

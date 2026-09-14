@@ -26,6 +26,27 @@ reliable_from <- function(cfg, surveys_dir) {
   min(raw$date) + window
 }
 
+# Last date the site shows for an election.
+#
+# The pipeline keeps scraping and pooling after an election has been held —
+# wahlrecht goes on publishing polls, and they are worth keeping — but the
+# nowcast they feed is about an election that already happened. Cutting every
+# series off here freezes the page at the picture it showed on election day
+# without the pipeline needing to know anything about it. A config with no
+# election_date (btw, whose term fixes a window rather than a day) is never
+# frozen.
+freeze_at <- function(cfg) {
+  if (is.null(cfg$election_date)) return(NULL)
+  as.Date(as.character(cfg$election_date))
+}
+
+# Drop everything after the election. Applied at every read, before the
+# `date == max(date)` filters that pick out the "current" numbers — those would
+# otherwise latch onto a post-election poll and show it as today's state.
+drop_after <- function(dat, cutoff) {
+  if (is.null(cutoff)) dat else filter(dat, as.Date(date) <= cutoff)
+}
+
 # Drop the pooling run-up from a series, unless that would leave nothing to plot
 # (an election whose whole history is still shorter than one pooling window).
 drop_warmup <- function(dat, cutoff, what, election_id) {
@@ -49,17 +70,25 @@ prepare_election <- function(election_id) {
 
   dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
+  # A no-op until the election is actually held: nothing is dated after it yet.
+  frozen <- freeze_at(cfg)
+  if (!is.null(frozen) && frozen < Sys.Date())
+    message(election_id, ": election was held on ", frozen,
+            " — freezing the site's data there")
+
   # "Aktualisiert am" on the site: the date of the most recent poll behind this
   # election's numbers. Not a build timestamp — a push or a manual dispatch
   # rebuilds the site without any new poll behind it, so that would advance
   # while the nowcast stands still. The pooled series is excluded because it
   # carries a row per computed date rather than per published poll; the newest
   # raw poll is what actually moved the estimate.
-  all_polls  <- fromJSON(file.path(surveys_dir, "polls.json")) %>% mutate(date = as.Date(date))
+  all_polls  <- fromJSON(file.path(surveys_dir, "polls.json")) %>% mutate(date = as.Date(date)) %>%
+    drop_after(frozen)
   raw_polls  <- all_polls %>% filter(pollster != "pooled")
   updated    <- as.character(max(if (nrow(raw_polls) > 0) raw_polls$date else all_polls$date))
 
   coal <- fromJSON(file.path(results_dir, "coalProbs_grouping.json")) %>%
+    drop_after(frozen) %>%
     filter(pollster == "pooled", date == max(date)) %>%
     mutate(label = coal_type, probability = prob / 100) %>%
     select(label, probability)
@@ -67,6 +96,7 @@ prepare_election <- function(election_id) {
              file.path(out_dir, "coalition_probabilities.json"), auto_unbox = TRUE)
 
   shares <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
+    drop_after(frozen) %>%
     filter(pollster == "pooled", date == max(date)) %>%
     select(party, percent, date)
   write_json(list(party_shares = shares, updated = updated),
@@ -77,6 +107,7 @@ prepare_election <- function(election_id) {
   cutoff <- reliable_from(cfg, surveys_dir)
 
   history <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
+    drop_after(frozen) %>%
     select(pollster, date, party, percent) %>%
     drop_warmup(cutoff, "poll", election_id)
   write_json(list(history = history, updated = updated),
@@ -84,12 +115,14 @@ prepare_election <- function(election_id) {
 
   coal_history <- fromJSON(file.path(results_dir, "coalProbs_grouping.json")) %>%
     mutate(date = as.Date(date), probability = prob / 100) %>%
+    drop_after(frozen) %>%
     select(pollster, date, label = coal_type, probability) %>%
     drop_warmup(cutoff, "coalition probability", election_id)
   write_json(list(coalitions_history = coal_history, updated = updated),
              file.path(out_dir, "coalition_history.json"), auto_unbox = TRUE)
 
   hurdle <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
+    drop_after(frozen) %>%
     filter(pollster == "pooled", date == max(date)) %>%
     group_by(party) %>%
     summarise(prob_above_hurdle = mean(prob / 100), .groups = "drop") %>%
@@ -98,6 +131,7 @@ prepare_election <- function(election_id) {
              file.path(out_dir, "hurdle_probabilities.json"), auto_unbox = TRUE)
 
   per_pollster <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
+    drop_after(frozen) %>%
     filter(pollster != "pooled") %>%
     group_by(pollster) %>%
     filter(date == max(date)) %>%
@@ -106,6 +140,7 @@ prepare_election <- function(election_id) {
 
   per_pollster_coalitions <- fromJSON(file.path(results_dir, "coalProbs_grouping.json")) %>%
     mutate(date = as.Date(date)) %>%
+    drop_after(frozen) %>%
     filter(pollster != "pooled") %>%
     group_by(pollster) %>%
     filter(date == max(date)) %>%
@@ -115,6 +150,7 @@ prepare_election <- function(election_id) {
 
   per_pollster_hurdle <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
     mutate(date = as.Date(date)) %>%
+    drop_after(frozen) %>%
     filter(pollster != "pooled") %>%
     group_by(pollster) %>%
     filter(date == max(date)) %>%
@@ -141,7 +177,7 @@ prepare_election <- function(election_id) {
   #
   # Grouping by "every column except the curve" rather than by a hard-coded key
   # list keeps this correct if coalition_density() gains or drops a column.
-  dens <- coalition_density(cfg, results_dir) %>%
+  dens <- coalition_density(cfg, results_dir, until = frozen) %>%
     group_by(across(!c(seat_share, density))) %>%
     summarise(
       seat_share = list(signif(seat_share, 4)),

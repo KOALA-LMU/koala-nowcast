@@ -284,6 +284,11 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # at a large size cost. Only jsonlite::fromJSON ever reads them back.
   write_compact <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, digits = 4)
 
+  # Before shares.json is replaced: once the election has passed, the copy on
+  # disk still holds the draws behind the election-day result, and this write is
+  # what loses them.
+  archive_shares(cfg, results_dir)
+
   write_compact(coalProbs,          "coalProbs")
   write_compact(shares_out,         "shares")
   write_result(coalProbs_grouping,  "coalProbs_grouping")

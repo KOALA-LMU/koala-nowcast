@@ -201,3 +201,63 @@ derive_dynamic_coalitions <- function(parties_cfg, pooled_shares, max_size = 4,
   }
   out
 }
+
+#' Newest date held in a shares.json, read without parsing it
+#'
+#' The file carries one column per simulation draw, so fromJSON() is slow and
+#' memory-hungry on it (tens of MB for the Bundestagswahl). Every record starts
+#' with a pollster and a date, so scanning the raw text answers this in about a
+#' second. Same trick as result_pairs() in scripts/pending_configs.R.
+#'
+#' @param path path to a shares.json
+#' @return the newest date in the file, or NA if it holds none
+#' @noRd
+shares_newest_date <- function(path) {
+  txt <- readChar(path, file.size(path), useBytes = TRUE)
+  m   <- regmatches(txt, gregexpr('"date"\\s*:\\s*"[0-9]{4}-[0-9]{2}-[0-9]{2}"', txt, useBytes = TRUE))[[1]]
+  if (length(m) == 0) return(as.Date(NA))
+  max(as.Date(substr(m, nchar(m) - 10, nchar(m) - 1)))
+}
+
+#' Keep the election-day draws before they are overwritten
+#'
+#' shares.json holds only each pollster's newest date, not a history, so the
+#' first recomputation after an election replaces the draws the election-day
+#' result rested on and they are gone for good. Once the election date has
+#' passed, copy the file aside as \code{shares_<election_date>.json} in the same
+#' directory — it lives under data/results/, which the pipeline syncs to storage,
+#' so it survives the next run.
+#'
+#' Called before the file is rewritten. It copies once: a later run finds the
+#' archive already there and leaves it alone, so the snapshot stays the state as
+#' of the election however often the pipeline runs afterwards.
+#'
+#' @param cfg election config, as read from config/elections/*.yml
+#' @param results_dir the election's directory under data/results/
+#' @param today date to compare the election date against
+#' @return invisibly, the archive path if one was written, else NULL
+#' @export
+archive_shares <- function(cfg, results_dir, today = Sys.Date()) {
+  if (is.null(cfg$election_date)) return(invisible(NULL))  # no fixed date, nothing to archive
+  election_date <- as.Date(as.character(cfg$election_date))
+  if (as.Date(today) <= election_date) return(invisible(NULL))
+
+  src <- file.path(results_dir, "shares.json")
+  dst <- file.path(results_dir, paste0("shares_", election_date, ".json"))
+  if (!file.exists(src) || file.exists(dst)) return(invisible(NULL))
+
+  # Only archive draws that actually predate the election. If the pipeline was
+  # down across election day and shares.json has already moved on, saving it
+  # under the election-day name would be worse than saving nothing: the
+  # dashboard would show post-election draws as the final result.
+  newest <- shares_newest_date(src)
+  if (is.na(newest) || newest > election_date) {
+    warning(sprintf("[%s] shares.json is already past the election (newest %s) — no election-day draws left to archive",
+                    cfg$id, newest))
+    return(invisible(NULL))
+  }
+
+  file.copy(src, dst)
+  message(sprintf("[%s] archived the election-day draws (%s) to %s", cfg$id, newest, basename(dst)))
+  invisible(dst)
+}

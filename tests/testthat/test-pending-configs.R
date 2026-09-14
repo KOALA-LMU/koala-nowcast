@@ -52,29 +52,3 @@ test_that("all five result files are declared for checking", {
     c("coalProbs", "coalProbs_grouping", "biggestParty", "passHurdle", "shares")
   )
 })
-
-# Scraping and pooling stop once an election has been held (#147).
-
-# Minimal config: election_is_over() reads nothing but election_date.
-write_cfg <- function(election_date = NULL, env = parent.frame()) {
-  p <- withr::local_tempfile(fileext = ".yml", .local_envir = env)
-  writeLines(c("id: test", if (!is.null(election_date)) paste("election_date:", election_date)), p)
-  p
-}
-
-test_that("an election is over only once its date has passed", {
-  p <- write_cfg("2026-09-06")
-  expect_false(election_is_over(p, as.Date("2026-09-05")))
-  expect_false(election_is_over(p, as.Date("2026-09-06")))  # election day still scrapes
-  expect_true(election_is_over(p, as.Date("2026-09-07")))
-  # No date — a term fixing only a window, as btw.yml has today — is never over.
-  expect_false(election_is_over(write_cfg(), as.Date("2030-01-01")))
-})
-
-test_that("configs_todo() drops past elections in both modes", {
-  cfgs <- c(write_cfg("2020-01-01"), write_cfg())
-  expect_equal(suppressMessages(configs_todo(cfgs, force_all = TRUE)), cfgs[2])
-  # has_pending() would look for data/ files that do not exist here, so the past
-  # config has to be gone before it is ever consulted.
-  expect_equal(suppressMessages(configs_todo(cfgs)), character(0))
-})

@@ -34,10 +34,14 @@ norm_coal <- function(coal) {
 #' Must contain \code{parliament$seats} and \code{parties}.
 #' @param results_dir Directory containing the election's result files, including
 #' \code{shares.json}.
+#' @param until Optional \code{Date}. Rows after it are dropped before each
+#' pollster's latest date is picked, so an election already held keeps the curves
+#' it had on election day rather than following polls published since. \code{NULL}
+#' (the default) uses everything.
 #' @return Tibble with one density curve per \code{pollster}, latest \code{date},
 #' and canonical \code{coalition}. The output contains \code{seat_share} and
 #' \code{density} curve points plus parliament-presence and interval metadata.
-coalition_density <- function(cfg, results_dir) {
+coalition_density <- function(cfg, results_dir, until = NULL) {
 
   parl_seats <- cfg$parliament$seats
   party_labels <- setNames(
@@ -45,8 +49,31 @@ coalition_density <- function(cfg, results_dir) {
     vapply(cfg$parties, `[[`, character(1), "id")
   )
 
-  shares <- jsonlite::fromJSON(file.path(results_dir, "shares.json"))
+  # shares.json holds only each pollster's newest date, not a history, so after
+  # an election it no longer carries the draws the result rested on.
+  # archive_shares() copies those aside on the first run after the election;
+  # prefer that snapshot whenever one exists.
+  shares_file <- file.path(results_dir, "shares.json")
+  if (!is.null(until)) {
+    archived <- file.path(results_dir, paste0("shares_", until, ".json"))
+    if (file.exists(archived)) shares_file <- archived
+  }
+
+  shares <- jsonlite::fromJSON(shares_file)
   shares$date <- as.Date(shares$date)
+
+  if (!is.null(until)) {
+    keep <- shares$date <= until
+    if (any(keep)) {
+      shares <- shares[keep, , drop = FALSE]
+    } else {
+      # No snapshot and the live file has moved on — the draws are gone. Show
+      # what is there rather than write an empty file the seat view cannot render.
+      warning(basename(shares_file), " holds no draws on or before ", until,
+              " — the election-day draws were not archived in time; showing the ",
+              "newest draws instead")
+    }
+  }
 
   latest <- shares %>%
     group_by(pollster) %>%

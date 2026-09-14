@@ -128,7 +128,7 @@ See an existing config for the full shape — the keys that need thought:
 | Key | Note |
 | --- | --- |
 | `id` | Directory under `data/` and `dashboard/data/` (`ltw_` stripped for the latter) |
-| `election_date` | Scraping and pooling stop the day after it; omit when only a window is fixed (as for `btw`) |
+| `election_date` | The site freezes here: polls scraped after it are kept but not shown. Omit when only a window is fixed (as for `btw`) |
 | `scraper.function` | `scrape_ltw` (with `url`, `ind_row_remove`) or `scrape_btw` |
 | `scraper.oldest_date` | Set ≥ `period_extended` days before the first date you want shown — earlier dates pool over an incompletely scraped window and are hidden |
 | `parliament.majority` | Display value only; the simulation derives majority from seat counts |
@@ -159,6 +159,7 @@ Per election under `data/`, mirrored to the `koala-data` bucket:
 | `results/<id>/passHurdle.json` | Probability each party clears the threshold |
 | `results/<id>/biggestParty.json` | "Strongest force" probabilities per contest |
 | `results/<id>/shares.json` | Per-simulation seat shares (1000 draws), newest date per pollster |
+| `results/<id>/shares_<election_date>.json` | Written once, on the first run after the election: the draws behind the election-day result, which the line above would otherwise overwrite |
 
 `prepare_data.R` turns those into seven slim files under `dashboard/data/<id>/`,
 each carrying an `updated` field — the date of the newest raw poll behind the
