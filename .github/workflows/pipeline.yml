@@ -178,10 +178,24 @@ jobs:
         working-directory: stable
         run: Rscript dashboard/prepare_data.R
 
-      - name: Render stable dashboard
+      - name: Render stable dashboard and blog
         if: steps.gate.outputs.render == 'true'
         working-directory: stable
-        run: quarto render dashboard/index.qmd --output-dir _site
+        run: |
+          for post in dashboard/blog/*/index.qmd; do
+            [ -e "$post" ] || continue
+            quarto render "$post"
+          done
+
+          quarto render dashboard/index.qmd --output-dir _site
+
+          if [ -d dashboard/blog ]; then
+            find dashboard/blog -path '*/index.html' -type f | while IFS= read -r html; do
+              dest="dashboard/_site/${html#dashboard/}"
+              mkdir -p "$(dirname "$dest")"
+              cp "$html" "$dest"
+            done
+          fi
 
       - name: Prepare beta dashboard data
         id: beta_prepare
@@ -190,12 +204,26 @@ jobs:
         working-directory: beta
         run: Rscript dashboard/prepare_data.R
 
-      - name: Render beta dashboard
+      - name: Render beta dashboard and blog
         id: beta_render
         if: steps.gate.outputs.render == 'true' && steps.beta_prepare.outcome == 'success'
         continue-on-error: true
         working-directory: beta
-        run: quarto render dashboard/index.qmd --output-dir _site
+        run: |
+          for post in dashboard/blog/*/index.qmd; do
+            [ -e "$post" ] || continue
+            quarto render "$post"
+          done
+
+          quarto render dashboard/index.qmd --output-dir _site
+
+          if [ -d dashboard/blog ]; then
+            find dashboard/blog -path '*/index.html' -type f | while IFS= read -r html; do
+              dest="dashboard/_site/${html#dashboard/}"
+              mkdir -p "$(dirname "$dest")"
+              cp "$html" "$dest"
+            done
+          fi
 
       - name: Assemble GitHub Pages website
         if: steps.gate.outputs.render == 'true'
