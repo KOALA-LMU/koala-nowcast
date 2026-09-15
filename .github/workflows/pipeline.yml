@@ -187,6 +187,11 @@ jobs:
             quarto render "$post"
           done
           quarto render dashboard/index.qmd --output-dir _site
+          find dashboard/blog -path '*/index.html' -type f | while IFS= read -r html; do
+            dest="dashboard/_site/${html#dashboard/}"
+            mkdir -p "$(dirname "$dest")"
+            cp "$html" "$dest"
+          done
 
       - name: Prepare beta dashboard data
         id: beta_prepare
@@ -206,6 +211,11 @@ jobs:
             quarto render "$post"
           done
           quarto render dashboard/index.qmd --output-dir _site
+          find dashboard/blog -path '*/index.html' -type f | while IFS= read -r html; do
+            dest="dashboard/_site/${html#dashboard/}"
+            mkdir -p "$(dirname "$dest")"
+            cp "$html" "$dest"
+          done
 
       - name: Assemble GitHub Pages website
         if: steps.gate.outputs.render == 'true'
