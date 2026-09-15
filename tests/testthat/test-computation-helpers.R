@@ -391,3 +391,58 @@ testthat::test_that("compute_pooled works with a single pollster", {
   testthat::expect_setequal(unique(out$date), as.Date("2026-08-01"))
   testthat::expect_true(all(out$election == "test-election"))
 })
+### Tests for summarise_shareDraws
+testthat::test_that("summarise_shareDraws counts joint presence of all members", {
+  shares <- data.frame(
+    coalition = c("a", "b", "c", "a|b", "a|d"),
+    s1 = c(0.5, 0.3, 0.2, 0.8, 0.5),
+    s2 = c(0.5, 0.0, 0.5, 0.5, 0.5),
+    s3 = c(0.5, 0.3, 0.2, 0.8, 0.5),
+    s4 = c(0.5, 0.3, 0.2, 0.8, 0.5),
+    stringsAsFactors = FALSE
+  )
+  party_shares <- shares[shares$coalition %in% c("a", "b", "c"),
+                         colnames(shares) != "coalition"]
+  rownames(party_shares) <- c("a", "b", "c")
+
+  res <- summarise_shareDraws(shares, party_shares, probs = c(0.25, 0.75))
+
+  testthat::expect_equal(res$simulation_n, rep(4L, 5))
+  # b is out of parliament in s2, so a|b is fully represented in 3 of 4 draws.
+  testthat::expect_equal(res$parliament_presence_n[res$coalition == "a|b"], 3L)
+  testthat::expect_equal(res$parliament_presence_n[res$coalition == "b"], 3L)
+  # d was not polled and so has no row: the coalition counts as never complete
+  # rather than being scored from a alone.
+  testthat::expect_equal(res$parliament_presence_n[res$coalition == "a|d"], 0L)
+})
+
+testthat::test_that("summarise_shareDraws stores the quantile grid and a bandwidth", {
+  set.seed(1)
+  draws  <- matrix(runif(2 * 500), nrow = 2)
+  shares <- data.frame(coalition = c("a", "b"), draws, stringsAsFactors = FALSE)
+  party_shares <- shares[, colnames(shares) != "coalition"]
+  rownames(party_shares) <- c("a", "b")
+
+  res <- summarise_shareDraws(shares, party_shares)
+
+  q_cols <- grep("^q[0-9]+$", colnames(res), value = TRUE)
+  testthat::expect_equal(length(q_cols), 100)
+  testthat::expect_equal(
+    as.numeric(res[1, q_cols]),
+    unname(quantile(draws[1, ], probs = (seq_len(100) - 0.5) / 100))
+  )
+  # The 95% interval the dashboard shows is read off the grid, not interpolated.
+  testthat::expect_equal(res[[1, "q003"]], unname(quantile(draws[1, ], 0.025)))
+  testthat::expect_equal(res[[1, "q098"]], unname(quantile(draws[1, ], 0.975)))
+  testthat::expect_true(all(res$bw > 0))
+})
+
+testthat::test_that("summarise_shareDraws marks a degenerate row with bw NA", {
+  shares <- data.frame(coalition = "a", s1 = 0.4, s2 = 0.4, s3 = 0.4,
+                       stringsAsFactors = FALSE)
+  party_shares <- shares[, colnames(shares) != "coalition", drop = FALSE]
+  rownames(party_shares) <- "a"
+
+  res <- summarise_shareDraws(shares, party_shares, probs = c(0.25, 0.75))
+  testthat::expect_true(is.na(res$bw))
+})
