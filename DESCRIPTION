@@ -17,7 +17,8 @@ Imports:
 Suggests:
     testthat (>= 3.0.0),
     withr
-# 0.6.28 carries the wahlrecht scraper fix (KOALA-LMU/coalitions#146) and is not
-# on CRAN yet; drop this line once it is released.
+Config/Note/Remotes: 0.6.28 carries the wahlrecht scraper fix
+    (KOALA-LMU/coalitions#146) and is not on CRAN yet; drop Remotes: once it is
+    released.
 Remotes:
     KOALA-LMU/coalitions
