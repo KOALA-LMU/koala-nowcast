@@ -1349,6 +1349,10 @@ coalition_selection_store = {
   return { selections: null }
 }
 
+// Dash patterns for the second and third line sharing a colour with an earlier
+// one, used by both the Zeitverlauf chart and the selector's swatches.
+dash_patterns = ["6,4", "2,3"]
+
 // The parties offered in the Zeitverlauf selector: everyone this election's
 // pooled shares carry, Sonstige aside, in seating order.
 selectable_parties = {
@@ -2458,8 +2462,8 @@ html`<div style="
 
 # Zeitverlauf
 
-<!-- tall enough for the selector with a second party combination opened -->
-## Row {height=1010px}
+<!-- tall enough for the selector with all three party combinations opened -->
+## Row {height=1120px}
 
 ::: {.card .zeitverlauf-card}
 
@@ -2505,10 +2509,12 @@ viewof hoveredCoalitionRow = {
       }
     })
 
-  // both selections can be led by the same party, and would then be two lines in
-  // the same colour; the second one is dashed so they stay tellable apart
+  // several selections can be led by the same party, and would then be lines in
+  // the same colour; every one after the first gets its own dash so they stay
+  // tellable apart
   series.forEach((d, i) => {
-    d.dash = series.slice(0, i).some(other => other.color === d.color) ? "6,4" : undefined
+    const sameColor = series.slice(0, i).filter(other => other.color === d.color).length
+    d.dash = sameColor ? dash_patterns[sameColor - 1] : undefined
   })
 
   // one row per date, one column per selection — used for the crosshair, which
@@ -2733,13 +2739,13 @@ viewof hoveredCoalitionRow = {
 ```{ojs}
 //| label: input-coalition-selection
 viewof selectedCoalitions = {
-  // Up to two hand-built party combinations, each one a set of parties plus the
+  // Up to three hand-built party combinations, each one a set of parties plus the
   // party leading it. The first starts on the coalition currently most likely to
   // hold a majority, so the chart is never empty on load.
   const ranked = leading_variants.slice().sort((a, b) =>
     d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
   )
-  const maxSelections = 2
+  const maxSelections = 3
 
   // This cell reads the election's and the institute's data, so switching either
   // one rebuilds it from scratch. Carry the combinations over through the store,
@@ -2806,12 +2812,14 @@ viewof selectedCoalitions = {
     form.textContent = ""
     form.append(html`<div class="kombi-picker__title">Parteikombination auswählen</div>`)
 
-    // mirrors the chart: two combinations in the same colour are told apart by
-    // dashing the second one, and the swatch shows which line is which
+    // mirrors the chart: combinations in the same colour are told apart by dashing
+    // every one after the first, and the swatch shows which line is which
     const drawn = selections.filter(selection => selection.parties.size)
     const dashOf = selection => {
       const i = drawn.indexOf(selection)
-      return i > 0 && drawn.slice(0, i).some(other => colorOf(other) === colorOf(selection)) ? "6,4" : ""
+      if (i < 1) return ""
+      const sameColor = drawn.slice(0, i).filter(other => colorOf(other) === colorOf(selection)).length
+      return sameColor ? dash_patterns[sameColor - 1] : ""
     }
 
     selections.forEach((selection, i) => {
