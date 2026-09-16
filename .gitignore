@@ -1,6 +1,7 @@
 # Generated data (stored as GitHub Actions artifacts)
 /data/surveys/
 /data/results/
+/data/evaluations/
 
 # Quarto build output
 /website/_site/

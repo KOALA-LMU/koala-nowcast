@@ -1,0 +1,359 @@
+:root {
+  --article-text: #4b4b4b;
+  --article-heading: #101010;
+  --article-rule: #d7d7d7;
+}
+
+body {
+  background: #ffffff;
+  color: var(--article-text);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-top: 70px;
+}
+
+.koala-site-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+  border-bottom: 1px solid #d7dce1;
+  background: #e9ecef;
+}
+
+.koala-site-nav {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 24px;
+  padding: 6px 18px;
+}
+
+.koala-site-brand {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  color: #343a40;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.koala-site-brand img {
+  width: auto;
+  height: 36px;
+}
+
+.koala-site-links {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.koala-site-links a {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 2px solid transparent;
+  color: #343a40;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.koala-site-links a:hover,
+.koala-site-links a.active {
+  border-bottom-color: #2b6cb0;
+  color: #1f4d64;
+}
+
+#quarto-content.page-columns {
+  display: block;
+}
+
+main.content {
+  width: calc(100% - 96px);
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px 0 56px;
+}
+
+#title-block-header {
+  margin: 0 0 18px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1.2rem;
+  color: #285f7a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back-link::before {
+  content: "\2190";
+  margin-right: 0.4rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.quarto-title h1.title {
+  margin: 0;
+  color: var(--article-heading);
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.quarto-title .description,
+.quarto-title-meta,
+.quarto-categories {
+  display: none;
+}
+
+#quarto-document-content > p:first-of-type {
+  margin-bottom: 2rem;
+  font-size: 1.15rem;
+}
+
+.pooled-explainer {
+  margin: -0.4rem 0 2.4rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--article-rule);
+  border-bottom: 1px solid var(--article-rule);
+}
+
+.pooled-explainer summary {
+  color: #285f7a;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pooled-explainer summary:hover {
+  color: #1f4d64;
+}
+
+.pooled-explainer p {
+  margin: 0.85rem 0 0;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+main.content p {
+  margin: 0 0 1.1rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  letter-spacing: 0;
+  text-align: justify;
+  hyphens: auto;
+}
+
+main.content h2 {
+  margin: 2.75rem 0 0.85rem;
+  padding: 0;
+  border: 0;
+  color: var(--article-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.table-wrap {
+  max-width: 100%;
+  margin: 1.5rem auto 2rem;
+  overflow-x: auto;
+}
+
+.table-wrap.table-compact {
+  max-width: 560px;
+}
+
+.table-wrap.table-wide {
+  max-width: 920px;
+}
+
+.table-wrap table.table {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  color: #1d1d1d;
+  font-size: 0.93rem;
+  line-height: 1.4;
+}
+
+.table-wrap table.table > :not(caption) > * > * {
+  padding: 0.65rem 0.8rem;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 1px solid var(--article-rule);
+  border-left: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.table-wrap table.table thead th {
+  border-bottom-width: 2px;
+  color: #111111;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.table-wrap table.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.quarto-figure {
+  margin: 2rem 0 2.4rem;
+}
+
+.quarto-figure figure {
+  margin: 0;
+}
+
+.quarto-figure .figure-img {
+  display: block;
+  max-width: 94%;
+  margin: 0 auto;
+}
+
+.quarto-figure figcaption {
+  max-width: 900px;
+  margin: 0.6rem auto 0;
+  color: #6a6a6a;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+main.content a {
+  color: #285f7a;
+}
+
+main.content ul {
+  margin-bottom: 1.5rem;
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 1200px) {
+  .koala-site-brand {
+    font-size: 0.85rem;
+  }
+
+  .koala-site-brand img {
+    height: 34px;
+  }
+
+  .koala-site-links a {
+    padding-right: 0.55rem;
+    padding-left: 0.55rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .koala-site-nav {
+    gap: 12px;
+  }
+
+  .koala-site-brand span {
+    display: none;
+  }
+
+  .koala-site-brand img {
+    height: 28px;
+  }
+
+  .koala-site-links a {
+    padding-right: 0.42rem;
+    padding-left: 0.42rem;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 700px) {
+  body {
+    padding-top: 92px;
+  }
+
+  .koala-site-nav {
+    display: block;
+    padding: 6px 12px 0;
+  }
+
+  .koala-site-brand {
+    min-height: 42px;
+  }
+
+  .koala-site-brand span {
+    display: none;
+  }
+
+  .koala-site-brand img {
+    height: 30px;
+  }
+
+  .koala-site-links {
+    margin: 0 -12px;
+    padding: 0 6px;
+  }
+
+  .koala-site-links a {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.82rem;
+  }
+
+  main.content {
+    width: calc(100% - 32px);
+    padding: 24px 0 48px;
+  }
+
+  .quarto-title h1.title {
+    font-size: 1.85rem;
+  }
+
+  #quarto-document-content > p:first-of-type {
+    margin-bottom: 1.6rem;
+    font-size: 1.05rem;
+  }
+
+  main.content p {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  main.content h2 {
+    margin-top: 2.3rem;
+    font-size: 1.25rem;
+  }
+
+  .table-wrap {
+    margin: 1.6rem 0 2.2rem;
+  }
+
+  .table-wrap table.table {
+    min-width: 520px;
+    font-size: 0.93rem;
+  }
+
+  .table-wrap.table-wide table.table {
+    min-width: 760px;
+  }
+
+  .quarto-figure {
+    margin: 1.7rem 0 2rem;
+  }
+
+  .quarto-figure .figure-img {
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,100 @@
+---
+title: "Landtagswahl in Sachsen-Anhalt"
+description: "Ein Vergleich der letzten Wahlumfragen und der KOALA-Schätzung mit dem vorläufigen Ergebnis der Landtagswahl."
+date: "2026-09-14"
+lang: de
+date-format: "D. MMMM YYYY"
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    embed-resources: true
+    toc: false
+    fig-align: center
+page-layout: full
+link-external-newwindow: true
+---
+
+```{=html}
+<header class="koala-site-header">
+  <nav class="koala-site-nav" aria-label="Hauptnavigation">
+    <a class="koala-site-brand" href="../../index.html#überblick">
+      <img src="../../Koala_Logo_Schrift.png" alt="KOALA">
+      <span>Koalitionswahrscheinlichkeitsrechner LMU</span>
+    </a>
+    <div class="koala-site-links">
+      <a href="../../index.html#überblick">Überblick</a>
+      <a href="../../index.html#sitzverteilung">Sitzverteilung</a>
+      <a href="../../index.html#zeitverlauf">Zeitverlauf</a>
+      <a href="../../index.html#umfragedaten">Umfragedaten</a>
+      <a class="active" href="../../index.html#blog" aria-current="page">Blog</a>
+      <a href="../../index.html#methodik">Methodik</a>
+      <a href="../../index.html#über-das-projekt">Über das Projekt</a>
+    </div>
+  </nav>
+</header>
+```
+
+[Zurück zur Blogübersicht](../../index.html#blog){.back-link}
+
+Die Landtagswahl in Sachsen-Anhalt fand am 6. September 2026 statt. Für den Vergleich verwenden wir die jeweils letzte vor der Wahl veröffentlichte Umfrage von vier Instituten; ihre Veröffentlichungsdaten liegen zwischen dem 12. August und dem 3. September. Hinzu kommt die letzte gepoolte KOALA-Schätzung vom 3. September.
+
+<details class="pooled-explainer">
+<summary>Was ist eine gepoolte Umfrage?</summary>
+<p>Die <em>gepoolte Umfrage</em> ist keine zusätzliche Befragung, , sondern eine gemeinsame Schätzung auf Basis mehrerer Einzelumfragen. Berücksichtigt wird höchstens die jeweils jüngste Umfrage eines Instituts innerhalb des 100-Tage-Fensters. In den Punktschätzer gehen die Umfragen zunächst proportional zu ihrer ausgewiesenen Stichprobengröße ein; bei Umfragen, deren Veröffentlichung am Stichtag älter als 14 Tage ist, werden Stichprobengröße und Stimmenzahlen halbiert. Im letzten Pool erhielten daher die Umfragen von Forschungsgruppe Wahlen, INSA und Infratest dimap volles Gewicht, die Pollytix-Umfrage vom 12. August halbes Gewicht. Bei der Berechnung der Unsicherheit wird außerdem angenommen, dass die Ergebnisse verschiedener Institute mit 0,5 korreliert sind. Das verhindert, dass die Umfragen wie vollständig unabhängige Stichproben behandelt werden. Das Pooling glättet zufällige Unterschiede zwischen Einzelumfragen, beseitigt aber weder gemeinsame Messfehler noch systematische Verzerrungen.</p>
+</details>
+
+## Datengrundlage
+
+::: {.table-wrap .table-compact}
+
+| Schätzung | Datum |
+|---|---|
+| Forschungsgruppe Wahlen | 3. September 2026 |
+| INSA | 2. September 2026 |
+| Infratest dimap | 26. August 2026 |
+| Pollytix | 12. August 2026 |
+| KOALA-Pool | 3. September 2026 |
+
+:::
+
+Als Vergleichsmaßstab verwenden wir das von Wahlrecht ausgewiesene vorläufige Zweitstimmenergebnis auf Landesebene. Wahlrecht führt die Freien Wähler mit 1,2 Prozent und die übrigen Parteien mit zusammen 3,2 Prozent getrennt auf. Da die Freien Wähler im KOALA-Modell nicht als eigene Partei geführt werden, fassen wir beide Werte für alle Vergleiche zur Kategorie „Sonstige“ mit 4,4 Prozent zusammen.
+
+![Vorläufiges Zweitstimmenergebnis der Landtagswahl Sachsen-Anhalt 2026. Quelle: wahlrecht.de.](election_result.png){#fig-election-result width="100%"}
+
+## Umfragen im Vergleich
+
+Die folgende Abbildung zeigt die Differenz zwischen Schätzung und Wahlergebnis in Prozentpunkten. Positive Werte stehen für eine Überschätzung, negative Werte für eine Unterschätzung.
+
+![Abweichung der letzten Schätzungen vom vorläufigen Zweitstimmenergebnis nach Partei und Schätzung.](diff_vs_results.png){#fig-differences width="100%"}
+
+Besonders auffällig ist die CDU: Ihr vorläufiges Ergebnis wurde von allen fünf Schätzungen um 4,8 bis 5,8 Prozentpunkte überschätzt. Auch das Ergebnis der Linken wurde durchgehend überschätzt, und zwar um 2,4 bis 4,4 Prozentpunkte. Umgekehrt wurden die Grünen in allen Schätzungen um 2,9 bis 3,9 Prozentpunkte unterschätzt. Bei der FDP und der Kategorie „Sonstige“ waren die absoluten Abweichungen kleiner.
+
+Die gepoolte KOALA-Schätzung zeigt dasselbe grundlegende Muster. Sie lag bei der CDU um 5,3 Prozentpunkte und bei der Linken um 3,2 Prozentpunkte zu hoch. Grüne, SPD, AfD und BSW wurden um 3,4, 1,7, 1,5 beziehungsweise 1,3 Prozentpunkte unterschätzt.
+
+Warum die Abweichungen zwischen den Umfrageinstituten so ähnlich ausfallen, lässt sich aus den veröffentlichten Zahlen nicht ablesen. Mögliche Gründe sind unentschiedene Wählende, Meinungsänderungen kurz vor der Wahl, Unterschiede zwischen den erreichten Befragten und den tatsächlichen Wählerinnen und Wählern oder falsche methodische Annahmen bei Gewichtung und Hochrechnung. Das ist allerdings Spekulation: Wie die Institute ihre Rohdaten im Einzelnen aufbereiten ung gewichten, ist nicht (vollständig) öffentlich bekannt. Sind mehrere Umfragen systematisch in dieselbe Richtung verzerrt, kann unser Pooling das natürlich nicht ausgleichen. Die KOALA-Schätzung kann also nur so gut sein wie die Umfragen, auf denen sie beruht.
+
+## Gesamtvergleich mit dem MAE
+
+Für einen kompakten Gesamtvergleich verwenden wir den mittleren absoluten Fehler (MAE). Dafür berechnen wir in Prozentpunkten den absoluten Abstand zwischen Schätzung und Wahlergebnis und mitteln ihn gleichgewichtet über dieselben acht Kategorien, einschließlich „Sonstige“. Ein niedrigerer Wert bedeutet hier lediglich eine im Mittel kleinere Abweichung der jeweiligen Punktschätzung. Der MAE enthält keine Aussage über statistische Signifikanz oder Prognoseunsicherheit; zudem sind die acht Abweichungen nicht unabhängig, weil sich die Stimmenanteile jeweils zu ungefähr 100 Prozent summieren.
+
+![Mittlerer absoluter Fehler jeder letzten Schätzung über alle acht Parteikategorien.](mae_by_pollster.png){#fig-mae width="82%"}
+
+In diesem deskriptiven Vergleich hat Infratest dimap mit 1,91 Prozentpunkten den niedrigsten MAE. Es folgen INSA mit 2,16, KOALA mit 2,18 und die Forschungsgruppe Wahlen mit 2,29 Prozentpunkten. Pollytix liegt bei 2,56 Prozentpunkten; dessen letzte berücksichtigte Umfrage war allerdings bereits 25 Tage vor der Wahl erschienen. Die Werte vergleichen deshalb nicht die Institute unter identischen zeitlichen Bedingungen.
+
+## Mehrheits- und Hürdenwahrscheinlichkeiten
+
+Betrachtet man die veröffentlichten Wahlumfragen probabilistisch, bestand Unsicherheit darüber, ob CDU, Linke, SPD und Grüne gemeinsam eine Sitzmehrheit erreichen würden. Ausgehend von der gepoolten KOALA-Schätzung ergab sich dafür eine modellbasierte Wahrscheinlichkeit von 87,7 Prozent. Die Wahrscheinlichkeit, dass diese Kombination zugleich eine minimale Sitzmehrheit bildet, lag bei 79,5 Prozent. Eine minimale Sitzmehrheit liegt vor, wenn das Bündnis eine Mehrheit erreicht, aber keine kleinere Teilkoalition aus seinen Parteien bereits über genügend Sitze verfügt.
+
+Im vorläufigen Wahlergebnis kamen die vier Parteien jedoch nur auf 44,0 Prozent der Stimmen und 39 der 83 Sitze. Damit verfehlten sie die erforderlichen 42 Sitze. Der Unterschied zum Wahlergebnis ist vor allem auf die Überschätzung der Stimmenanteile der CDU und der Linken zurückzuführen.
+
+Für eine absolute Sitzmehrheit der AfD ergab sich nach der KOALA-Methode eine Wahrscheinlichkeit von 10,3 Prozent. Im vorläufigen Ergebnis erhielt die AfD 39 Sitze und verfehlte damit ebenfalls die absolute Mehrheit.
+
+Unsicherheit bestand auch darüber, welche Parteien die Fünfprozenthürde überwinden würden. Die Grünen lagen in der gepoolten KOALA-Schätzung bei 5,5 Prozent. Daraus ergab sich eine modellbasierte Wahrscheinlichkeit von 81,1 Prozent, mindestens fünf Prozent der Stimmen zu erreichen. Im vorläufigen Wahlergebnis zogen sie mit 8,9 Prozent deutlich in den Landtag ein. Das BSW wurde in der gepoolten Schätzung mit 4,0 Prozent unterhalb der Hürde verortet. Seine Wahrscheinlichkeit, die Hürde dennoch zu überwinden, lag nach der KOALA-Methode bei 3,5 Prozent. Tatsächlich erreichte das BSW 5,3 Prozent, erhielt im vorläufigen Ergebnis fünf Sitze und zog damit in den Landtag ein.
+
+Für die FDP lag die auf eine Nachkommastelle gerundete Hürdenwahrscheinlichkeit bei 0,0 Prozent. Im vorläufigen Ergebnis blieb sie mit 2,6 Prozent ebenfalls unter der Fünfprozenthürde. Der gerundete Wert bedeutet nicht, dass das Überschreiten der Hürde grundsätzlich unmöglich war, sondern dass ihm das Modell eine äußerst geringe Wahrscheinlichkeit zuwies.
+
+## Quellen
+
+- [Wahlumfragen zur Landtagswahl in Sachsen-Anhalt](https://www.wahlrecht.de/umfragen/landtage/sachsen-anhalt.htm) (Stand: 14. September 2026)
+- [Ergebnisse der Landtagswahl in Sachsen-Anhalt](https://www.wahlrecht.de/ergebnisse/sachsen-anhalt.htm) (Stand: 14. September 2026)

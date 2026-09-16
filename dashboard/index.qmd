@@ -13,6 +13,10 @@ format:
 # explicitly.
 resources:
   - berd-nfdi-logo.svg
+  # Blog posts are rendered before the dashboard; copy their self-contained
+  # HTML and the preview images used by the static post list.
+  - blog/**/index.html
+  - blog/**/*.png
 ---
 
 ```{=html}
@@ -67,12 +71,271 @@ resources:
   flex: 0 0 auto !important;
 }
 
+/* Zeitverlauf party-combination picker. The colours of the pills are per party
+   and stay inline; everything structural lives here, so the states a style
+   attribute cannot express (:hover, :focus) are available. */
+.kombi-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.kombi-picker__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2f3337;
+}
+
+.kombi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 10px 12px 12px;
+  border: 1px solid #e3e6ea;
+  border-radius: 12px;
+  background: #fbfcfd;
+}
+
+.kombi-card__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.kombi-card__index {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8a9099;
+}
+
+.kombi-card__name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2f3337;
+}
+
+.kombi-card__name--empty {
+  font-weight: 400;
+  font-style: italic;
+  color: #8a9099;
+}
+
+/* pushes the leading-party box to the right-hand end of the header row */
+.kombi-card__spacer {
+  flex: 1 1 auto;
+}
+
+.kombi-parties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kombi-pill {
+  border: 1.5px solid;
+  border-radius: 999px;
+  padding: 4px 13px;
+  font-size: 0.8rem;
+  background: white;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, box-shadow 120ms;
+}
+
+.kombi-pill:hover {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.18);
+}
+
+.kombi-leader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  color: #6c7278;
+}
+
+/* the native arrow sits too far from the text inside a pill-shaped box, so the
+   control draws its own (encoded as a data URI, hence the %23 for #) */
+.kombi-leader select {
+  appearance: none;
+  -webkit-appearance: none;
+  font-size: 0.78rem;
+  color: #2f3337;
+  padding: 4px 26px 4px 11px;
+  border: 1px solid #d6dade;
+  border-radius: 999px;
+  background: white url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236c7278' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;
+  background-size: 9px;
+  cursor: pointer;
+}
+
+.kombi-leader select:hover {
+  border-color: #b9bfc5;
+}
+
+.kombi-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kombi-action {
+  border: 1px solid #d6dade;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.8rem;
+  color: #4a5057;
+  background: white;
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms;
+}
+
+.kombi-action:hover {
+  background: #f1f3f5;
+  border-color: #b9bfc5;
+}
+
+/* removes one combination card; a bare glyph rather than a labelled button, so
+   the header row stays readable */
+.kombi-drop {
+  border: none;
+  background: none;
+  color: #9aa0a6;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.kombi-drop:hover {
+  color: #d03030;
+}
+
 /* The text-heavy Methodik and project cards need to scroll inside the card
    instead of being clipped on short viewports. */
 .methodik-card > .cell.card-body,
 .methodik-publications-card > .cell.card-body,
 .projekt-card > .cell.card-body {
   overflow-y: auto !important;
+}
+
+/* The blog is global dashboard content. It is plain HTML rather than an OJS
+   cell, so changing the selected election never rebuilds or replaces it. */
+.blog-index {
+  --blog-ink: #1f2933;
+  --blog-muted: #6b7280;
+  --blog-accent: #2b6cb0;
+  --blog-line: #dfe3e8;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 12px 6px 32px;
+  color: var(--blog-ink);
+}
+
+.blog-card {
+  overflow-y: auto !important;
+}
+
+.blog-card > .blog-index {
+  width: 100%;
+  flex: 0 0 auto !important;
+}
+
+.blog-index-header {
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--blog-accent);
+}
+
+.blog-index-header h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.blog-index-header p {
+  margin: 6px 0 0;
+  color: var(--blog-muted);
+  font-size: 0.94rem;
+}
+
+.blog-list {
+  margin: 0;
+  padding: 0;
+}
+
+.blog-post {
+  display: grid;
+  grid-template-columns: minmax(180px, 230px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--blog-line);
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-post:hover,
+.blog-post:focus-visible {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-post:focus-visible {
+  outline: 3px solid rgba(43, 108, 176, 0.28);
+  outline-offset: 5px;
+}
+
+.blog-post-media {
+  display: flex;
+  aspect-ratio: 16 / 10;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--blog-line);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.blog-post-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.blog-post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 6px;
+  color: var(--blog-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.blog-post h3 {
+  margin: 0;
+  color: var(--blog-ink);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.blog-post:hover h3 {
+  color: var(--blog-accent);
+}
+
+.blog-post-summary {
+  margin: 7px 0 0;
+  color: var(--blog-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
 }
 
 /* The Überblick charts have fixed pixel heights, so rows sized as a fraction of
@@ -115,6 +378,12 @@ resources:
     max-height: 34px;
   }
 
+  #quarto-dashboard-header .navbar-nav .nav-link {
+    padding-right: 0.55rem;
+    padding-left: 0.55rem;
+    font-size: 0.9rem;
+  }
+
   .quarto-dashboard .card-header {
     font-size: 0.95rem;
   }
@@ -130,11 +399,17 @@ resources:
 
 @media (max-width: 900px) {
   #quarto-dashboard-header .navbar-subtitle {
-    font-size: 0.78rem;
+    display: none;
   }
 
   #quarto-dashboard-header .navbar-logo {
     max-height: 28px;
+  }
+
+  #quarto-dashboard-header .navbar-nav .nav-link {
+    padding-right: 0.42rem;
+    padding-left: 0.42rem;
+    font-size: 0.82rem;
   }
 
   .quarto-dashboard .card-header {
@@ -153,6 +428,27 @@ resources:
      that has itself shrunk with the viewport */
   .card-body svg [aria-label="tick"] text {
     font-size: 11px;
+  }
+
+  .blog-post {
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .blog-index {
+    padding: 6px 2px 24px;
+  }
+
+  .blog-post {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 20px 0;
+  }
+
+  .blog-post-media {
+    width: min(100%, 440px);
   }
 }
 
@@ -561,8 +857,13 @@ leadershipVariants = (coalitions, shares, pooledShares) => {
   ).flat()
 }
 
-cleanCoalitionHistory = rows => {
-  const filtered = rows.filter(d => isViableCoalition(coalitionParties(d.label)))
+// viableOnly=false keeps the politically excluded coalitions in: the Zeitverlauf
+// lets a reader assemble any combination of parties, including the ones the rest
+// of the site never reports.
+cleanCoalitionHistory = (rows, viableOnly = true) => {
+  const filtered = viableOnly
+    ? rows.filter(d => isViableCoalition(coalitionParties(d.label)))
+    : rows
 
   // Collapse exact (date, label) duplicates by averaging. A pooled result can
   // occasionally get recomputed more than once for the same poll date.
@@ -864,6 +1165,7 @@ html`<details style="
     <div style="margin-top:5px"><b>Sitzverteilung:</b> Verteilung möglicher Sitzanteile ausgewählter Parteikombinationen.</div>
     <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Mehrheitswahrscheinlichkeiten über die Zeit.</div>
     <div style="margin-top:5px"><b>Umfragedaten:</b> Umfragen, gepoolte Schätzung und Parteienwerte im Verlauf.</div>
+    <div style="margin-top:5px"><b>Blog:</b> Analysen zu abgeschlossenen Wahlen.</div>
     <div style="margin-top:5px"><b>Methodik:</b> Erklärung der statistischen Methoden.</div>
   </div>
 </details>`
@@ -1024,6 +1326,35 @@ history_raw = institute === "Pooled"
 
 overview_coalitions = cleanCoalitions(coal_source, shares_source)
 leading_variants    = leadershipVariants(coal_source, shares_source, cur.party_data.party_shares)
+
+current_party_votes = Object.fromEntries(cleanShares(shares_source).map(d => [d.party, d.percent]))
+
+// Label for a hand-picked set of parties, ordered like the coalition labels in
+// the data are: the leading party first — the strongest current polling one
+// unless a leader was picked — ties broken by seating order.
+coalitionLabelFor = (parties, leader = null) =>
+  labelFromParties(
+    parties.slice().sort((a, b) =>
+      d3.descending(a === leader, b === leader) ||
+      d3.descending(current_party_votes[a] ?? 0, current_party_votes[b] ?? 0) ||
+      d3.ascending(party_order.indexOf(a), party_order.indexOf(b))
+    )
+  )
+
+// Holds the Zeitverlauf selector's combinations across its own re-runs. A cell
+// without dependencies is evaluated once per page load, while the selector
+// itself is rebuilt whenever the election or the institute changes. Written as a
+// block: quarto's ojs parser leaves a bare object-literal cell undefined.
+coalition_selection_store = {
+  return { selections: null }
+}
+
+// The parties offered in the Zeitverlauf selector: everyone this election's
+// pooled shares carry, Sonstige aside, in seating order.
+selectable_parties = {
+  const present = new Set(cleanShares(cur.party_data.party_shares).map(d => d.party))
+  return party_order.filter(party => present.has(party))
+}
 
 coal_history_source = institute === "Pooled"
   ? cur_coal_history.coalitions_history.filter(d => d.pollster === "pooled")
@@ -2127,40 +2458,65 @@ html`<div style="
 
 # Zeitverlauf
 
-## Row {height=860px}
+<!-- tall enough for the selector with a second party combination opened -->
+## Row {height=1010px}
 
 ::: {.card .zeitverlauf-card}
 
 ```{ojs}
 //| label: chart-coalition-history
 viewof hoveredCoalitionRow = {
-  const rows   = cleanCoalitionHistory(coal_history_source)
-  // sorted by date so Plot.line connects the points in chronological order
-  const active = rows
-    .filter(d => selectedCoalitions.includes(d.label))
-    .sort((a, b) => a.date - b.date)
+  const rows  = cleanCoalitionHistory(coal_history_source, false)
+  const dates = Array.from(new Set(rows.map(d => +d.date))).sort((a, b) => a - b)
 
-  const colorByKey = Object.fromEntries(leading_variants.map(d => [d.label, party_colors[d.first_party] || "#aaa"]))
-
-  const selectedLabels = selectedCoalitions
-  const selectedColors = selectedCoalitions.map(k => colorByKey[k] || "#aaa")
-
-  // The series are drawn as lines only — the dots turned the dense pooled series
-  // (one point per poll date) into a scatter. A line needs two points to render
-  // anything, though, so coalitions with a single observation (some institutes
-  // have polled a state exactly once) still get a dot, or they would vanish.
-  const countByLabel = d3.rollup(active, v => v.length, d => d.label)
-  const singletons   = active.filter(d => countByLabel.get(d.label) === 1)
-
-  // one row per date, one column per selected coalition — used for the
-  // crosshair, which tracks the nearest date across all selected lines at once
-  const byDate = d3.rollup(
-    active,
-    v => Object.fromEntries(v.map(d => [d.label, d.probability])),
+  // The data holds one series per leadership ordering of a coalition, and a
+  // selection names the ordering it wants (its largest party, unless another one
+  // was picked) — so the line is that ordering's own series, not the sum over
+  // them. Selections the backend never simulated (off the table politically, or
+  // nowhere near a majority) have no series at all and are drawn at 0% rather
+  // than left out.
+  const probByKeyDate = d3.rollup(
+    rows,
+    v => d3.sum(v, d => d.probability),
+    d => normCoalition(d.label),
     d => +d.date
   )
-  const wide = Array.from(byDate, ([t, vals]) => ({ date: new Date(+t), ...vals }))
-    .sort((a, b) => a.date - b.date)
+  const probByVariantDate = d3.rollup(
+    rows,
+    v => d3.sum(v, d => d.probability),
+    d => `${normCoalition(d.label)}/${coalitionParties(d.label)[0]}`,
+    d => +d.date
+  )
+  const probabilityAt = (key, t) =>
+    (key.includes("/") ? probByVariantDate : probByKeyDate).get(key)?.get(t) ?? 0
+
+  const series = selectedCoalitions
+    .filter(d => d.parties.length)
+    .map(({ parties, leader }) => {
+      const lead  = parties.includes(leader) ? leader : null
+      const key   = lead ? `${partyKey(parties)}/${lead}` : partyKey(parties)
+      const label = coalitionLabelFor(parties, lead)
+      return {
+        key,
+        label,
+        color: party_colors[coalitionParties(label)[0]] || "#aaa",
+        // sorted by date so Plot.line connects the points in chronological order
+        rows: dates.map(t => ({ key, label, date: new Date(t), probability: probabilityAt(key, t) }))
+      }
+    })
+
+  // both selections can be led by the same party, and would then be two lines in
+  // the same colour; the second one is dashed so they stay tellable apart
+  series.forEach((d, i) => {
+    d.dash = series.slice(0, i).some(other => other.color === d.color) ? "6,4" : undefined
+  })
+
+  // one row per date, one column per selection — used for the crosshair, which
+  // tracks the nearest date across all selected lines at once
+  const wide = dates.map(t => Object.assign(
+    { date: new Date(t) },
+    ...series.map(d => ({ [d.key]: probabilityAt(d.key, t) }))
+  ))
   const lastRow = wide.at(-1)
 
   const plot = Plot.plot({
@@ -2179,6 +2535,9 @@ viewof hoveredCoalitionRow = {
       label: null,
       interval: "day",
       tickPadding: 12,
+      // fixed to the full available history, so the axis does not jump around
+      // while combinations are put together button by button
+      domain: dates.length ? [new Date(dates[0]), new Date(dates.at(-1))] : undefined,
       // one tick per year, anchored on 1.1. (d3.utcYear ticks land on January 1 UTC)
       ticks: yearTicks(wide[0]?.date, wide.at(-1)?.date),
       tickFormat: formatYear
@@ -2189,31 +2548,29 @@ viewof hoveredCoalitionRow = {
       domain: [0, 1],
       tickFormat: d => formatDe(d * 100, 0) + "%"
     },
-    color: {
-      domain: selectedLabels,
-      range: selectedColors
-    },
     marks: [
       Plot.ruleY([0]),
-      Plot.line(active, {
-        x: "date",
-        y: "probability",
-        stroke: "label",
-        z: "label",
-        strokeWidth: 2
-      }),
-      Plot.dot(singletons, {
-        x: "date",
-        y: "probability",
-        fill: "label",
-        stroke: "white",
-        strokeWidth: 1,
-        r: 4
-      })
+      // one mark per selection rather than a colour scale over all of them, so
+      // the dashed second line stays a per-series setting
+      ...series.flatMap(d => [
+        Plot.line(d.rows, {
+          x: "date",
+          y: "probability",
+          strokeWidth: 2,
+          stroke: d.color,
+          strokeDasharray: d.dash
+        }),
+        // A line needs two points to render anything, so a history of a single
+        // date (some institutes have polled a state exactly once) gets a dot, or
+        // the selection would vanish.
+        ...(dates.length === 1
+          ? [Plot.dot(d.rows, { x: "date", y: "probability", fill: d.color, stroke: "white", strokeWidth: 1, r: 4 })]
+          : [])
+      ])
     ]
   })
 
-  if (!lastRow) return plot
+  if (!lastRow || !series.length) return plot
 
   // custom overlay, synced to the plot's own scales: a dot + label per selected
   // coalition that tracks the crosshair, defaulting to the last date when not hovering
@@ -2235,8 +2592,8 @@ viewof hoveredCoalitionRow = {
   const linkLayer  = overlay.append("g")
   const dotLayer   = overlay.append("g")
   const labelLayer = overlay.append("g")
-  const items = selectedCoalitions.map(label => {
-    const color = colorByKey[label] || "#aaa"
+  const items = series.map(d => {
+    const { key, label, color } = d
     // drawn only where a label had to be pushed off its own value, so a reader can
     // still tell which point on the crosshair the displaced label belongs to
     const link = linkLayer.append("line")
@@ -2246,7 +2603,7 @@ viewof hoveredCoalitionRow = {
       .attr("fill", color).attr("font-size", 13).attr("font-weight", "bold")
       .attr("paint-order", "stroke")
       .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
-    return { key: label, label, link, dot, text }
+    return { key, label, link, dot, text }
   })
   const dateLabel = overlay.append("text")
     .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
@@ -2376,76 +2733,193 @@ viewof hoveredCoalitionRow = {
 ```{ojs}
 //| label: input-coalition-selection
 viewof selectedCoalitions = {
-  // one button per displayed coalition label; the label's first party is the
-  // strongest currently polling member of that coalition
-  const options = leading_variants.slice().sort((a, b) =>
+  // Up to two hand-built party combinations, each one a set of parties plus the
+  // party leading it. The first starts on the coalition currently most likely to
+  // hold a majority, so the chart is never empty on load.
+  const ranked = leading_variants.slice().sort((a, b) =>
     d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
   )
-  const active  = new Set(options.length ? [options[0].label] : [])
+  const maxSelections = 2
 
-  // width:100% makes the label consume a whole flex line, so the buttons wrap
-  // onto the rows beneath it instead of sitting next to it.
-  const form = html`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-    <span style="width:100%;font-size:0.85em;color:#666">Betrachtete Kombinationen</span>
-  </div>`
+  // This cell reads the election's and the institute's data, so switching either
+  // one rebuilds it from scratch. Carry the combinations over through the store,
+  // dropping the parties that do not run in the election switched to.
+  const stored = (coalition_selection_store.selections ?? [])
+    .map(({ parties, leader }) => ({
+      parties: new Set(parties.filter(party => selectable_parties.includes(party))),
+      leader
+    }))
 
-  const style = (btn, color, isActive) => {
-    btn.style.background = isActive ? color : "white"
-    btn.style.color      = isActive ? "white" : color
+  const selections = stored.some(selection => selection.parties.size) ? stored : [{
+    parties: new Set(ranked.length ? coalitionParties(ranked[0].label) : []),
+    leader: null
+  }]
+
+  // FDP yellow and AfD light blue are illegible as text on white and as white
+  // text on their own fill, so light party colours get a darkened outline and
+  // dark lettering while keeping their true colour as the active background.
+  const isLight  = color => d3.hcl(color).l > 70
+  const inkOf    = color => isLight(color) ? d3.hcl(color).darker(1.5).formatHex() : color
+  const onFillOf = color => isLight(color) ? "#1c1c1b" : "white"
+
+  // The combination is always shown as one leadership ordering; unless another
+  // one is picked, that is the ordering led by its strongest polling party.
+  const largestOf = parties => parties.slice().sort((a, b) =>
+    d3.descending(current_party_votes[a] ?? 0, current_party_votes[b] ?? 0) ||
+    d3.ascending(party_order.indexOf(a), party_order.indexOf(b))
+  )[0] ?? null
+
+  const leadOf = selection => {
+    const parties = selectable_parties.filter(party => selection.parties.has(party))
+    return parties.includes(selection.leader) ? selection.leader : largestOf(parties)
+  }
+  const partiesOf = ({ parties }) => selectable_parties.filter(party => parties.has(party))
+  const colorOf  = selection => {
+    const parties = partiesOf(selection)
+    if (!parties.length) return "#aaa"
+    return party_colors[coalitionParties(coalitionLabelFor(parties, leadOf(selection)))[0]] || "#aaa"
   }
 
-  const buttons = []
+  const valueOf = () => selections.map(selection => ({
+    parties: partiesOf(selection),
+    leader: leadOf(selection)
+  }))
 
-  const deselectColor = "#888"
-  const deselectBtn = html`<button type="button" style="
-    border: 1.5px solid ${deselectColor};
-    border-radius: 999px;
-    padding: 4px 12px;
-    font-size: 0.8em;
-    cursor: pointer;
-    color: ${deselectColor};
-    background: white;
-    transition: background 100ms, color 100ms;
-  ">Auswahl entfernen</button>`
+  const form = html`<div class="kombi-picker"></div>`
 
-  deselectBtn.onclick = () => {
-    active.clear()
-    for (const { btn, color, label } of buttons) style(btn, color, false)
-    form.value = Array.from(active)
+  // Only an explicitly picked leader is carried over; left at null, the largest
+  // party of the combination leads it, recomputed for whatever is switched to.
+  const persist = () => {
+    coalition_selection_store.selections = selections.map(selection => ({
+      parties: partiesOf(selection),
+      leader: selection.leader
+    }))
+  }
+
+  const emit = () => {
+    form.value = valueOf()
+    persist()
     form.dispatchEvent(new Event("input"))
   }
 
-  form.append(deselectBtn)
+  const render = () => {
+    form.textContent = ""
+    form.append(html`<div class="kombi-picker__title">Parteikombination auswählen</div>`)
 
-  for (const d of options) {
-    const color = party_colors[d.first_party] || "#aaa"
-    const btn = html`<button type="button" style="
-      border: 1.5px solid ${color};
-      border-radius: 999px;
-      padding: 4px 12px;
-      font-size: 0.8em;
-      cursor: pointer;
-      transition: background 100ms, color 100ms;
-    ">${d.label}</button>`
-
-    style(btn, color, active.has(d.label))
-    buttons.push({ btn, color, label: d.label })
-
-    btn.onclick = () => {
-      if (active.has(d.label)) {
-        active.delete(d.label)
-      } else {
-        active.add(d.label)
-      }
-      style(btn, color, active.has(d.label))
-      form.value = Array.from(active)
-      form.dispatchEvent(new Event("input"))
+    // mirrors the chart: two combinations in the same colour are told apart by
+    // dashing the second one, and the swatch shows which line is which
+    const drawn = selections.filter(selection => selection.parties.size)
+    const dashOf = selection => {
+      const i = drawn.indexOf(selection)
+      return i > 0 && drawn.slice(0, i).some(other => colorOf(other) === colorOf(selection)) ? "6,4" : ""
     }
 
-    form.append(btn)
+    selections.forEach((selection, i) => {
+      const { parties } = selection
+      const chosen = partiesOf(selection)
+      const color  = colorOf(selection)
+      const card   = html`<div class="kombi-card"></div>`
+      const head   = html`<div class="kombi-card__head"></div>`
+
+      head.append(html`<span class="kombi-card__index">Kombination ${i + 1}</span>`)
+      head.append(chosen.length
+        ? html`<span class="kombi-card__name">
+            <svg width="20" height="8" aria-hidden="true"><line x1="1" y1="4" x2="19" y2="4"
+              stroke="${color}" stroke-width="3" stroke-linecap="round"
+              stroke-dasharray="${dashOf(selection)}"></line></svg>
+            ${coalitionLabelFor(chosen, leadOf(selection))}
+          </span>`
+        : html`<span class="kombi-card__name kombi-card__name--empty">Parteien auswählen</span>`)
+      head.append(html`<span class="kombi-card__spacer"></span>`)
+
+      // Which ordering of the combination to show: the coalitions are simulated
+      // per leading party, and summing those orderings up (the default) answers
+      // a different question than picking one of them.
+      if (chosen.length > 1) {
+        const select = html`<select>
+          ${chosen.map(party => html`<option value="${party}" style="color:${inkOf(party_colors[party] || "#aaa")}">${party_to_label[party] || party}</option>`)}
+        </select>`
+        select.value = leadOf(selection)
+        // the picked party carries its own colour, which is also the colour of
+        // the line it puts on the chart
+        const leadColor = inkOf(party_colors[leadOf(selection)] || "#aaa")
+        select.style.color       = leadColor
+        select.style.borderColor = leadColor
+        select.style.fontWeight  = 600
+
+        select.onchange = () => {
+          selection.leader = select.value
+          render()
+          emit()
+        }
+        head.append(html`<label class="kombi-leader">Größte Partei ${select}</label>`)
+      }
+
+      if (selections.length > 1) {
+        const drop = html`<button type="button" class="kombi-drop" title="Kombination entfernen">✕</button>`
+        drop.onclick = () => {
+          selections.splice(i, 1)
+          render()
+          emit()
+        }
+        head.append(drop)
+      }
+
+      const pills = html`<div class="kombi-parties"></div>`
+
+      for (const party of selectable_parties) {
+        const partyColor = party_colors[party] || "#aaa"
+        const isOn = parties.has(party)
+        const btn  = html`<button type="button" class="kombi-pill">${party_to_label[party] || party}</button>`
+
+        btn.style.borderColor = inkOf(partyColor)
+        btn.style.background  = isOn ? partyColor : "white"
+        btn.style.color       = isOn ? onFillOf(partyColor) : inkOf(partyColor)
+
+        btn.onclick = () => {
+          if (isOn) parties.delete(party)
+          else parties.add(party)
+          // a leader that just left the combination cannot lead it any more
+          if (!parties.has(selection.leader)) selection.leader = null
+          render()
+          emit()
+        }
+
+        pills.append(btn)
+      }
+
+      card.append(head, pills)
+      form.append(card)
+    })
+
+    const actions = html`<div class="kombi-actions"></div>`
+
+    if (selections.length < maxSelections) {
+      const addBtn = html`<button type="button" class="kombi-action">+ Weitere Parteikombination hinzufügen</button>`
+      addBtn.onclick = () => {
+        selections.push({ parties: new Set(), leader: null })
+        render()
+        emit()
+      }
+      actions.append(addBtn)
+    }
+
+    const deselectBtn = html`<button type="button" class="kombi-action">Auswahl entfernen</button>`
+    deselectBtn.onclick = () => {
+      selections.splice(1)
+      selections[0].parties.clear()
+      selections[0].leader = null
+      render()
+      emit()
+    }
+    actions.append(deselectBtn)
+
+    form.append(actions)
   }
 
-  form.value = Array.from(active)
+  render()
+  form.value = valueOf()
+  persist()
   return form
 }
 ```
@@ -2853,6 +3327,43 @@ viewof hoveredRow = {
   })
 }
 ```
+
+# Blog
+
+## Row
+
+::: {.card .blog-card}
+
+```{=html}
+<div class="blog-index">
+  <header class="blog-index-header">
+    <h2>Analysen zu den Wahlen</h2>
+    <p>Einordnung von Umfragen, KOALA-Schätzungen und amtlichen Ergebnissen.</p>
+  </header>
+
+  <div class="blog-list" aria-label="Blogbeiträge">
+    <a class="blog-post" href="blog/202609_ltwsa/index.html">
+      <div class="blog-post-media">
+        <img src="blog/202609_ltwsa/election_result.png"
+             alt="Vorläufiges Zweitstimmenergebnis der Landtagswahl in Sachsen-Anhalt 2026">
+      </div>
+      <div>
+        <div class="blog-post-meta">
+          <time datetime="2026-09-10">10. September 2026</time>
+          <span>Landtagswahl</span>
+        </div>
+        <h3>Landtagswahl in Sachsen-Anhalt</h3>
+        <p class="blog-post-summary">
+          Wie gut lagen die letzten Wahlumfragen und die KOALA-Schätzung im
+          Vergleich zum vorläufigen Wahlergebnis?
+        </p>
+      </div>
+    </a>
+  </div>
+</div>
+```
+
+:::
 
 # Methodik
 
