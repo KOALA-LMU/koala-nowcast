@@ -3350,6 +3350,42 @@ viewof hoveredRow = {
   </header>
 
   <div class="blog-list" aria-label="Blogbeiträge">
+    <a class="blog-post" href="blog/202609_ltwbe/index.html">
+      <div class="blog-post-media">
+        <img src="blog/202609_ltwbe/election_result.png"
+             alt="Vorläufiges Zweitstimmenergebnis der Abgeordnetenhauswahl in Berlin 2026">
+      </div>
+      <div>
+        <div class="blog-post-meta">
+          <time datetime="2026-09-23">23. September 2026</time>
+          <span>Abgeordnetenhauswahl</span>
+        </div>
+        <h3>Abgeordnetenhauswahl in Berlin</h3>
+        <p class="blog-post-summary">
+          Wie gut lagen die letzten Wahlumfragen und die KOALA-Schätzung im
+          Vergleich zum vorläufigen Wahlergebnis?
+        </p>
+      </div>
+    </a>
+
+    <a class="blog-post" href="blog/202609_ltwmv/index.html">
+      <div class="blog-post-media">
+        <img src="blog/202609_ltwmv/election_result.png"
+             alt="Vorläufiges Zweitstimmenergebnis der Landtagswahl in Mecklenburg-Vorpommern 2026">
+      </div>
+      <div>
+        <div class="blog-post-meta">
+          <time datetime="2026-09-23">23. September 2026</time>
+          <span>Landtagswahl</span>
+        </div>
+        <h3>Landtagswahl in Mecklenburg-Vorpommern</h3>
+        <p class="blog-post-summary">
+          Wie gut lagen die letzten Wahlumfragen und die KOALA-Schätzung im
+          Vergleich zum vorläufigen Wahlergebnis?
+        </p>
+      </div>
+    </a>
+
     <a class="blog-post" href="blog/202609_ltwsa/index.html">
       <div class="blog-post-media">
         <img src="blog/202609_ltwsa/election_result.png"
