@@ -80,7 +80,7 @@ Für einen kompakten Gesamtvergleich verwenden wir den mittleren absoluten Fehle
 
 ![Mittlerer absoluter Fehler jeder letzten Schätzung über alle acht Parteikategorien.](mae_by_pollster.png){#fig-mae width="82%"}
 
-In diesem deskriptiven Vergleich hat KOALA mit 1,19 Prozentpunkten den niedrigsten MAE. Es folgen Forsa mit 1,31, die Forschungsgruppe Wahlen mit 1,74, INSA mit 1,81 und Infratest dimap mit 1,99 Prozentpunkten. Die letzte berücksichtigte Forsa-Umfrage war allerdings bereits 29 Tage vor der Wahl erschienen. Die Werte vergleichen deshalb nicht die Institute unter identischen zeitlichen Bedingungen.
+In diesem deskriptiven Vergleich hat KOALA mit 1,19 Prozentpunkten den niedrigsten MAE. Es folgen Forsa mit 1,31, die Forschungsgruppe Wahlen mit 1,74, INSA mit 1,81 und Infratest dimap mit 1,99 Prozentpunkten. Da die Umfragen zu unterschiedlichen Zeitpunkten veröffentlicht wurden, erfolgt der Vergleich nicht unter identischen Bedingungen
 
 ## Mehrheits- und Hürdenwahrscheinlichkeiten
 
@@ -92,7 +92,7 @@ Auch für CDU, SPD und Grüne ergab sich mit 98,2 Prozent eine hohe modellbasier
 
 Die Modellrechnungen verwenden die gesetzliche Regelgröße von 130 Sitzen und eine Mehrheitsschwelle von 66 Sitzen. Das vorläufige Wahlergebnis umfasst infolge von Überhang- und Ausgleichsmandaten hingegen 158 Sitze; für die Einordnung des tatsächlichen Ergebnisses gilt deshalb die Schwelle von 80 Sitzen. Die Wahrscheinlichkeiten sind folglich keine Vorhersage der Größe des vergrößerten Abgeordnetenhauses.
 
-Unsicherheit bestand vor allem bei der Fünfprozenthürde. Das BSW lag in der gepoolten KOALA-Schätzung bei 4,2 Prozent. Daraus ergab sich eine modellbasierte Wahrscheinlichkeit von 7,2 Prozent, mindestens fünf Prozent der Stimmen zu erreichen. Im vorläufigen Ergebnis verfehlte es den Einzug mit 4,7 Prozent knapp. Für die FDP lag die auf eine Nachkommastelle gerundete Hürdenwahrscheinlichkeit bei 0,0 Prozent; sie blieb mit 2,5 Prozent ebenfalls außerhalb des Abgeordnetenhauses. Der gerundete Wert bedeutet nicht, dass das Überschreiten der Hürde grundsätzlich unmöglich war, sondern dass es in keiner der 10.000 Simulationen auftrat.
+Unsicherheit bestand vor allem bei der Fünf-Prozent-Hürde. Das BSW lag in der gepoolten KOALA-Schätzung bei 4,2 Prozent. Daraus ergab sich eine modellbasierte Wahrscheinlichkeit von 7,2 Prozent, mindestens fünf Prozent der Stimmen zu erreichen. Im vorläufigen Ergebnis verfehlte es den Einzug mit 4,7 Prozent knapp. Für die FDP lag die auf eine Nachkommastelle gerundete Hürdenwahrscheinlichkeit bei 0,0 Prozent; sie blieb mit 2,5 Prozent ebenfalls außerhalb des Abgeordnetenhauses. Der gerundete Wert bedeutet nicht, dass das Überschreiten der Hürde grundsätzlich unmöglich war, sondern dass es in keiner der 10.000 Simulationen auftrat.
 
 ## Quellen
 
