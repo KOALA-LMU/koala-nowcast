@@ -30,7 +30,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # ── Paths ────────────────────────────────────────────────────────────────────
   surveys_file <- file.path("data", "surveys", cfg$id, "polls.json")
   results_dir  <- file.path("data", "results", cfg$id)
-  results_file <- file.path(results_dir, "coalProbs.json")
+  results_file <- file.path(results_dir, "coalProbs_grouping.json")
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
   # ── Load surveys (flat JSON produced by scrape_election) ────────────────────
@@ -101,7 +101,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     survey_byTime <- surveys_byTime %>% filter(pollster == p)
     dates_ins     <- unique(survey_byTime$date[survey_byTime$date %in% dates])
     if (length(dates_ins) == 0) {
-      return(list("coalProbs" = NULL, "shares" = NULL,
+      return(list("shares" = NULL,
                   "coalProbs_grouping" = NULL, "biggestParty" = NULL,
                   "passHurdle" = NULL))
     }
@@ -148,7 +148,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
       res_all   <- calc_allCoalProbs(seat.distributions, parties_ins, dirichlet.draws,
                                      strongest_party_coals = spc_ins, cores = cores)
-      coalProbs <- res_all$coalProbs
       allShares <- res_all$shares_perSimulation
 
       # ── Filter to realistic coalitions ──────────────────────────────────────
@@ -196,26 +195,25 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       }
 
       # ── Hurdle probabilities ─────────────────────────────────────────────────
-      partyShares    <- allShares[allShares$coalition %in% parties_ins, colnames(allShares) != "coalition"]
+      is_party       <- allShares$coalition %in% parties_ins
+      partyShares    <- allShares[is_party, colnames(allShares) != "coalition"]
+      # Named by the rows actually taken, not by parties_ins: summarise_shareDraws()
+      # looks members up by name, and allShares is not in parties_ins order.
+      rownames(partyShares) <- allShares$coalition[is_party]
       res_passHurdle <- data.frame("party" = parties_ins,
                                    "prob"  = rowMeans(partyShares > hurdle))
 
-      # ── Attach pollster/date, subsample simulations, return ─────────────────
-      coalProbs        <- coalProbs        %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
+      # ── Summarise the draws, attach pollster/date, return ───────────────────
+      # The draws themselves are not written out (#145): everything downstream is
+      # derived from the quantile grid and the presence count computed here,
+      # while the draws are still in memory and still linked by simulation.
+      shares           <- summarise_shareDraws(shares, partyShares)
       shares           <- shares           %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
       res_grouping     <- res_grouping     %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
       res_biggestParty <- res_biggestParty %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
       res_passHurdle   <- res_passHurdle   %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
 
-      # We only use 1000 simulations
-      n <- 1000
-      if (nrow(dirichlet.draws) > n) {
-        coal_share_columns <- grepl("coal_share", colnames(shares))
-        shares             <- shares[, c(which(!coal_share_columns), sample(which(coal_share_columns), n))]
-        colnames(shares)[which(coal_share_columns)[seq_len(n)]] <- paste0("coal_share", seq_len(n))
-      }
-
-      list("coalProbs" = coalProbs, "shares" = shares,
+      list("shares" = shares,
            "coalProbs_grouping" = res_grouping, "biggestParty" = res_biggestParty,
            "passHurdle" = res_passHurdle)
     }
@@ -224,7 +222,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     results[sapply(results, is.null)] <- NULL
 
     list(
-      "coalProbs"          = bind_rows(lapply(results, `[[`, "coalProbs")),
       "shares"             = bind_rows(lapply(results, `[[`, "shares")),
       "coalProbs_grouping" = bind_rows(lapply(results, `[[`, "coalProbs_grouping")),
       "biggestParty"       = bind_rows(lapply(results, `[[`, "biggestParty")),
@@ -233,7 +230,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   })
 
   # ── Bind all pollsters ───────────────────────────────────────────────────────
-  coalProbs          <- bind_rows(lapply(results, `[[`, "coalProbs"))
   shares             <- bind_rows(lapply(results, `[[`, "shares"))
   coalProbs_grouping <- bind_rows(lapply(results, `[[`, "coalProbs_grouping"))
   biggestParty       <- bind_rows(lapply(results, `[[`, "biggestParty"))
@@ -241,10 +237,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
   # ── Post-processing of new results (must happen before merging with saved results
   # which are already in post-processed format) ──────────────────────────────────
-  coalProbs <- coalProbs %>%
-    select(-starts_with("coal_maj")) %>%
-    mutate(coal_prob = coal_prob * 100) %>%
-    rename(size = coal_size, prob = coal_prob)
   coalProbs_grouping <- coalProbs_grouping %>%
     mutate(prob = prob * 100)
   biggestParty <- biggestParty %>% mutate(prob = prob * 100)
@@ -255,7 +247,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     jsonlite::fromJSON(file.path(results_dir, paste0(name, ".json"))) %>% dplyr::mutate(date = as.Date(date))
   }
   if (!identical(dates, dates_todo)) {
-    coalProbs          <- bind_rows(coalProbs,          read_result("coalProbs")          %>% filter(!date %in% dates))
     shares             <- bind_rows(shares,             read_result("shares")             %>% filter(!date %in% dates))
     coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping") %>% filter(!date %in% dates))
     biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty")       %>% filter(!date %in% dates))
@@ -263,7 +254,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   }
 
   # ── Sort final output by date, then pollster ─────────────────────────────────
-  coalProbs          <- coalProbs          %>% dplyr::arrange(date, pollster)
   shares             <- shares             %>% dplyr::arrange(date, pollster)
   coalProbs_grouping <- coalProbs_grouping %>% dplyr::arrange(date, pollster)
   biggestParty       <- biggestParty       %>% dplyr::arrange(date, pollster)
@@ -279,12 +269,14 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     ungroup()
 
   write_result <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, pretty = TRUE)
-  # The two files that dominate on-disk size are written unprettified and rounded:
-  # these are Monte Carlo estimates, so the default 15 significant digits is noise
-  # at a large size cost. Only jsonlite::fromJSON ever reads them back.
-  write_compact <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, digits = 4)
+  # shares.json is still the largest result file, so it is written unprettified
+  # and rounded: these are Monte Carlo estimates, so the default 15 significant
+  # digits is noise at a size cost. Only jsonlite::fromJSON ever reads it back.
+  # digits counts decimal places, not significant digits: 4 would leave a narrow
+  # bandwidth (a small party in a large parliament) with two significant digits,
+  # and the density curve is drawn at that width.
+  write_compact <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, digits = 6)
 
-  write_compact(coalProbs,          "coalProbs")
   write_compact(shares_out,         "shares")
   write_result(coalProbs_grouping,  "coalProbs_grouping")
   write_result(biggestParty,        "biggestParty")

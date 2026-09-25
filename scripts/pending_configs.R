@@ -1,4 +1,4 @@
-RESULT_FILES <- c("coalProbs", "coalProbs_grouping", "biggestParty", "passHurdle", "shares")
+RESULT_FILES <- c("coalProbs_grouping", "biggestParty", "passHurdle", "shares")
 
 #' Newest date per pollster, as a named Date vector
 #' @noRd
@@ -9,9 +9,9 @@ newest_per_pollster <- function(dates, pollsters) {
 
 #' Pollster/date pairs of a result file, read without parsing it
 #'
-#' shares.json carries one column per simulation draw, so fromJSON() needs
+#' shares.json used to carry one column per simulation draw, so fromJSON() needed
 #' minutes on it; every record starts with these two fields, so scanning for
-#' that prefix answers the same question in about a second.
+#' that prefix answers the same question in about a second, whatever the layout.
 #' @noRd
 result_pairs <- function(path) {
   txt <- readChar(path, file.size(path), useBytes = TRUE)
@@ -27,7 +27,7 @@ result_pairs <- function(path) {
 
 #' Scraped dates that any result file is missing
 #'
-#' All result files are checked, not only \code{coalProbs.json}: the upload
+#' All result files are checked, not only \code{coalProbs_grouping.json}: the upload
 #' syncs them one at a time, so a run that dies partway — or that loses a single
 #' file, as a failed multipart upload of the large \code{shares.json} does —
 #' leaves some current and the rest stale.

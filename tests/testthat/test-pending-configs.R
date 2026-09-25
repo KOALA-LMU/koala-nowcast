@@ -44,11 +44,11 @@ test_that("both writers yield identical pairs for identical data", {
   expect_equal(result_pairs(a), result_pairs(b))
 })
 
-test_that("all five result files are declared for checking", {
+test_that("all four result files are declared for checking", {
   # missing_dates() only inspects what RESULT_FILES lists; dropping one here
   # would silently stop guarding it.
   expect_setequal(
     RESULT_FILES,
-    c("coalProbs", "coalProbs_grouping", "biggestParty", "passHurdle", "shares")
+    c("coalProbs_grouping", "biggestParty", "passHurdle", "shares")
   )
 })
