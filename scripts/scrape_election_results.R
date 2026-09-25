@@ -11,6 +11,7 @@ clean_party_label <- function(x) {
   }
   x <- gsub("\\[[0-9]+\\]", "", x)
   x <- gsub("\\([0-9]+\\)", "", x)
+  x <- gsub("[0-9]+$", "", x)
 
   x <- gsub(intToUtf8(0x2019), "'", x, fixed = TRUE)
   x <- gsub("`", "'", x, fixed = TRUE)
@@ -48,6 +49,7 @@ party_lookup <- function() {
 
 
     "FDP" = "fdp",
+    "DPS/FDP" = "fdp",
     "DIE LINKE" = "left",
     "Die Linke" = "left",
     "PDS/DIE LINKE" = "left",
@@ -56,6 +58,8 @@ party_lookup <- function() {
     "AfD" = "afd",
 
     "BSW" = "bsw",
+    "SSW" = "ssw",
+    "SSV/SSW" = "ssw",
 
     "Sonstige" = "others"
   )
@@ -74,16 +78,23 @@ scrape_election_results <- function(
 
   page <- rvest::read_html(url)
   table <- rvest::html_table(page, fill = TRUE)[[2]]
-  
+
   year_cols <- grep(paste0("^", election_year), colnames(table))
+  if (length(year_cols) < 2) {
+    first_row <- trimws(as.character(unlist(table[1, ], use.names = FALSE)))
+    year_cols <- grep(paste0("^", election_year), first_row)
+  }
+  if (length(year_cols) < 2) {
+    stop(sprintf("Could not find percent and seat columns for election year %s", election_year))
+  }
   percent_col <- year_cols[[1]]
   seats_col <- year_cols[[2]]
 
   table <- table[, c(1, percent_col, seats_col)]
   colnames(table) <- c("label", "percent", "seats")
-  table <- table[-c(1, 2), ]
 
   table$label <- enc2utf8(clean_party_label(table$label))
+  table <- table[nzchar(table$label) & !grepl("^Wahlbe", table$label), ]
   lookup <- party_lookup()
   names(lookup) <- enc2utf8(names(lookup))
   table$party <- ifelse(table$label %in% names(lookup),
@@ -91,9 +102,13 @@ scrape_election_results <- function(
     "others"
   )
   
-  table$percent <- gsub(",", ".", table$percent, fixed = TRUE)
-  table$percent <- as.numeric(ifelse(table$percent == "–", "0", table$percent))
-  table$seats <- as.numeric(ifelse(table$seats == "–", "0", table$seats))
+  parse_number <- function(x) {
+    x <- gsub(",", ".", trimws(as.character(x)), fixed = TRUE)
+    x[!grepl("^[0-9]+(?:\\.[0-9]+)?$", x)] <- "0"
+    as.numeric(x)
+  }
+  table$percent <- parse_number(table$percent)
+  table$seats <- parse_number(table$seats)
   table$sum_seats <- sum(table$seats)
 
   res <- table |>

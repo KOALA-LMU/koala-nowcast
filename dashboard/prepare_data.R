@@ -171,7 +171,11 @@ prepare_election <- function(election_id) {
   message(election_id, " dashboard data written to ", out_dir)
 }
 
-for (id in c("ltw_st", "ltw_mv", "ltw_be", "btw")) {
+for (id in c(
+  "ltw_st", "ltw_mv", "ltw_be",
+  "ltw_sl", "ltw_sh", "ltw_nw", "ltw_hb", "ltw_ni",
+  "btw"
+)) {
   tryCatch(
     prepare_election(id),
     error = function(e) message("Skipping ", id, ": ", conditionMessage(e))

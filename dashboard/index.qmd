@@ -519,7 +519,7 @@ for (loc in c("en_US.UTF-8", "C.UTF-8", "en_US.utf8")) {
 # Only hand-written constants go through ojs_define. The data itself is read
 # straight from data/ by the browser (see the election-files cell below):
 # prepare_data.R already wrote it as JSON, so routing it through R would just
-# parse it and serialise it back out — for the ~90 MB across all four elections
+# parse it and serialise it back out — across all elections that round trip
 # that round trip costs minutes of render time and inlines every byte of it
 # into index.html, which every visitor then downloads before anything appears.
 ojs_define(
@@ -563,6 +563,61 @@ ojs_define(
       hurdle = "5 %",
       pooling_days = 14L
     ),
+    SL = list(
+      title = "Landtagswahl im Saarland 2027",
+      seats = 51L,
+      majority = 26L,
+      last_election = "27. März 2022",
+      next_election = "18. April 2027",
+      next_election_date = "2027-04-18",
+      seat_method = "d'Hondt",
+      hurdle = "5 %",
+      pooling_days = 14L
+    ),
+    SH = list(
+      title = "Landtagswahl in Schleswig-Holstein 2027",
+      seats = 69L,
+      majority = 35L,
+      last_election = "8. Mai 2022",
+      next_election = "18. April 2027",
+      next_election_date = "2027-04-18",
+      seat_method = "Sainte-Laguë/Schepers",
+      hurdle = "5 %",
+      pooling_days = 14L
+    ),
+    NW = list(
+      title = "Landtagswahl in Nordrhein-Westfalen 2027",
+      seats = 181L,
+      majority = 91L,
+      last_election = "15. Mai 2022",
+      next_election = "25. April 2027",
+      next_election_date = "2027-04-25",
+      seat_method = "Sainte-Laguë/Schepers",
+      hurdle = "5 %",
+      pooling_days = 14L
+    ),
+    HB = list(
+      title = "Bürgerschaftswahl in Bremen 2027",
+      seats = 87L,
+      majority = 44L,
+      last_election = "14. Mai 2023",
+      next_election = "30. Mai 2027",
+      next_election_date = "2027-05-30",
+      seat_method = "Sainte-Laguë/Schepers",
+      hurdle = "5 %",
+      pooling_days = 14L
+    ),
+    NI = list(
+      title = "Landtagswahl in Niedersachsen 2027",
+      seats = 135L,
+      majority = 68L,
+      last_election = "9. Oktober 2022",
+      next_election = "26. September 2027",
+      next_election_date = "2027-09-26",
+      seat_method = "Sainte-Laguë/Schepers",
+      hurdle = "5 %",
+      pooling_days = 14L
+    ),
     BTW = list(
       title = "Bundestagswahl 2029",
       seats = 630L,
@@ -578,12 +633,12 @@ ojs_define(
   ),
   party_colors = list(
     cdu = "#1c1c1b", spd = "#e3000f", afd = "#82caff",
-    greens = "#46962b", fdp = "#ffed00", fw = "#005fa3",
+    greens = "#46962b", fdp = "#ffed00", fw = "#005fa3", ssw = "#005ca9",
     left = "#be3075", bsw = "#6d1f99", others = "#aaaaaa"
   ),
   party_names = list(
     cdu = "Union", spd = "SPD", afd = "AfD",
-    greens = "Grüne", fdp = "FDP", fw = "Freie Wähler",
+    greens = "Grüne", fdp = "FDP", fw = "Freie Wähler", ssw = "SSW",
     left = "Linke", bsw = "BSW", others = "Sonstige"
   ),
   pollster_names = list(
@@ -603,10 +658,10 @@ ojs_define(
 //| label: ojs-setup
 //| output: false
 d3 = require("d3@7")
-// Left to right by seating order in the Bundestag; Freie Wähler, who do not
-// sit there, keep their place between FDP and Union. "others" is not listed
-// and sorts last wherever this order is applied.
-party_order = ["bsw", "left", "spd", "greens", "fdp", "fw", "cdu", "afd"]
+// Left to right by seating order in the Bundestag; the regional parties SSW
+// and Freie Wähler keep their approximate place in that spectrum. "others"
+// is not listed and sorts last wherever this order is applied.
+party_order = ["bsw", "left", "spd", "greens", "ssw", "fdp", "fw", "cdu", "afd"]
 
 label_to_party = Object.fromEntries(
   Object.entries(party_names).map(([party, label]) => [label, party])
@@ -1179,7 +1234,12 @@ viewof election = {
       ["Bundestagswahl",         "BTW"],
       ["Berlin",                  "BE"],
       ["Mecklenburg-Vorpommern",  "MV"],
-      ["Sachsen-Anhalt",          "ST"]
+      ["Sachsen-Anhalt",          "ST"],
+      ["Saarland",                "SL"],
+      ["Schleswig-Holstein",      "SH"],
+      ["Nordrhein-Westfalen",     "NW"],
+      ["Bremen",                  "HB"],
+      ["Niedersachsen",           "NI"]
     ]),
     { value: "BTW", label: "Wahl auswählen"}
   )
@@ -1237,6 +1297,56 @@ election_files = {
       history_data      : FileAttachment("data/be/poll_history.json"),
       coal_history_data : FileAttachment("data/be/coalition_history.json"),
       density_data      : FileAttachment("data/be/coalition_densities.json")
+    },
+    SL: {
+      coalitions        : FileAttachment("data/sl/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/sl/party_shares.json"),
+      last_result_data  : FileAttachment("data/sl/last_results.json"),
+      hurdle_data       : FileAttachment("data/sl/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/sl/per_pollster.json"),
+      history_data      : FileAttachment("data/sl/poll_history.json"),
+      coal_history_data : FileAttachment("data/sl/coalition_history.json"),
+      density_data      : FileAttachment("data/sl/coalition_densities.json")
+    },
+    SH: {
+      coalitions        : FileAttachment("data/sh/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/sh/party_shares.json"),
+      last_result_data  : FileAttachment("data/sh/last_results.json"),
+      hurdle_data       : FileAttachment("data/sh/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/sh/per_pollster.json"),
+      history_data      : FileAttachment("data/sh/poll_history.json"),
+      coal_history_data : FileAttachment("data/sh/coalition_history.json"),
+      density_data      : FileAttachment("data/sh/coalition_densities.json")
+    },
+    NW: {
+      coalitions        : FileAttachment("data/nw/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/nw/party_shares.json"),
+      last_result_data  : FileAttachment("data/nw/last_results.json"),
+      hurdle_data       : FileAttachment("data/nw/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/nw/per_pollster.json"),
+      history_data      : FileAttachment("data/nw/poll_history.json"),
+      coal_history_data : FileAttachment("data/nw/coalition_history.json"),
+      density_data      : FileAttachment("data/nw/coalition_densities.json")
+    },
+    HB: {
+      coalitions        : FileAttachment("data/hb/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/hb/party_shares.json"),
+      last_result_data  : FileAttachment("data/hb/last_results.json"),
+      hurdle_data       : FileAttachment("data/hb/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/hb/per_pollster.json"),
+      history_data      : FileAttachment("data/hb/poll_history.json"),
+      coal_history_data : FileAttachment("data/hb/coalition_history.json"),
+      density_data      : FileAttachment("data/hb/coalition_densities.json")
+    },
+    NI: {
+      coalitions        : FileAttachment("data/ni/coalition_probabilities.json"),
+      party_data        : FileAttachment("data/ni/party_shares.json"),
+      last_result_data  : FileAttachment("data/ni/last_results.json"),
+      hurdle_data       : FileAttachment("data/ni/hurdle_probabilities.json"),
+      pollster_data     : FileAttachment("data/ni/per_pollster.json"),
+      history_data      : FileAttachment("data/ni/poll_history.json"),
+      coal_history_data : FileAttachment("data/ni/coalition_history.json"),
+      density_data      : FileAttachment("data/ni/coalition_densities.json")
     },
     BTW: {
       coalitions        : FileAttachment("data/btw/coalition_probabilities.json"),
