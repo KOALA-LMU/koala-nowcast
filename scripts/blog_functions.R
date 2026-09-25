@@ -74,6 +74,7 @@ blog_read_wahlrecht_result <- function(result_url, result_year, party_lookup,
                                        others_id = "others",
                                        excluded_source_rows = "Wahlbeteiligung",
                                        expected_seats = NULL,
+                                       result_percent_overrides = NULL,
                                        total_tolerance = 0.2) {
   tables <- rvest::read_html(result_url) |>
     rvest::html_table(fill = TRUE)
@@ -124,6 +125,44 @@ blog_read_wahlrecht_result <- function(result_url, result_year, party_lookup,
     dplyr::mutate(label = unname(party_labels[.data$party])) |>
     dplyr::select(dplyr::all_of(c("label", "party", "percent", "seats"))) |>
     dplyr::arrange(match(.data$party, party_order))
+
+  if (!is.null(result_percent_overrides)) {
+    if (is.null(names(result_percent_overrides)) ||
+      any(names(result_percent_overrides) == "") ||
+      anyDuplicated(names(result_percent_overrides)) ||
+      !is.numeric(result_percent_overrides) ||
+      any(!is.finite(result_percent_overrides)) ||
+      any(result_percent_overrides < 0 | result_percent_overrides > 100)) {
+      stop("Election-result percentage overrides must be a named numeric vector.")
+    }
+
+    unknown_overrides <- setdiff(names(result_percent_overrides), party_order)
+    if (length(unknown_overrides) > 0) {
+      stop(
+        "Election-result percentage overrides contain unknown parties: ",
+        paste(unknown_overrides, collapse = ", "), "."
+      )
+    }
+
+    missing_overrides <- setdiff(names(result_percent_overrides), result$party)
+    if (length(missing_overrides) > 0) {
+      result <- dplyr::bind_rows(
+        result,
+        data.frame(
+          label = unname(party_labels[missing_overrides]),
+          party = missing_overrides,
+          percent = NA_real_,
+          seats = 0,
+          stringsAsFactors = FALSE
+        )
+      )
+    }
+
+    override_rows <- match(names(result_percent_overrides), result$party)
+    result$percent[override_rows] <- unname(result_percent_overrides)
+    result <- result |>
+      dplyr::arrange(match(.data$party, party_order))
+  }
 
   blog_validate_result(
     result,
@@ -221,6 +260,32 @@ blog_select_poll_snapshots <- function(polls_file, election_date, election_confi
     ) |>
     dplyr::group_by(.data$pollster) |>
     dplyr::filter(.data$date == max(.data$date, na.rm = TRUE)) |>
+    dplyr::ungroup() |>
+    dplyr::arrange(
+      dplyr::desc(.data$date),
+      .data$pollster,
+      match(.data$party, party_order)
+    )
+
+  # Wahlrecht omits a party row when an institute publishes a dash. If the
+  # remaining reported categories already sum to 100, that dash is represented
+  # as zero for the point-estimate comparison.
+  latest_polls <- latest_polls |>
+    dplyr::group_by(.data$pollster, .data$date) |>
+    dplyr::group_modify(function(poll, key) {
+      missing_parties <- setdiff(party_order, poll$party)
+      if (length(missing_parties) == 0) {
+        return(poll)
+      }
+
+      missing_rows <- poll[rep(1, length(missing_parties)), , drop = FALSE]
+      missing_rows$party <- missing_parties
+      missing_rows$percent <- 0
+      if ("votes" %in% names(missing_rows)) {
+        missing_rows$votes <- 0
+      }
+      dplyr::bind_rows(poll, missing_rows)
+    }) |>
     dplyr::ungroup() |>
     dplyr::arrange(
       dplyr::desc(.data$date),
@@ -708,6 +773,7 @@ prepare_election_blog <- function(election_id, election_date, config_path,
                                   polls_file = file.path("data", "surveys", election_id, "polls.json"),
                                   evaluation_dir = file.path("data", "evaluations", election_id),
                                   result_status = "provisional",
+                                  result_percent_overrides = NULL,
                                   expected_result_seats = NULL,
                                   expected_pooled_date = NULL,
                                   expected_poll_dates = NULL,
@@ -733,7 +799,8 @@ prepare_election_blog <- function(election_id, election_date, config_path,
     party_labels = party_labels,
     party_order = party_order,
     others_id = others_id,
-    expected_seats = expected_result_seats
+    expected_seats = expected_result_seats,
+    result_percent_overrides = result_percent_overrides
   )
   snapshots <- blog_select_poll_snapshots(
     polls_file = polls_file,

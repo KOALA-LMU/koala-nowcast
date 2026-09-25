@@ -24,5 +24,6 @@ sys.source("scripts/calc_coalProbs_helpers.R", envir = env)
 sys.source("scripts/pending_configs.R",        envir = env)
 sys.source("scripts/scrape_polls.R",           envir = env)
 sys.source("scripts/scrape_election_results.R", envir = env)
+sys.source("scripts/blog_functions.R",         envir = env)
 
 testthat::test_dir("tests/testthat", env = env, stop_on_failure = TRUE)
