@@ -1233,13 +1233,13 @@ viewof election = {
     new Map([
       ["Bundestagswahl",         "BTW"],
       ["Berlin",                  "BE"],
-      ["Mecklenburg-Vorpommern",  "MV"],
-      ["Sachsen-Anhalt",          "ST"],
-      ["Saarland",                "SL"],
-      ["Schleswig-Holstein",      "SH"],
-      ["Nordrhein-Westfalen",     "NW"],
       ["Bremen",                  "HB"],
-      ["Niedersachsen",           "NI"]
+      ["Mecklenburg-Vorpommern",  "MV"],
+      ["Niedersachsen",           "NI"],
+      ["Nordrhein-Westfalen",     "NW"],
+      ["Saarland",                "SL"],
+      ["Sachsen-Anhalt",          "ST"],
+      ["Schleswig-Holstein",      "SH"]
     ]),
     { value: "BTW", label: "Wahl auswählen"}
   )
