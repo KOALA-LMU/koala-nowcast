@@ -134,6 +134,8 @@ See an existing config for the full shape — the keys that need thought:
 | `pooling.period` / `period_extended` | Full-weight and half-weight windows; state polls are sparse, hence 14 / 100 |
 | `parties[].required` | `false` = may be absent from a poll without dropping the date |
 | `coalitions` | Omit to derive dynamically from current pooled shares |
+| `last_result` | One fixed reference election (`url`, `year`); retained for existing configs |
+| `election_results[]` | Dated reference elections (`date`, `url`, `year`); the dashboard selects the latest election before the newest raw poll |
 
 Two things outside the config also need touching:
 
