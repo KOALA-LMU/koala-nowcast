@@ -1,0 +1,81 @@
+id: ltw_ni
+name: Landtagswahl Niedersachsen 2027
+hashtag: "#ltwni"
+
+last_result:
+  url: https://www.wahlrecht.de/ergebnisse/niedersachsen.htm
+  year: 2022
+
+scraper:
+  function: scrape_ltw_2027
+  url: https://www.wahlrecht.de/umfragen/landtage/niedersachsen.htm
+  ind_row_remove: [1, 2]
+  # 100-day pooling window, so pooled estimates are complete from 2024-11-05 on
+  oldest_date: 2024-07-28
+
+parliament:
+  seats: 135
+  majority: 68
+  hurdle: 0.05
+  seat_allocation: sls
+
+pooling:
+  period: 14
+  period_extended: 100
+
+parties:
+  - id: spd
+    label: SPD
+    color: "#E3000F"
+    required: true
+  - id: cdu
+    label: Union
+    color: "#000000"
+    required: true
+  - id: afd
+    label: AfD
+    color: "#82caff"
+    required: true
+  - id: greens
+    label: Grüne
+    color: "#46962b"
+    required: true
+  - id: left
+    label: Linke
+    color: "#ff1493"
+    required: false
+  - id: fdp
+    label: FDP
+    color: "#ffed00"
+    required: false
+  - id: bsw
+    label: BSW
+    color: "#6d1f99"
+    required: false
+  - id: others
+    label: Sonstige
+    color: "#808080"
+    required: false
+
+pollsters:
+  - allensbach
+  - civey
+  - emnid
+  - forsa
+  - fgw
+  - gms
+  - infratest
+  - insa
+  - pollytix
+
+# coalitions: dynamically derived at compute time from current pooled vote
+# shares (see derive_dynamic_coalitions() in scripts/calc_coalProbs_helpers.R).
+# Leaving this key absent/empty is what triggers the dynamic path.
+
+analyses:
+  biggest_party:
+    - parties: [spd, cdu, afd]
+      label: "Wer wird stärkste Kraft?"
+  pass_hurdle:
+    parties: [fdp, left, bsw]
+    label: "Schaffen es die folgenden Parteien in den Landtag?"
