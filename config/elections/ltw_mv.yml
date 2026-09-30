@@ -2,9 +2,13 @@ id: ltw_mv
 name: Landtagswahl Mecklenburg-Vorpommern 2026
 hashtag: "#ltwmv"
 
-last_result:
-  url: https://www.wahlrecht.de/ergebnisse/mecklenburg.htm
-  year: 2021
+election_results:
+  - date: 2021-09-26
+    url: https://www.wahlrecht.de/ergebnisse/mecklenburg.htm
+    year: 2021
+  - date: 2026-09-20
+    url: https://www.wahlrecht.de/ergebnisse/mecklenburg.htm
+    year: 2026
 
 scraper:
   function: scrape_ltw

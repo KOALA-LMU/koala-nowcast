@@ -2,9 +2,13 @@ id: ltw_st
 name: Landtagswahl Sachsen-Anhalt 2026
 hashtag: "#ltwst"
 
-last_result:
-  url: https://www.wahlrecht.de/ergebnisse/sachsen-anhalt.htm
-  year: 2021
+election_results:
+  - date: 2021-06-06
+    url: https://www.wahlrecht.de/ergebnisse/sachsen-anhalt.htm
+    year: 2021
+  - date: 2026-09-06
+    url: https://www.wahlrecht.de/ergebnisse/sachsen-anhalt.htm
+    year: 2026
 
 scraper:
   function: scrape_ltw

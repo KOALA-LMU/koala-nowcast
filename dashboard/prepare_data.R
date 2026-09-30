@@ -2,7 +2,7 @@ library(jsonlite)
 library(dplyr)
 library(yaml)
 source("scripts/coalition_density.R")
-source("scripts/scrape_election_results.R")
+source("scripts/election_results.R")
 
 # First date whose pooled estimate rests on a fully scraped pooling window.
 # pool_surveys() averages over the period_extended days before each date, so the
@@ -156,12 +156,7 @@ prepare_election <- function(election_id) {
     auto_unbox = TRUE
   )
 
-  if (!is.null(cfg$last_result)) {
-    last_result <- scrape_election_results(
-      url = cfg$last_result$url,
-      election_year = cfg$last_result$year
-    )
-  }
+  last_result <- read_configured_election_result(cfg, updated)
   write_json(
     list(last_result = last_result, updated = updated),
     file.path(out_dir, "last_results.json"),

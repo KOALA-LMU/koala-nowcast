@@ -1,4 +1,6 @@
 
+source("scripts/election_results.R", local = TRUE)
+
 blog_read_config <- function(config_path) {
   if (!file.exists(config_path)) {
     stop("Election config not found: ", config_path)
@@ -10,168 +12,31 @@ blog_read_config <- function(config_path) {
   ))
 }
 
-blog_clean_label <- function(x) {
-  x <- gsub("&shy;", "", as.character(x), fixed = TRUE)
-  x <- gsub("<[^>]+>", "", x)
-  x <- gsub("\\s+", " ", x)
-  trimws(x)
-}
+blog_result_overrides <- function(percent_overrides, party_order) {
+  if (is.null(percent_overrides)) {
+    return(NULL)
+  }
+  if (is.null(names(percent_overrides)) ||
+      any(names(percent_overrides) == "") ||
+      anyDuplicated(names(percent_overrides)) ||
+      !is.numeric(percent_overrides) ||
+      any(!is.finite(percent_overrides)) ||
+      any(percent_overrides < 0 | percent_overrides > 100)) {
+    stop("Election-result percentage overrides must be a named numeric vector.")
+  }
 
-blog_party_key <- function(x) {
-  x <- iconv(blog_clean_label(x), from = "UTF-8", to = "ASCII//TRANSLIT")
-  x <- toupper(x)
-  gsub("[^A-Z0-9]+", "", x)
-}
+  unknown_overrides <- setdiff(names(percent_overrides), party_order)
+  if (length(unknown_overrides) > 0) {
+    stop(
+      "Election-result percentage overrides contain unknown parties: ",
+      paste(unknown_overrides, collapse = ", "), "."
+    )
+  }
 
-blog_parse_decimal <- function(x) {
-  suppressWarnings(as.numeric(sub(",", ".", trimws(x), fixed = TRUE)))
+  lapply(as.list(percent_overrides), function(percent) list(percent = percent))
 }
 
 # Result and poll preparation ----------------------------------------------
-
-blog_validate_result <- function(result, party_order, expected_seats = NULL,
-                                 total_tolerance = 0.2) {
-  required_columns <- c("party", "percent", "seats")
-  missing_columns <- setdiff(required_columns, names(result))
-  if (length(missing_columns) > 0) {
-    stop("Election result is missing columns: ", paste(missing_columns, collapse = ", "))
-  }
-  if (!is.numeric(result$percent) || !is.numeric(result$seats) ||
-    any(!is.finite(result$percent)) || any(!is.finite(result$seats))) {
-    stop("Election-result percentages and seats must be finite numeric values.")
-  }
-  if (any(result$percent < 0 | result$percent > 100) ||
-    any(result$seats < 0 | result$seats != round(result$seats))) {
-    stop("Election-result percentages or seats are outside their valid range.")
-  }
-  if (anyDuplicated(result$party)) {
-    stop("Election result contains duplicate party categories.")
-  }
-  if (!setequal(result$party, party_order)) {
-    missing <- setdiff(party_order, result$party)
-    extra <- setdiff(result$party, party_order)
-    stop(
-      "Election-result categories do not match the requested categories. ",
-      "Missing: ", paste(missing, collapse = ", "), "; extra: ",
-      paste(extra, collapse = ", "), "."
-    )
-  }
-  if (abs(sum(result$percent) - 100) > total_tolerance) {
-    stop("Election-result percentages do not sum to approximately 100 percent.")
-  }
-  if (!is.null(expected_seats) && sum(result$seats) != expected_seats) {
-    stop(
-      "Election-result seats sum to ", sum(result$seats),
-      ", expected ", expected_seats, "."
-    )
-  }
-
-  invisible(result)
-}
-
-blog_read_wahlrecht_result <- function(result_url, result_year, party_lookup,
-                                       party_labels, party_order = names(party_labels),
-                                       others_id = "others",
-                                       excluded_source_rows = "Wahlbeteiligung",
-                                       expected_seats = NULL,
-                                       result_percent_overrides = NULL,
-                                       total_tolerance = 0.2) {
-  tables <- rvest::read_html(result_url) |>
-    rvest::html_table(fill = TRUE)
-
-  year_matches <- function(table) {
-    normalized_names <- gsub("[^0-9]", "", names(table))
-    sum(normalized_names == as.character(result_year)) == 2
-  }
-  table_index <- which(vapply(tables, year_matches, logical(1)))
-
-  if (length(table_index) != 1) {
-    stop(
-      "Expected exactly one Wahlrecht result table with two columns for ",
-      result_year, "."
-    )
-  }
-
-  result_table <- tables[[table_index]]
-  year_columns <- which(
-    gsub("[^0-9]", "", names(result_table)) == as.character(result_year)
-  )
-  result_raw <- result_table[, c(1, year_columns)]
-  names(result_raw) <- c("party_label", "percent", "seats")
-
-  lookup <- stats::setNames(
-    unname(party_lookup),
-    blog_party_key(names(party_lookup))
-  )
-  excluded_keys <- blog_party_key(excluded_source_rows)
-
-  result <- result_raw |>
-    dplyr::transmute(
-      source_party = blog_party_key(.data$party_label),
-      party = unname(lookup[.data$source_party]),
-      percent = blog_parse_decimal(.data$percent),
-      seats = blog_parse_decimal(.data$seats)
-    ) |>
-    dplyr::filter(!(.data$source_party %in% excluded_keys), !is.na(.data$percent)) |>
-    dplyr::mutate(
-      party = dplyr::if_else(is.na(.data$party), others_id, .data$party)
-    ) |>
-    dplyr::group_by(.data$party) |>
-    dplyr::summarise(
-      percent = sum(.data$percent),
-      seats = sum(dplyr::coalesce(.data$seats, 0)),
-      .groups = "drop"
-    ) |>
-    dplyr::mutate(label = unname(party_labels[.data$party])) |>
-    dplyr::select(dplyr::all_of(c("label", "party", "percent", "seats"))) |>
-    dplyr::arrange(match(.data$party, party_order))
-
-  if (!is.null(result_percent_overrides)) {
-    if (is.null(names(result_percent_overrides)) ||
-      any(names(result_percent_overrides) == "") ||
-      anyDuplicated(names(result_percent_overrides)) ||
-      !is.numeric(result_percent_overrides) ||
-      any(!is.finite(result_percent_overrides)) ||
-      any(result_percent_overrides < 0 | result_percent_overrides > 100)) {
-      stop("Election-result percentage overrides must be a named numeric vector.")
-    }
-
-    unknown_overrides <- setdiff(names(result_percent_overrides), party_order)
-    if (length(unknown_overrides) > 0) {
-      stop(
-        "Election-result percentage overrides contain unknown parties: ",
-        paste(unknown_overrides, collapse = ", "), "."
-      )
-    }
-
-    missing_overrides <- setdiff(names(result_percent_overrides), result$party)
-    if (length(missing_overrides) > 0) {
-      result <- dplyr::bind_rows(
-        result,
-        data.frame(
-          label = unname(party_labels[missing_overrides]),
-          party = missing_overrides,
-          percent = NA_real_,
-          seats = 0,
-          stringsAsFactors = FALSE
-        )
-      )
-    }
-
-    override_rows <- match(names(result_percent_overrides), result$party)
-    result$percent[override_rows] <- unname(result_percent_overrides)
-    result <- result |>
-      dplyr::arrange(match(.data$party, party_order))
-  }
-
-  blog_validate_result(
-    result,
-    party_order = party_order,
-    expected_seats = expected_seats,
-    total_tolerance = total_tolerance
-  )
-  result
-}
 
 blog_validate_estimates <- function(estimates, party_order,
                                     group_column = "pollster",
@@ -792,7 +657,7 @@ prepare_election_blog <- function(election_id, election_date, config_path,
   dir.create(evaluation_dir, recursive = TRUE, showWarnings = FALSE)
   dir.create(blog_dir, recursive = TRUE, showWarnings = FALSE)
 
-  election_result <- blog_read_wahlrecht_result(
+  election_result <- read_wahlrecht_result(
     result_url = result_url,
     result_year = result_year,
     party_lookup = party_lookup,
@@ -800,7 +665,7 @@ prepare_election_blog <- function(election_id, election_date, config_path,
     party_order = party_order,
     others_id = others_id,
     expected_seats = expected_result_seats,
-    result_percent_overrides = result_percent_overrides
+    overrides = blog_result_overrides(result_percent_overrides, party_order)
   )
   snapshots <- blog_select_poll_snapshots(
     polls_file = polls_file,
