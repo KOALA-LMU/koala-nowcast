@@ -103,7 +103,9 @@ Rscript -e '
 # 3. Reshape for the dashboard (all four elections, skipping missing ones)
 Rscript dashboard/prepare_data.R
 
-# 4. Render and view
+# 4. Render the standalone blog posts, then render and view the dashboard.
+#    The dashboard copies their HTML; preview does not render linked QMD files.
+for post in dashboard/blog/*/index.qmd; do quarto render "$post"; done
 quarto preview dashboard/index.qmd
 
 # Majority-logic tests
