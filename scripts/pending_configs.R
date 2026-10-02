@@ -9,9 +9,9 @@ newest_per_pollster <- function(dates, pollsters) {
 
 #' Pollster/date pairs of a result file, read without parsing it
 #'
-#' shares.json carries one column per simulation draw, so fromJSON() needs
+#' shares.json used to carry one column per simulation draw, so fromJSON() needed
 #' minutes on it; every record starts with these two fields, so scanning for
-#' that prefix answers the same question in about a second.
+#' that prefix answers the same question in about a second, whatever the layout.
 #' @noRd
 result_pairs <- function(path) {
   txt <- readChar(path, file.size(path), useBytes = TRUE)
@@ -46,7 +46,12 @@ missing_dates <- function(id) {
     if (nrow(got) == 0) return(dates[0])  # empty analysis, or a layout we cannot read
     have   <- newest_per_pollster(got$date, got$pollster)[names(newest)]
     behind <- unname(newest[is.na(have) | have < newest])
-    # shares.json keeps only each pollster's newest date, the rest a full history
+    # shares.json now carries a full history like the other three, so this branch
+    # is only transitional: the copies in the bucket predate the change and still
+    # hold nothing but the newest date per pollster. Checking them for every date
+    # would flag the whole history at once and send the pipeline into a full
+    # recomputation it cannot finish inside the job. Drop the exception once the
+    # histories have been backfilled.
     if (grepl("shares", p)) behind else c(behind, dates[!dates %in% got$date])
   })
   sort(unique(do.call(c, miss)))
