@@ -103,7 +103,9 @@ Rscript -e '
 # 3. Reshape for the dashboard (all four elections, skipping missing ones)
 Rscript dashboard/prepare_data.R
 
-# 4. Render and view
+# 4. Render the standalone blog posts, then render and view the dashboard.
+#    The dashboard copies their HTML; preview does not render linked QMD files.
+for post in dashboard/blog/*/index.qmd; do quarto render "$post"; done
 quarto preview dashboard/index.qmd
 
 # Majority-logic tests
@@ -153,7 +155,6 @@ Per election under `data/`, mirrored to the `koala-data` bucket:
 | --- | --- |
 | `surveys/<id>/polls.json` | Raw polls plus the pooled series, one row per pollster/date/party |
 | `surveys/<id>/pending_dates.json` | Transient: dates awaiting computation |
-| `results/<id>/coalProbs.json` | Every enumerated coalition per pollster/date. Largest file; only read back by the pipeline |
 | `results/<id>/coalProbs_grouping.json` | Just the configured/derived coalitions with labels — what the dashboard uses |
 | `results/<id>/passHurdle.json` | Probability each party clears the threshold |
 | `results/<id>/biggestParty.json` | "Strongest force" probabilities per contest |
