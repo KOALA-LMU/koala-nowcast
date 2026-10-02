@@ -46,7 +46,12 @@ missing_dates <- function(id) {
     if (nrow(got) == 0) return(dates[0])  # empty analysis, or a layout we cannot read
     have   <- newest_per_pollster(got$date, got$pollster)[names(newest)]
     behind <- unname(newest[is.na(have) | have < newest])
-    # shares.json keeps only each pollster's newest date, the rest a full history
+    # shares.json now carries a full history like the other three, so this branch
+    # is only transitional: the copies in the bucket predate the change and still
+    # hold nothing but the newest date per pollster. Checking them for every date
+    # would flag the whole history at once and send the pipeline into a full
+    # recomputation it cannot finish inside the job. Drop the exception once the
+    # histories have been backfilled.
     if (grepl("shares", p)) behind else c(behind, dates[!dates %in% got$date])
   })
   sort(unique(do.call(c, miss)))

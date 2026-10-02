@@ -52,3 +52,23 @@ test_that("all four result files are declared for checking", {
     c("coalProbs_grouping", "biggestParty", "passHurdle", "shares")
   )
 })
+
+test_that("result_pairs() still reads the pairs with computed_at in the record", {
+  # The scanner relies on "pollster" and "date" being ADJACENT fields, so where
+  # computed_at sits in the record decides whether the safety net sees the file
+  # at all. calc_coalProbs() writes it third, after date, for exactly this
+  # reason; putting it between the two would silently blind the net again (#96).
+  x <- data.frame(pollster    = c("forsa", "insa"),
+                  date        = c("2026-08-01", "2026-08-02"),
+                  computed_at = "2026-08-02T06:00:00Z",
+                  prob        = c(42, 43))
+  for (writer in list(function(p) jsonlite::write_json(x, p, auto_unbox = TRUE, digits = 4),
+                      function(p) jsonlite::write_json(x, p, auto_unbox = TRUE, pretty = TRUE))) {
+    p <- withr::local_tempfile(fileext = ".json")
+    writer(p)
+    got <- result_pairs(p)
+    expect_equal(nrow(got), 2)
+    expect_equal(got$pollster, c("forsa", "insa"))
+    expect_equal(got$date, as.Date(c("2026-08-01", "2026-08-02")))
+  }
+})

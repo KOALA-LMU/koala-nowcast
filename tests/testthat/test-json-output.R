@@ -1,84 +1,8 @@
+# ISO-8601 in UTC, to the second — the format computed_at is written in.
+stamp_re <- "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+
 testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
-  repo <- normalizePath(file.path("..", ".."))
-  tmp <- withr::local_tempdir()
-  old <- setwd(tmp)
-  withr::defer(setwd(old))
-
-  dir.create("scripts", recursive = TRUE)
-  dir.create("config/elections", recursive = TRUE)
-  dir.create("data/surveys/test-election", recursive = TRUE)
-
-  testthat::expect_true(file.copy(
-    file.path(repo, "scripts", "calc_coalProbs.R"),
-    "scripts/calc_coalProbs.R"
-  ))
-  testthat::expect_true(file.copy(
-    file.path(repo, "scripts", "calc_coalProbs_helpers.R"),
-    "scripts/calc_coalProbs_helpers.R"
-  ))
-
-  source("scripts/calc_coalProbs_helpers.R")
-  source("scripts/calc_coalProbs.R")
-
-  config_path <- "config/elections/test.yml"
-
-  writeLines(
-    c(
-       "id: test-election",
-      "name: Test Election",
-      "parliament:",
-      "  seats: 20",
-      "  hurdle: 5",
-      "  seat_allocation: sls",
-      "parties:",
-      "  - id: cdu",
-      "    label: CDU",
-      "    color: '#111111'",
-      "    required: true",
-      "  - id: spd",
-      "    label: SPD",
-      "    color: '#cc0000'",
-      "    required: true",
-      "  - id: greens",
-      "    label: Greens",
-      "    color: '#00aa00'",
-      "    required: true",
-      "  - id: others",
-      "    label: Others",
-      "    color: '#999999'",
-      "    required: false",
-      "coalitions:",
-      "  - parties: [cdu]",
-      "    label: CDU",
-      "    color: '#111111'",
-      "  - parties: [spd]",
-      "    label: SPD",
-      "    color: '#cc0000'",
-      "  - parties: [cdu, spd]",
-      "    label: CDU-SPD",
-      "    color: '#111111'",
-      "analyses:",
-      "  biggest_party:",
-      "    - parties: [cdu, spd, greens]"
-    ),
-    config_path
-  )
-
-  polls <- data.frame(
-    pollster = rep(c("insa", "pooled"), each = 4),
-    date = as.Date(rep("2026-08-01", 8)),
-    party = rep(c("cdu", "spd", "greens", "others"), times = 2),
-    percent = c(34, 28, 18, 20, 34, 28, 18, 20),
-    votes = c(340, 280, 180, 200, 340, 280, 180, 200),
-    election = "test-election"
-  )
-
-  jsonlite::write_json(
-    polls,
-    "data/surveys/test-election/polls.json",
-    auto_unbox = TRUE,
-    pretty = TRUE
-  )
+  config_path <- local_calc_project(make_polls_json("2026-08-01"))
 
   calc_coalProbs(config_path, nsim = 100, cores = 1)
 
@@ -162,4 +86,96 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
   testthat::expect_true(
     all(shares$parliament_presence_n >= 0 & shares$parliament_presence_n <= shares$simulation_n)
   )
+
+  # Every result carries the time of its computation, in one and the same format,
+  # and a single run stamps all of its rows alike.
+  for (res in list(grouping, biggest, hurdle, shares)) {
+    testthat::expect_true("computed_at" %in% colnames(res))
+    testthat::expect_type(res$computed_at, "character")
+    testthat::expect_true(all(grepl(stamp_re, res$computed_at)))
+    testthat::expect_length(unique(res$computed_at), 1)
+  }
+  testthat::expect_length(
+    unique(c(grouping$computed_at, biggest$computed_at,
+             hurdle$computed_at, shares$computed_at)),
+    1
+  )
+})
+
+testthat::test_that("a second run keeps the earlier dates and their computed_at", {
+  config_path <- local_calc_project(make_polls_json("2026-08-01"))
+
+  calc_coalProbs(config_path, nsim = 100, cores = 1)
+
+  result_dir <- "data/results/test-election"
+  read_res   <- function(name) jsonlite::fromJSON(file.path(result_dir, paste0(name, ".json")))
+  names_all  <- c("shares", "coalProbs_grouping", "biggestParty", "passHurdle")
+
+  first <- lapply(setNames(names_all, names_all), read_res)
+  stamp_first <- unique(first$shares$computed_at)
+  testthat::expect_length(stamp_first, 1)
+
+  # computed_at has second resolution, so the second run needs a later second to
+  # be distinguishable from the first at all.
+  Sys.sleep(1.1)
+
+  # A new poll date arrives; the old one stays in polls.json.
+  write_polls(make_polls_json(c("2026-08-01", "2026-09-01")))
+  calc_coalProbs(config_path, nsim = 100, cores = 1)
+
+  second <- lapply(setNames(names_all, names_all), read_res)
+
+  for (name in names_all) {
+    res <- second[[name]]
+    # Both dates are in the file. shares.json used to be cut to the latest date
+    # per pollster, which left the distributions without any history.
+    testthat::expect_setequal(unique(res$date), c("2026-08-01", "2026-09-01"))
+    # Only the new date was recomputed; the carried-over rows keep the stamp they
+    # were written with, which is the whole point of storing it per row.
+    testthat::expect_equal(unique(res$computed_at[res$date == "2026-08-01"]), stamp_first)
+    stamp_second <- unique(res$computed_at[res$date == "2026-09-01"])
+    testthat::expect_length(stamp_second, 1)
+    testthat::expect_true(stamp_second > stamp_first)
+    # The older rows survive unchanged, column for column.
+    testthat::expect_equal(
+      res[res$date == "2026-08-01", ] %>% dplyr::arrange(pollster),
+      first[[name]] %>% dplyr::arrange(pollster),
+      ignore_attr = TRUE
+    )
+  }
+
+  # Both pollsters are present on both dates, not just the one that was new.
+  testthat::expect_setequal(unique(second$shares$pollster), c("insa", "pooled"))
+})
+
+testthat::test_that("force_newCalculation restamps every row it recomputes", {
+  # The path the one-off backfill takes: nothing is carried over, so every row
+  # gets the stamp of that run, and the history is rewritten in full.
+  config_path <- local_calc_project(make_polls_json(c("2026-08-01", "2026-09-01")))
+
+  calc_coalProbs(config_path, nsim = 100, cores = 1)
+
+  result_dir <- "data/results/test-election"
+  read_res   <- function(name) jsonlite::fromJSON(file.path(result_dir, paste0(name, ".json")))
+
+  before <- read_res("shares")
+  stamp_before <- unique(before$computed_at)
+  testthat::expect_length(stamp_before, 1)
+
+  Sys.sleep(1.1)
+  calc_coalProbs(config_path, nsim = 100, cores = 1, force_newCalculation = TRUE)
+
+  for (name in c("shares", "coalProbs_grouping", "biggestParty", "passHurdle")) {
+    res <- read_res(name)
+    testthat::expect_setequal(unique(res$date), c("2026-08-01", "2026-09-01"))
+    stamp_after <- unique(res$computed_at)
+    testthat::expect_length(stamp_after, 1)
+    testthat::expect_true(stamp_after > stamp_before)
+  }
+
+  # Same rows as before, only recomputed: the draws are random, so the numbers
+  # move, but the shape of the file does not.
+  after <- read_res("shares")
+  testthat::expect_equal(dim(after), dim(before))
+  testthat::expect_equal(colnames(after), colnames(before))
 })

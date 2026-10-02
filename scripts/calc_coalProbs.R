@@ -30,6 +30,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # ── Paths ────────────────────────────────────────────────────────────────────
   surveys_file <- file.path("data", "surveys", cfg$id, "polls.json")
   results_dir  <- file.path("data", "results", cfg$id)
+  run_stamp    <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
   results_file <- file.path(results_dir, "coalProbs_grouping.json")
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -208,10 +209,16 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       # derived from the quantile grid and the presence count computed here,
       # while the draws are still in memory and still linked by simulation.
       shares           <- summarise_shareDraws(shares, partyShares)
-      shares           <- shares           %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
-      res_grouping     <- res_grouping     %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
-      res_biggestParty <- res_biggestParty %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
-      res_passHurdle   <- res_passHurdle   %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
+      # `date` is the reference date (Stichtag): the day the poll was published and
+      # the day the pooling window ends. `computed_at` is when this row was
+      # calculated. The two differ whenever rows are recomputed or backfilled, and
+      # only `computed_at` tells the two apart afterwards. One timestamp per run,
+      # so every row of a run is attributable to it; rows carried over by the merge
+      # below keep the stamp they were written with.
+      shares           <- shares           %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
+      res_grouping     <- res_grouping     %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
+      res_biggestParty <- res_biggestParty %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
+      res_passHurdle   <- res_passHurdle   %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
 
       list("shares" = shares,
            "coalProbs_grouping" = res_grouping, "biggestParty" = res_biggestParty,
@@ -260,13 +267,13 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   passHurdle         <- passHurdle         %>% dplyr::arrange(date, pollster)
 
   # ── Save results ─────────────────────────────────────────────────────────────
-  # The dashboard only ever uses the most recent date per pollster (see
-  # coalition_density() in dashboard/prepare_data.R), so only that slice is
-  # written out. `shares` itself keeps all dates for the merge logic above.
-  shares_out <- shares %>%
-    group_by(pollster) %>%
-    filter(date == max(date)) %>%
-    ungroup()
+  # shares.json used to be cut to the most recent date per pollster, because the
+  # dashboard only reads that slice and the file carried 1000 draws per coalition.
+  # Since the quantile layout the file is roughly an order of magnitude smaller,
+  # and the cut was the reason the distributions had no history at all: the merge
+  # above reads its own past from this file, so what is not written is gone. The
+  # dashboard still reads only the newest slice; it simply ignores the rest.
+  shares_out <- shares
 
   write_result <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, pretty = TRUE)
   # shares.json is still the largest result file, so it is written unprettified
