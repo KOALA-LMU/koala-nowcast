@@ -20,39 +20,26 @@
 #' not specified here the ordering of the parties in the coalition is not taken into account. But for all
 #' values specified here the coalition is only counted as possible it the first party from the coalition
 #' is the leading one. E.g. \code{"cdu|spd"} is only counted as a possible coalition if the coalition
-#' both has a majority and cdu is the leading party in the coalition.
+#' both has a majority and cdu is the leading party in the coalition. Each value is returned under
+#' exactly the name given; the order of the parties after the first one is not taken into account.
 #' @param cores number of cores for parallel processing (fork on Unix, PSOCK on Windows).
 #' @return \code{list} containing the coalition probabilities, the shares of each coalition in each simulation
 #'                     and for each simulation if the coalition has a majority while no subset coalition already has a majority.
 #' @import parallel
 #' @export
 calc_allCoalProbs <- function(seat.distributions, parties, shares_sim, strongest_party_coals = NULL, cores = 1) {
-  norm_coal <- function(c) paste(sort(strsplit(c, "\\|")[[1]]), collapse = "|")
   nsim <- max(as.numeric(seat.distributions$sim))
   nseats <- sum(seat.distributions$seats[seat.distributions$sim == 1])
   ### define all possible combinations of parties
   coalitions <- lapply(parties, function(p) combn(parties, m = match(p, parties)))
-  # for the coalitions in 'strongest_party_coals' every setting with a different leading party is looked at
+  # the coalitions in 'strongest_party_coals' are added verbatim, as requested (#132):
+  # only the leading party is checked below, so the order of the trailing parties is
+  # the caller's to choose, and the caller looks the result up by exactly that name
   if (!is.null(strongest_party_coals)) {
-    # only loop through one of the multiple equal (equal if ignoring the ordering) strongest_party_coals
-    spc_vec <- strongest_party_coals
-    spc_secondary_index <- if (length(spc_vec) == 1) {
-      FALSE
-    } else {
-      c(FALSE, sapply(seq(2, length(spc_vec)), function(i)
-        norm_coal(spc_vec[i]) %in% sapply(spc_vec[seq_len(i - 1)], norm_coal)))
-    }
-    spc_primary <- spc_vec[!spc_secondary_index]
-    for (spc in spc_primary) {
+    existing <- unlist(lapply(coalitions, function(x) apply(x, 2, paste0, collapse = "|")))
+    for (spc in setdiff(strongest_party_coals, existing)) {
       p <- strsplit(spc, "\\|")[[1]]
-      index_already_in_coalitions <- which.min(match(p, parties))
-      coal_size <- length(p)
-      for (i in 1:coal_size) {
-        if (i != index_already_in_coalitions) {
-          p_vector <- c(p[i], p[-i])
-          coalitions[[coal_size]] <- cbind(coalitions[[coal_size]], matrix(p_vector, nrow = coal_size, ncol = 1))
-        }
-      }
+      coalitions[[length(p)]] <- cbind(coalitions[[length(p)]], matrix(p, ncol = 1))
     }
   }
   coal_names <- unlist(sapply(coalitions, function(x) apply(x, 2, function(y) paste0(y, collapse = "|"))))
