@@ -1,30 +1,23 @@
-id: ltw_be
-name: Abgeordnetenhauswahl Berlin 2026
-hashtag: "#aghwahl"
+id: ltw_sh
+name: Landtagswahl Schleswig-Holstein 2027
+hashtag: "#ltwsh"
 
-election_results:
-  - date: 2023-02-12
-    url: https://www.wahlrecht.de/ergebnisse/berlin.htm
-    year: 2023
-    overrides:
-      others:
-        percent: 9.0
-  - date: 2026-09-20
-    url: https://www.wahlrecht.de/ergebnisse/berlin.htm
-    year: 2026
+last_result:
+  url: https://www.wahlrecht.de/ergebnisse/schleswig-holstein.htm
+  year: 2022
 
 scraper:
-  function: scrape_ltw
-  url: https://www.wahlrecht.de/umfragen/landtage/berlin.htm
+  function: scrape_ltw_2027
+  url: https://www.wahlrecht.de/umfragen/landtage/schleswig-holstein.htm
   ind_row_remove: [1, 2]
   # 100-day pooling window, so pooled estimates are complete from 2024-11-05 on
   oldest_date: 2024-07-28
 
 parliament:
-  seats: 130
-  majority: 66
+  seats: 69
+  majority: 35
   hurdle: 0.05
-  seat_allocation: hare_niemeyer
+  seat_allocation: sls
 
 pooling:
   period: 14
@@ -35,17 +28,17 @@ parties:
     label: Union
     color: "#000000"
     required: true
-  - id: spd
-    label: SPD
-    color: "#E3000F"
+  - id: afd
+    label: AfD
+    color: "#82caff"
     required: true
   - id: greens
     label: Grüne
     color: "#46962b"
     required: true
-  - id: afd
-    label: AfD
-    color: "#82caff"
+  - id: spd
+    label: SPD
+    color: "#E3000F"
     required: true
   - id: left
     label: Linke
@@ -58,6 +51,10 @@ parties:
   - id: bsw
     label: BSW
     color: "#6d1f99"
+    required: false
+  - id: ssw
+    label: SSW
+    color: "#005ca9"
     required: false
   - id: others
     label: Sonstige
@@ -73,6 +70,7 @@ pollsters:
   - gms
   - infratest
   - insa
+  - pollytix
 
 # coalitions: dynamically derived at compute time from current pooled vote
 # shares (see derive_dynamic_coalitions() in scripts/calc_coalProbs_helpers.R).
@@ -80,8 +78,8 @@ pollsters:
 
 analyses:
   biggest_party:
-    - parties: [cdu, spd, greens, left, afd]
+    - parties: [cdu, afd, greens, spd]
       label: "Wer wird stärkste Kraft?"
   pass_hurdle:
-    parties: [fdp, bsw]
+    parties: [left, fdp, bsw]
     label: "Schaffen es die folgenden Parteien in den Landtag?"

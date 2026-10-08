@@ -6,6 +6,7 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 source("scripts/scrape_btw.R")
+source("scripts/scrape_ltw_2027.R")
 
 scrape_election <- function(config_path, oldest_date = as.Date("2024-12-01")) {
   cfg <- read_yaml(config_path)
