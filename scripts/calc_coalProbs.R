@@ -254,7 +254,16 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     jsonlite::fromJSON(file.path(results_dir, paste0(name, ".json"))) %>% dplyr::mutate(date = as.Date(date))
   }
   if (!identical(dates, dates_todo)) {
-    shares             <- bind_rows(shares,             read_result("shares")             %>% filter(!date %in% dates))
+    # Saved rows from before #145 carry the draws instead of the quantile grid.
+    # missing_dates() has these dates recomputed; whatever else of the old layout
+    # is left is dropped rather than merged in as a block of NAs.
+    saved_shares <- read_result("shares")
+    saved_shares <- if ("simulation_n" %in% colnames(saved_shares)) {
+      saved_shares %>% filter(!is.na(simulation_n)) %>% select(-starts_with("coal_share"))
+    } else {
+      saved_shares[0, c("pollster", "date")]
+    }
+    shares             <- bind_rows(shares,             saved_shares                      %>% filter(!date %in% dates))
     coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping") %>% filter(!date %in% dates))
     biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty")       %>% filter(!date %in% dates))
     passHurdle         <- bind_rows(passHurdle,         read_result("passHurdle")         %>% filter(!date %in% dates))

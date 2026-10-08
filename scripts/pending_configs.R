@@ -25,6 +25,15 @@ result_pairs <- function(path) {
              date     = as.Date(substr(m, nchar(m) - 10, nchar(m) - 1)))
 }
 
+#' Whether a shares.json is in the quantile layout of #145
+#'
+#' A text scan for the field, like \code{result_pairs()}: a file from before
+#' #145 is large enough that parsing it to look at the column names is slow.
+#' @noRd
+has_quantile_layout <- function(path) {
+  grepl('"simulation_n"', readChar(path, file.size(path), useBytes = TRUE), fixed = TRUE)
+}
+
 #' Scraped dates that any result file is missing
 #'
 #' All result files are checked, not only \code{coalProbs_grouping.json}: the upload
@@ -44,6 +53,11 @@ missing_dates <- function(id) {
     if (!file.exists(p)) return(dates)
     got <- result_pairs(p)
     if (nrow(got) == 0) return(dates[0])  # empty analysis, or a layout we cannot read
+    # A shares.json from before #145 carries the draws, not the quantile grid, and
+    # coalition_density() cannot read it. Its pairs look current, so without this
+    # the file would never be rewritten. Flag the dates the old file covered --
+    # the newest per pollster, all the dashboard reads -- and nothing more.
+    if (grepl("shares", p) && !has_quantile_layout(p)) return(unname(newest))
     have   <- newest_per_pollster(got$date, got$pollster)[names(newest)]
     behind <- unname(newest[is.na(have) | have < newest])
     # shares.json now carries a full history like the other three, so this branch
