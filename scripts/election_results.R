@@ -100,6 +100,18 @@ read_wahlrecht_result <- function(result_url, result_year, party_lookup,
   tables <- rvest::read_html(result_url) |>
     rvest::html_table(fill = TRUE)
 
+  # Some result pages (Bremen, Saarland) repeat the party names in a trailing
+  # column, and rvest then reads the year row as data rather than as the header:
+  # the columns come out as X1, X2, ... with the years in the first row. Promote
+  # that row to the header so both layouts are matched the same way.
+  tables <- lapply(tables, function(table) {
+    if (nrow(table) > 0 && all(grepl("^X[0-9]+$", names(table)))) {
+      names(table) <- as.character(unlist(table[1, ]))
+      table <- table[-1, ]
+    }
+    table
+  })
+
   year_columns <- function(table) {
     which(grepl(paste0("^", result_year, "([^0-9]|$)"), names(table)))
   }
@@ -124,14 +136,19 @@ read_wahlrecht_result <- function(result_url, result_year, party_lookup,
   )
   excluded_keys <- election_result_party_key(excluded_source_rows)
 
-  result <- result_raw |>
+  parsed <- result_raw |>
     dplyr::transmute(
       source_party = election_result_party_key(.data$party_label),
       party = unname(lookup[.data$source_party]),
       fallback_party = unname(lookup[gsub("[0-9]+$", "", .data$source_party)]),
       percent = parse_election_result_number(.data$percent),
       seats = parse_election_result_number(.data$seats)
-    ) |>
+    )
+  # A blank Sonstige share (as in Berlin's preliminary 2026 result) is not zero:
+  # Wahlrecht leaves it as the remainder of the listed parties.
+  others_blank <- any(parsed$party %in% others_id & is.na(parsed$percent))
+
+  result <- parsed |>
     dplyr::filter(!(.data$source_party %in% excluded_keys), !is.na(.data$percent)) |>
     dplyr::mutate(
       party = dplyr::coalesce(.data$party, .data$fallback_party),
@@ -154,6 +171,11 @@ read_wahlrecht_result <- function(result_url, result_year, party_lookup,
       result,
       tibble::tibble(party = missing_parties, percent = 0, seats = 0)
     )
+  }
+
+  if (others_blank) {
+    is_others <- result$party == others_id
+    result$percent[is_others] <- round(100 - sum(result$percent[!is_others]), 1)
   }
 
   if (!is.null(overrides)) {
