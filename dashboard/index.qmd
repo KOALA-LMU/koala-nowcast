@@ -539,7 +539,14 @@ ojs_define(
       next_election_date = "2026-09-06",
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
-      pooling_days = 14L
+      pooling_days = 14L,
+      # takes over once a poll postdates next_election_date (see cur_meta)
+      after_election = list(
+        title = "Landtagswahl in Sachsen-Anhalt 2031",
+        last_election = "6. September 2026",
+        last_election_date = "2026-09-06",
+        next_election = "voraussichtlich Herbst 2031, Termin offen"
+      )
     ),
     MV = list(
       title = "Landtagswahl in Mecklenburg-Vorpommern 2026",
@@ -550,7 +557,14 @@ ojs_define(
       next_election_date = "2026-09-20",
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
-      pooling_days = 14L
+      pooling_days = 14L,
+      # takes over once a poll postdates next_election_date (see cur_meta)
+      after_election = list(
+        title = "Landtagswahl in Mecklenburg-Vorpommern 2031",
+        last_election = "20. September 2026",
+        last_election_date = "2026-09-20",
+        next_election = "voraussichtlich Herbst 2031, Termin offen"
+      )
     ),
     BE = list(
       title = "Abgeordnetenhauswahl in Berlin 2026",
@@ -561,7 +575,14 @@ ojs_define(
       next_election_date = "2026-09-20",
       seat_method = "Hare-Niemeyer",
       hurdle = "5 %",
-      pooling_days = 14L
+      pooling_days = 14L,
+      # takes over once a poll postdates next_election_date (see cur_meta)
+      after_election = list(
+        title = "Abgeordnetenhauswahl in Berlin 2031",
+        last_election = "20. September 2026",
+        last_election_date = "2026-09-20",
+        next_election = "voraussichtlich Herbst 2031, Termin offen"
+      )
     ),
     SL = list(
       title = "Landtagswahl im Saarland 2027",
@@ -1386,7 +1407,17 @@ cur_polls        = election_files[election].history_data.json()       // Umfrage
 cur_coal_history = election_files[election].coal_history_data.json()  // Zeitverlauf
 cur_density      = election_files[election].density_data.json()       // Koalitionswahrscheinlichkeiten
 
-cur_meta = election_meta[election]
+// Once the newest poll postdates the election, the polls are for the next one:
+// roll over to its after_election entry, as prepare_data.R does when it picks the
+// reference result. The next date is usually not fixed yet, so the stale
+// next_election_date is dropped and the header states next_election instead.
+cur_meta = {
+  const meta = election_meta[election]
+  if (!meta.after_election || !meta.next_election_date ||
+      cur.coalitions.updated <= meta.next_election_date) return meta
+  const { after_election, next_election_date, ...current } = meta
+  return { ...current, ...after_election }
+}
 // A date rather than a timestamp: the day the most recent poll was published.
 // Formatted in UTC on purpose — a date-only ISO string parses as UTC midnight,
 // so rendering it in a zone behind UTC would roll it back to the previous day.
