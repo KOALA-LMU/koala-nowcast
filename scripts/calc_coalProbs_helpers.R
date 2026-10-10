@@ -201,3 +201,58 @@ derive_dynamic_coalitions <- function(parties_cfg, pooled_shares, max_size = 4,
   }
   out
 }
+
+#' Reduce per-simulation seat shares to a compact summary
+#'
+#' \code{shares.json} used to carry one column per simulation draw, which made it
+#' by far the largest file in the bucket while the dashboard only ever derived
+#' three things from those draws (see \code{coalition_density()}): a density
+#' curve, the 95% simulation interval, and how often every member party of a
+#' coalition is represented in parliament. This keeps a quantile grid instead,
+#' which serves the first two, plus the presence count, which the quantiles
+#' cannot express: it is a joint property across coalitions of one and the same
+#' draw, and the per-row marginals have thrown that linkage away.
+#'
+#' The bandwidth is estimated here, on the full draws, because the quantile grid
+#' is a thinned pseudo-sample and \code{bw.bcv()} would read a different spread
+#' off it. \code{NA} marks a degenerate row, for which no curve can be drawn.
+#'
+#' @param shares \code{data.frame} with a \code{coalition} column and one column
+#' per simulation draw.
+#' @param party_shares per-simulation seat shares of the single parties, one row
+#' per party, \code{rownames} being the party ids.
+#' @param probs quantile grid. The default is the midpoint grid
+#' \code{(k - 0.5)/100}, which includes 0.025 and 0.975 exactly, so the interval
+#' the dashboard shows is read off and not interpolated.
+#' @return \code{data.frame} with one row per coalition: \code{coalition},
+#' \code{parliament_presence_n}, \code{simulation_n}, \code{bw} and the quantile
+#' columns \code{q001}...
+summarise_shareDraws <- function(shares, party_shares, probs = (seq_len(100) - 0.5) / 100) {
+  draws   <- as.matrix(shares[, colnames(shares) != "coalition", drop = FALSE])
+  present <- as.matrix(party_shares) > 0
+
+  members    <- strsplit(shares$coalition, "|", fixed = TRUE)
+  presence_n <- vapply(members, function(m) {
+    # A party the poll does not report has no row here; as before, the coalition
+    # then counts as never fully represented rather than being scored from its
+    # remaining members.
+    if (!all(m %in% rownames(present))) return(0L)
+    sum(colSums(present[m, , drop = FALSE]) == length(m))
+  }, integer(1))
+
+  qs <- t(apply(draws, 1, stats::quantile, probs = probs, names = FALSE, na.rm = TRUE))
+  colnames(qs) <- sprintf("q%03d", seq_along(probs))
+
+  bw <- apply(draws, 1, function(x) {
+    x <- x[is.finite(x)]
+    if (length(x) < 2 || diff(range(x)) == 0) return(NA_real_)
+    tryCatch(suppressWarnings(stats::bw.bcv(x)), error = function(e) NA_real_)
+  })
+
+  data.frame("coalition"             = shares$coalition,
+             "parliament_presence_n" = presence_n,
+             "simulation_n"          = ncol(draws),
+             "bw"                    = unname(bw),
+             qs,
+             stringsAsFactors = FALSE, check.names = FALSE)
+}

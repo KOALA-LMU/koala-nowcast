@@ -22,12 +22,14 @@ norm_coal <- function(coal) {
 #'
 #' Builds the data used by the dashboard's seat-distribution view from
 #' \code{shares.json}. For each pollster's latest date, coalition orderings that
-#' contain the same parties are collapsed into one canonical coalition key before
-#' the simulation draws are pivoted. The function then estimates the distribution
-#' of each party/coalition's simulated seat share, records the 95% simulation
-#' interval, and counts how often all member parties are represented in
-#' parliament. It deliberately does not compute coalition probabilities; those
-#' come from \code{coalProbs_grouping.json}/\code{coalition_history.json}, where
+#' contain the same parties are collapsed into one canonical coalition key. The
+#' function then reconstructs the distribution of each party/coalition's
+#' simulated seat share from the stored quantile grid and reads the 95%
+#' simulation interval off it; how often all member parties are represented in
+#' parliament is taken as computed, since that count cannot be recovered from
+#' per-coalition quantiles (see \code{summarise_shareDraws()}). It deliberately
+#' does not compute coalition probabilities; those come from
+#' \code{coalProbs_grouping.json}/\code{coalition_history.json}, where
 #' leadership variants and subset-majority rules are handled.
 #'
 #' @param cfg Election configuration as read from \code{config/elections/*.yml}.
@@ -55,84 +57,47 @@ coalition_density <- function(cfg, results_dir) {
     mutate(coalition = vapply(coalition, norm_coal, character(1))) %>%
     distinct(pollster, date, coalition, .keep_all = TRUE)
 
-  party_ids <- vapply(cfg$parties, `[[`, character(1), "id")
-  party_presence <- latest[latest$coalition %in% party_ids, ] %>%
-    tidyr::pivot_longer(
-      starts_with("coal_share"),
-      names_to = "sim",
-      names_prefix = "coal_share",
-      values_to = "party_seat_share",
-      names_transform = list(sim = as.integer)
-    ) %>%
-      transmute(
-        pollster,
-        date,
-        sim,
-        party = coalition,
-        party_present = party_seat_share > 0
-      )
-    
-  latest_long <- latest %>%
-    tidyr::pivot_longer(
-      starts_with("coal_share"),
-      names_to = "sim",
-      names_prefix = "coal_share",
-      values_to = "seat_share",
-      names_transform = list(sim = as.integer)
+  # The grid is not stored alongside the values: it is the midpoint grid
+  # summarise_shareDraws() wrote them on, so the column count determines it.
+  q_cols <- grep("^q[0-9]+$", colnames(latest), value = TRUE)
+  probs  <- (seq_along(q_cols) - 0.5) / length(q_cols)
+
+  dplyr::bind_rows(lapply(seq_len(nrow(latest)), function(i) {
+    row <- latest[i, ]
+    q   <- as.numeric(row[, q_cols])
+
+    # The quantiles are a thinned stand-in for the draws, so the bandwidth is the
+    # one measured on the draws themselves rather than one re-estimated here.
+    has_density <- is.finite(row$bw) && diff(range(q)) > 0
+    if (has_density) {
+      d  <- suppressWarnings(density(q, bw = row$bw, from = 0, to = 1, n = 512))
+      ci <- stats::approx(probs, q, xout = c(0.025, 0.975))$y
+    } else {
+      d  <- list(x = seq(0, 1, length.out = 512), y = rep(0, length.out = 512))
+      ci <- c(NA_real_, NA_real_)
+    }
+
+    tibble::tibble(
+      pollster              = row$pollster,
+      date                  = row$date,
+      coalition             = row$coalition,
+      seat_share            = d$x,
+      density               = d$y,
+      parliament_presence   = row$parliament_presence_n / row$simulation_n,
+      parliament_presence_n = row$parliament_presence_n,
+      simulation_n          = row$simulation_n,
+      ci_lower              = ci[[1]],
+      ci_upper              = ci[[2]],
+      ci_lower_seats        = ceiling(ci[[1]] * parl_seats),
+      ci_upper_seats        = floor(ci[[2]] * parl_seats)
     )
-  latest_long %>%
-    group_by(pollster, date, coalition) %>%
-    group_modify(function(dat, key) {
-      members <- strsplit(key$coalition, "|", fixed = TRUE)[[1]]
-      presence <- party_presence %>%
-        filter(
-          date == key$date,
-          pollster == key$pollster,
-          party %in% members
-        ) %>%
-          group_by(sim) %>%
-          summarise(
-            all_members_present = all(members %in% party) && all(party_present),
-            .groups = "drop"
-          )
-      
-      dat <- dat %>%
-        left_join(presence, by = "sim") %>%
-        mutate(all_members_present = tidyr::replace_na(all_members_present, FALSE))
-
-      parliament_presence_n <- sum(dat$all_members_present, na.rm = TRUE)
-      simulation_n <- nrow(dat)
-      parliament_presence <- parliament_presence_n / simulation_n
-      density_values <- dat$seat_share[is.finite(dat$seat_share)]
-      has_density <- length(density_values) > 1 && diff(range(density_values)) > 0
-
-      if (has_density) {
-        d <- suppressWarnings(density(density_values, from = 0, to = 1, n = 512, bw = "bcv"))
-        q <- quantile(density_values, probs = c(0.025, 0.975), na.rm = TRUE)
-      } else {
-        d <- list(x = seq(0, 1, length.out = 512), y = rep(0, length.out = 512))
-        q <- c(`2.5%` = NA_real_, `97.5%` = NA_real_)
-      }
-
-      tibble::tibble(
-        seat_share = d$x,
-        density = d$y,
-        parliament_presence = parliament_presence,
-        parliament_presence_n = parliament_presence_n,
-        simulation_n = simulation_n,
-        ci_lower = q[[1]],
-        ci_upper = q[[2]],
-        ci_lower_seats = ceiling(q[[1]] * parl_seats),
-        ci_upper_seats = floor(q[[2]] * parl_seats)
-      )
-    }) %>%
-      ungroup() %>%
+  })) %>%
     mutate(label = vapply(strsplit(coalition, "|", fixed = TRUE), function(x) {
       paste(party_labels[x], collapse = "-")
     }, character(1))) %>%
-      dplyr::select(
-          pollster, date, coalition, label, seat_share, density,
-          parliament_presence, parliament_presence_n, simulation_n,
-          ci_lower, ci_upper, ci_lower_seats, ci_upper_seats
+    dplyr::select(
+      pollster, date, coalition, label, seat_share, density,
+      parliament_presence, parliament_presence_n, simulation_n,
+      ci_lower, ci_upper, ci_lower_seats, ci_upper_seats
     )
 }

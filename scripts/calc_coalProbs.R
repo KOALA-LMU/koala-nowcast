@@ -30,6 +30,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # ── Paths ────────────────────────────────────────────────────────────────────
   surveys_file <- file.path("data", "surveys", cfg$id, "polls.json")
   results_dir  <- file.path("data", "results", cfg$id)
+  run_stamp    <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
   results_file <- file.path(results_dir, "coalProbs_grouping.json")
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -195,23 +196,29 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       }
 
       # ── Hurdle probabilities ─────────────────────────────────────────────────
-      partyShares    <- allShares[allShares$coalition %in% parties_ins, colnames(allShares) != "coalition"]
+      is_party       <- allShares$coalition %in% parties_ins
+      partyShares    <- allShares[is_party, colnames(allShares) != "coalition"]
+      # Named by the rows actually taken, not by parties_ins: summarise_shareDraws()
+      # looks members up by name, and allShares is not in parties_ins order.
+      rownames(partyShares) <- allShares$coalition[is_party]
       res_passHurdle <- data.frame("party" = parties_ins,
                                    "prob"  = rowMeans(partyShares > hurdle))
 
-      # ── Attach pollster/date, subsample simulations, return ─────────────────
-      shares           <- shares           %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
-      res_grouping     <- res_grouping     %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
-      res_biggestParty <- res_biggestParty %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
-      res_passHurdle   <- res_passHurdle   %>% mutate(pollster = p, date = date_ins) %>% select(pollster, date, everything())
-
-      # We only use 1000 simulations
-      n <- 1000
-      if (nrow(dirichlet.draws) > n) {
-        coal_share_columns <- grepl("coal_share", colnames(shares))
-        shares             <- shares[, c(which(!coal_share_columns), sample(which(coal_share_columns), n))]
-        colnames(shares)[which(coal_share_columns)[seq_len(n)]] <- paste0("coal_share", seq_len(n))
-      }
+      # ── Summarise the draws, attach pollster/date, return ───────────────────
+      # The draws themselves are not written out (#145): everything downstream is
+      # derived from the quantile grid and the presence count computed here,
+      # while the draws are still in memory and still linked by simulation.
+      shares           <- summarise_shareDraws(shares, partyShares)
+      # `date` is the reference date (Stichtag): the day the poll was published and
+      # the day the pooling window ends. `computed_at` is when this row was
+      # calculated. The two differ whenever rows are recomputed or backfilled, and
+      # only `computed_at` tells the two apart afterwards. One timestamp per run,
+      # so every row of a run is attributable to it; rows carried over by the merge
+      # below keep the stamp they were written with.
+      shares           <- shares           %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
+      res_grouping     <- res_grouping     %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
+      res_biggestParty <- res_biggestParty %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
+      res_passHurdle   <- res_passHurdle   %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
 
       list("shares" = shares,
            "coalProbs_grouping" = res_grouping, "biggestParty" = res_biggestParty,
@@ -247,7 +254,16 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     jsonlite::fromJSON(file.path(results_dir, paste0(name, ".json"))) %>% dplyr::mutate(date = as.Date(date))
   }
   if (!identical(dates, dates_todo)) {
-    shares             <- bind_rows(shares,             read_result("shares")             %>% filter(!date %in% dates))
+    # Saved rows from before #145 carry the draws instead of the quantile grid.
+    # missing_dates() has these dates recomputed; whatever else of the old layout
+    # is left is dropped rather than merged in as a block of NAs.
+    saved_shares <- read_result("shares")
+    saved_shares <- if ("simulation_n" %in% colnames(saved_shares)) {
+      saved_shares %>% filter(!is.na(simulation_n)) %>% select(-starts_with("coal_share"))
+    } else {
+      saved_shares[0, c("pollster", "date")]
+    }
+    shares             <- bind_rows(shares,             saved_shares                      %>% filter(!date %in% dates))
     coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping") %>% filter(!date %in% dates))
     biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty")       %>% filter(!date %in% dates))
     passHurdle         <- bind_rows(passHurdle,         read_result("passHurdle")         %>% filter(!date %in% dates))
@@ -260,19 +276,22 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   passHurdle         <- passHurdle         %>% dplyr::arrange(date, pollster)
 
   # ── Save results ─────────────────────────────────────────────────────────────
-  # The dashboard only ever uses the most recent date per pollster (see
-  # coalition_density() in dashboard/prepare_data.R), so only that slice is
-  # written out. `shares` itself keeps all dates for the merge logic above.
-  shares_out <- shares %>%
-    group_by(pollster) %>%
-    filter(date == max(date)) %>%
-    ungroup()
+  # shares.json used to be cut to the most recent date per pollster, because the
+  # dashboard only reads that slice and the file carried 1000 draws per coalition.
+  # Since the quantile layout the file is roughly an order of magnitude smaller,
+  # and the cut was the reason the distributions had no history at all: the merge
+  # above reads its own past from this file, so what is not written is gone. The
+  # dashboard still reads only the newest slice; it simply ignores the rest.
+  shares_out <- shares
 
   write_result <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, pretty = TRUE)
-  # shares.json dominates on-disk size, so it is written unprettified and rounded:
-  # these are Monte Carlo estimates, so the default 15 significant digits is noise
-  # at a large size cost. Only jsonlite::fromJSON ever reads it back.
-  write_compact <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, digits = 4)
+  # shares.json is still the largest result file, so it is written unprettified
+  # and rounded: these are Monte Carlo estimates, so the default 15 significant
+  # digits is noise at a size cost. Only jsonlite::fromJSON ever reads it back.
+  # digits counts decimal places, not significant digits: 4 would leave a narrow
+  # bandwidth (a small party in a large parliament) with two significant digits,
+  # and the density curve is drawn at that width.
+  write_compact <- function(x, name) jsonlite::write_json(x, file.path(results_dir, paste0(name, ".json")), auto_unbox = TRUE, digits = 6)
 
   write_compact(shares_out,         "shares")
   write_result(coalProbs_grouping,  "coalProbs_grouping")
