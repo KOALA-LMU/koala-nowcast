@@ -170,9 +170,18 @@ derive_dynamic_coalitions <- function(parties_cfg, pooled_shares, max_size = 4,
   colors <- setNames(sapply(parties_cfg, `[[`, "color"), ids)
   ids    <- ids[ids != "others"]
 
+  # Configured parties without a pooled share are treated as 0. Warn so an id
+  # mismatch between the YAML and the scraper output doesn't go unnoticed.
+  missing_ids <- setdiff(ids, names(pooled_shares))
+  if (length(missing_ids) > 0) {
+    warning("derive_dynamic_coalitions: no pooled share for configured parties ",
+            paste(missing_ids, collapse = ", "), "; treating as 0",
+            call. = FALSE)
+  }
+
+  # Check names() before indexing: `[[` on an atomic vector errors on a missing name
   share_of <- function(p) {
-    v <- pooled_shares[[p]]
-    if (is.null(v) || is.na(v)) 0 else v
+    if (!p %in% names(pooled_shares) || is.na(pooled_shares[[p]])) 0 else pooled_shares[[p]]
   }
 
   out <- list()
