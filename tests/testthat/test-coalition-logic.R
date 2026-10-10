@@ -81,12 +81,6 @@ test_that("two-party leadership orderings split by who leads in each draw", {
 })
 
 test_that("three-party leadership orderings are emitted as requested", {
-  skip("Unresolved behaviour - see #132.
-Requesting the ordering 'greens|spd|cdu' yields 'greens|cdu|spd' instead, so the
-name does not round-trip. The legacy script scripts/test_calc_allCoalProbs.R
-asserted this too and had been failing silently (it printed FAIL but always
-exited 0). Re-enable once the intended behaviour is settled.")
-
   parties <- c("cdu", "spd", "greens", "fdp")
   # 25 seats each: any pair reaches only 50 of 100 (short of 51), any three reach 75,
   # so every three-party coalition is genuinely minimal winning.
@@ -102,4 +96,25 @@ exited 0). Re-enable once the intended behaviour is settled.")
 
   for (nm in spc) expect_true(nm %in% cp$coalition)
   for (nm in spc) expect_equal(cp$coal_prob[cp$coalition == nm], 1 / 3)
+})
+
+test_that("a leadership ordering is checked even when its trailing parties are not in party order", {
+  parties <- c("cdu", "spd", "greens", "fdp")
+  seats <- make_seats(parties, matrix(rep(c(25, 25, 25, 25), 3), nrow = 3, byrow = TRUE))
+  shares <- make_shares(parties, matrix(c(
+    0.34, 0.33, 0.33, 0.00,   # cdu leads
+    0.33, 0.34, 0.33, 0.00,   # spd leads
+    0.33, 0.33, 0.34, 0.00    # greens leads
+  ), nrow = 3, byrow = TRUE))
+  # cdu is first in `parties`, but the trailing order differs from it, so the
+  # name does not coincide with the unordered "cdu|spd|greens" row
+  spc <- c("cdu|greens|spd", "greens|cdu|spd")
+
+  cp <- calc_allCoalProbs(seats, parties, shares, strongest_party_coals = spc)$coalProbs
+
+  expect_equal(cp$coal_prob[cp$coalition == "cdu|greens|spd"], 1 / 3)
+  expect_equal(cp$coal_prob[cp$coalition == "greens|cdu|spd"], 1 / 3)
+  # the unordered row is still there and ignores who leads
+  expect_equal(cp$coal_prob[cp$coalition == "cdu|spd|greens"], 1)
+  expect_false(anyDuplicated(cp$coalition) > 0)
 })
