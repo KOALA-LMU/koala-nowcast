@@ -14,7 +14,9 @@ testthat::test_that("derive_dynamic_coalitions excludes others", {
   fdp = 4,
   others = 34
   )
-  coals <- derive_dynamic_coalitions(parties_cfg, pooled_shares, max_size = 1)
+  testthat::expect_no_warning(
+    coals <- derive_dynamic_coalitions(parties_cfg, pooled_shares, max_size = 1)
+  )
   coal_parties <- unlist(lapply(coals, function(coal) coal$parties))
   testthat::expect_false("others" %in% coal_parties)
  })
@@ -94,10 +96,6 @@ testthat::test_that("derive_dynamic_coalitions emits leader variants only above 
 
 
 testthat::test_that("derive_dynamic_coalitions treats missing shares as zero", {
-  testthat::skip(
-    "Known bug: missing entries in pooled_shares currently error instead of
-    being treated as zero. See Issue #138"
-  )
   parties_cfg <- list(
     list(id = "cdu", label = "CDU", color = "#111111"),
     list(id = "spd", label = "SPD", color = "#cc0000"),
@@ -111,12 +109,15 @@ testthat::test_that("derive_dynamic_coalitions treats missing shares as zero", {
     others = 60
   )
 
-  coals <- derive_dynamic_coalitions(
-    parties_cfg = parties_cfg,
-    pooled_shares = pooled_shares,
-    max_size = 2,
-    min_combined_pct = 25,
-    leader_flip_ratio = 0.5
+  testthat::expect_warning(
+    coals <- derive_dynamic_coalitions(
+      parties_cfg = parties_cfg,
+      pooled_shares = pooled_shares,
+      max_size = 2,
+      min_combined_pct = 25,
+      leader_flip_ratio = 0.5
+    ),
+    "greens"
   )
 
   coal_keys <- vapply(coals, function(coal) {
