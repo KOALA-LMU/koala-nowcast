@@ -97,6 +97,16 @@ prepare_election <- function(election_id) {
   write_json(list(hurdle = hurdle, updated = updated),
              file.path(out_dir, "hurdle_probabilities.json"), auto_unbox = TRUE)
 
+  # Every pollster and date, for the Einzugswahrscheinlichkeit line in the
+  # Zeitverlauf; cut at the same warm-up as the coalition history above.
+  hurdle_history <- fromJSON(file.path(results_dir, "passHurdle.json")) %>%
+    mutate(date = as.Date(date)) %>%
+    group_by(pollster, date, party) %>%
+    summarise(prob_above_hurdle = mean(prob / 100), .groups = "drop") %>%
+    drop_warmup(cutoff, "hurdle probability", election_id)
+  write_json(list(hurdle_history = hurdle_history, updated = updated),
+             file.path(out_dir, "hurdle_history.json"), auto_unbox = TRUE)
+
   per_pollster <- fromJSON(file.path(surveys_dir, "polls.json")) %>%
     filter(pollster != "pooled") %>%
     group_by(pollster) %>%
