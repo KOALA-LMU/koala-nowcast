@@ -1494,6 +1494,19 @@ coalition_selection_store = {
 // one, used by both the Zeitverlauf chart and the selector's swatches.
 dash_patterns = ["6,4", "2,3"]
 
+// FDP yellow and AfD light blue are illegible as text on white and as white
+// text on their own fill, so light party colours get a darkened outline and
+// dark lettering while keeping their true colour as the active background.
+// Shared by the party pills of the Zeitverlauf and Sitzverteilung pickers.
+pillInk = color => d3.hcl(color).l > 70 ? d3.hcl(color).darker(1.5).formatHex() : color
+pillOnFill = color => d3.hcl(color).l > 70 ? "#1c1c1b" : "white"
+
+// Holds the Sitzverteilung picker's parties across its own re-runs, like
+// coalition_selection_store does for the Zeitverlauf.
+density_selection_store = {
+  return { parties: null }
+}
+
 // The parties offered in the Zeitverlauf selector: everyone this election's
 // pooled shares carry, Sonstige aside, in seating order.
 selectable_parties = {
@@ -2532,68 +2545,97 @@ html`<div style="
 
 # Sitzverteilung
 
-## Row {height=100%}
+<!-- a fixed height, as on the Zeitverlauf page, so the page scrolls rather than
+     the card: tall enough for the picker, the chart and the notes below it -->
+## Row {height=1150px}
 
 ```{ojs}
 //| label: chart-coalition-densities
 {
   const source = densitySource(cur_density, institute)
-  // exactly one record per coalition now, so no rollup is needed to collapse
-  // the repeated rows a single curve used to be spread over
-  const densityByKey = new Map(source.map(d => [d.coalition, d.coalition]))
-  const options = leading_variants
+  // exactly one record per coalition, keyed by its sorted parties: the seat sum
+  // does not depend on which party leads, so the picker needs no leader
+  const densityByKey = new Map(source.map(d => [d.coalition, d]))
+
+  // Starts on the coalition currently most likely to hold a majority, unless a
+  // combination was picked before the election or institute was switched; its
+  // parties that do not run in the new election are dropped.
+  const ranked = leading_variants
     .slice()
     .sort((a, b) =>
       d3.descending(a.probability, b.probability) || d3.descending(a.vote_share, b.vote_share)
     )
-    .map(d => ({ label: d.label, value: densityByKey.get(d.coalition_key) }))
-    .filter(d => d.value != null)
+    .filter(d => densityByKey.has(d.coalition_key))
+  const stored = (density_selection_store.parties ?? [])
+    .filter(party => selectable_parties.includes(party))
+  const parties = new Set(stored.length ? stored : (ranked.length ? coalitionParties(ranked[0].label) : []))
 
   const container = html`<div style="
     box-sizing:border-box;
-    min-height:calc(100vh - 170px);
     padding:4px 10px 0 10px;
     display:flex;
     flex-direction:column;
     justify-content:flex-start;
   "></div>`
-  const controls = html`<div style="
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:0 0 4px 0;
-    max-width:420px;
-  "></div>`
-  const label = html`<label style="
-    margin:0;
-    font-size:0.9rem;
-    font-weight:700;
-    white-space:nowrap;
-  ">Betrachtete Parteikombination</label>`
-  const select = html`<select style="
-    width:220px;
-    max-width:220px;
-    height:30px;
-    padding:2px 6px;
-    font-size:0.9rem;
-  "></select>`
+  const controls = html`<div class="kombi-picker" style="margin:0 0 4px 0"></div>`
   const plotArea = html`<div></div>`
 
-  for (const option of options) {
-    select.append(html`<option value=${option.value}>${option.label}</option>`)
-  }
-
   const draw = () => {
-    const group = source.find(d => d.coalition === select.value)
+    const chosen = selectable_parties.filter(party => parties.has(party))
+    density_selection_store.parties = chosen
+
+    const card = html`<div class="kombi-card"></div>`
+    const head = html`<div class="kombi-card__head"></div>`
+    head.append(chosen.length
+      ? html`<span class="kombi-card__name">${coalitionLabelFor(chosen)}</span>`
+      : html`<span class="kombi-card__name kombi-card__name--empty">Parteien auswählen</span>`)
+
+    const pills = html`<div class="kombi-parties"></div>`
+    for (const party of selectable_parties) {
+      const partyColor = party_colors[party] || "#aaa"
+      const isOn = parties.has(party)
+      const btn  = html`<button type="button" class="kombi-pill">${party_to_label[party] || party}</button>`
+
+      btn.style.borderColor = pillInk(partyColor)
+      btn.style.background  = isOn ? partyColor : "white"
+      btn.style.color       = isOn ? pillOnFill(partyColor) : pillInk(partyColor)
+
+      btn.onclick = () => {
+        if (isOn) parties.delete(party)
+        else parties.add(party)
+        draw()
+      }
+      pills.append(btn)
+    }
+
+    card.append(head, pills)
+
+    const actions = html`<div class="kombi-actions"></div>`
+    const deselectBtn = html`<button type="button" class="kombi-action">Auswahl entfernen</button>`
+    deselectBtn.onclick = () => {
+      parties.clear()
+      draw()
+    }
+    actions.append(deselectBtn)
+
+    controls.replaceChildren(
+      html`<div class="kombi-picker__title">Parteikombination auswählen</div>`,
+      card,
+      actions
+    )
+
+    // combinations the backend did not simulate (five parties or more, or ones
+    // dropped as unrealistic) have no density to show
+    const group = densityByKey.get(partyKey(chosen))
     plotArea.replaceChildren(
-      group
-        ? plotCoalitionDensity(group, 380)
-        : html`<div style="color:#666;font-size:0.95em">Keine Dichte für die ausgewählte Parteikombination gefunden.</div>`
+      !chosen.length
+        ? html`<div style="color:#666;font-size:0.95em">Wählen Sie mindestens eine Partei aus.</div>`
+        : group
+          ? plotCoalitionDensity(group, 380)
+          : html`<div style="color:#666;font-size:0.95em">Aus Kapazitätsgründen wurde für diese Parteikombination keine Sitzverteilungsdichte berechnet.</div>`
     )
   }
 
-  select.onchange = draw
-  controls.append(label, select)
   container.append(controls, plotArea)
   draw()
 
@@ -2902,12 +2944,8 @@ viewof selectedCoalitions = {
     leader: null
   }]
 
-  // FDP yellow and AfD light blue are illegible as text on white and as white
-  // text on their own fill, so light party colours get a darkened outline and
-  // dark lettering while keeping their true colour as the active background.
-  const isLight  = color => d3.hcl(color).l > 70
-  const inkOf    = color => isLight(color) ? d3.hcl(color).darker(1.5).formatHex() : color
-  const onFillOf = color => isLight(color) ? "#1c1c1b" : "white"
+  const inkOf    = pillInk
+  const onFillOf = pillOnFill
 
   // The combination is always shown as one leadership ordering; unless another
   // one is picked, that is the ordering led by its strongest polling party.
