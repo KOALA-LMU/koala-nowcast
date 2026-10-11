@@ -166,6 +166,7 @@ prepare_election <- function(election_id) {
   message(election_id, " dashboard data written to ", out_dir)
 }
 
+skipped <- character()
 for (id in c(
   "ltw_st", "ltw_mv", "ltw_be",
   "ltw_sl", "ltw_sh", "ltw_nw", "ltw_hb", "ltw_ni",
@@ -173,6 +174,18 @@ for (id in c(
 )) {
   tryCatch(
     prepare_election(id),
-    error = function(e) message("Skipping ", id, ": ", conditionMessage(e))
+    error = function(e) {
+      message("Skipping ", id, ": ", conditionMessage(e))
+      skipped <<- c(skipped, id)
+    }
   )
+}
+
+# The other elections are still prepared, so the log shows every failure at
+# once. But a skipped election has no data at all on the rendered site, and the
+# dashboard shows "Unable to load file" where its numbers should be. Failing
+# here keeps the last good deploy online and turns the run red instead of
+# reporting success.
+if (length(skipped) > 0) {
+  stop("No dashboard data for: ", paste(skipped, collapse = ", "), call. = FALSE)
 }
