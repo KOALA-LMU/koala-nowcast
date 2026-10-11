@@ -76,7 +76,7 @@ missing_dates <- function(id) {
 #' An election is pending if it has an explicit \code{pending_dates.json}
 #' (written by \code{\link{scrape_election}}), if it has surveys but no results
 #' yet, or if any result file is missing a scraped date. In the last case the
-#' dates are written to \code{pending_dates.json} as well, so that
+#' dates are added to \code{pending_dates.json}, so that
 #' \code{\link{calc_coalProbs}} recomputes exactly those and nothing else.
 #'
 #' @param cfg_path path to a YAML election config file
@@ -89,15 +89,20 @@ has_pending <- function(cfg_path) {
   pending_file <- file.path("data", "surveys", id, "pending_dates.json")
   survey_file  <- file.path("data", "surveys", id, "polls.json")
 
-  if (file.exists(pending_file)) return(TRUE)
-  if (!file.exists(survey_file)) return(FALSE)  # nothing scraped yet, nothing to compute
+  if (!file.exists(survey_file)) return(file.exists(pending_file))  # nothing scraped yet
 
-  miss <- missing_dates(id)
-  if (length(miss) == 0) return(FALSE)
+  # The pending file lists what the scrape changed, not what the results lack, so
+  # the gap check runs alongside it rather than only in its absence. Otherwise a
+  # gap waits for a run without new polls -- after #150 the migration of
+  # shares.json skipped every BTW pollster but the one that had just published.
+  pending <- if (file.exists(pending_file)) as.Date(unlist(jsonlite::fromJSON(pending_file))) else as.Date(character())
+  miss    <- missing_dates(id)
+  miss    <- miss[!miss %in% pending]
+  if (length(miss) == 0) return(length(pending) > 0)
 
   message(sprintf("[%s] results missing %d scraped date(s): %s", id, length(miss),
                   paste(format(utils::head(miss, 10)), collapse = ", ")))
-  jsonlite::write_json(as.character(miss), pending_file, auto_unbox = TRUE)
+  jsonlite::write_json(as.character(sort(c(pending, miss))), pending_file, auto_unbox = TRUE)
   TRUE
 }
 

@@ -100,3 +100,38 @@ test_that("missing_dates() flags the newest dates of a pre-#145 shares.json", {
   expect_true(has_quantile_layout(shares_file))
   expect_length(missing_dates("x"), 0)
 })
+
+test_that("has_pending() adds missing dates to a pending file instead of skipping the check", {
+  # After #150 the BTW run carried a pending file for the one new poll, the check
+  # was skipped, and the migration of shares.json left out every other pollster.
+  withr::local_dir(withr::local_tempdir())
+  dir.create(file.path("data", "surveys", "x"), recursive = TRUE)
+  dir.create(file.path("data", "results", "x"), recursive = TRUE)
+  writeLines("id: x", "x.yml")
+  polls <- data.frame(pollster = c("forsa", "insa", "insa"),
+                      date     = c("2026-08-01", "2026-08-02", "2026-08-09"))
+  jsonlite::write_json(polls, file.path("data", "surveys", "x", "polls.json"))
+  done <- polls[1:2, ]
+  for (f in RESULT_FILES)
+    jsonlite::write_json(cbind(done, simulation_n = 2), file.path("data", "results", "x", paste0(f, ".json")))
+  pending_file <- file.path("data", "surveys", "x", "pending_dates.json")
+  read_pending <- function() as.Date(unlist(jsonlite::fromJSON(pending_file)))
+
+  # the scrape's own date only: nothing to add
+  jsonlite::write_json("2026-08-09", pending_file, auto_unbox = TRUE)
+  expect_true(has_pending("x.yml"))
+  expect_equal(read_pending(), as.Date("2026-08-09"))
+
+  # a gap elsewhere joins the scrape's date rather than waiting for a quiet run
+  jsonlite::write_json(cbind(polls[2, ], simulation_n = 2),
+                       file.path("data", "results", "x", "shares.json"))
+  expect_true(has_pending("x.yml"))
+  expect_equal(read_pending(), as.Date(c("2026-08-01", "2026-08-09")))
+
+  # no pending file and no gap: nothing to do
+  file.remove(pending_file)
+  for (f in RESULT_FILES)
+    jsonlite::write_json(cbind(polls, simulation_n = 2), file.path("data", "results", "x", paste0(f, ".json")))
+  expect_false(has_pending("x.yml"))
+  expect_false(file.exists(pending_file))
+})
