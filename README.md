@@ -170,7 +170,7 @@ that need it and carries the rest over unchanged, keeping their original
 `computed_at` — so the files are a history, and the two fields together say what
 was known when.
 
-`prepare_data.R` turns those into seven slim files under `dashboard/data/<id>/`,
+`prepare_data.R` turns those into nine slim files under `dashboard/data/<id>/`,
 each carrying an `updated` field — the date of the newest raw poll behind the
 numbers, not a build timestamp. It reads only the newest date per pollster out of
 `shares.json` and ignores the rest.

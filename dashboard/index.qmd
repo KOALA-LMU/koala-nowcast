@@ -62,12 +62,14 @@ resources:
   margin-top: 0 !important;
 }
 
-/* Cards built from multiple ojs cells (via ::: {.card} fences) get one
-   .cell.card-body wrapper per cell, stacked as flex siblings that each grow
-   to an equal share of the card's height by default. Shrink every cell to
-   its own content height instead, so leftover space collapses to the
-   bottom of the card rather than sitting as a gap between cells. */
-.zeitverlauf-card > .cell.card-body {
+/* The Zeitverlauf tabs stack their ojs cells as flex siblings that each grow
+   to an equal share of the card's height by default. Shrink every cell to its
+   own content height instead, so leftover space collapses to the bottom of the
+   card rather than sitting as a gap between chart and picker. Addressed by id:
+   inside a tabset Quarto drops the classes set on the card fences. */
+#chart-coalition-history,
+#input-coalition-selection,
+#chart-hurdle-history {
   flex: 0 0 auto !important;
 }
 
@@ -727,6 +729,168 @@ formatDe = (value, digits = 1) =>
     maximumFractionDigits: digits
   })
 
+// Crosshair overlay shared by the two Zeitverlauf line charts, synced to the
+// plot's own scales: a dot + label per series that tracks the pointer and rests
+// on the most recent date when nobody is hovering. `series` needs key, label
+// and color per line, and may set a halo colour for its label (white unless
+// given); `wide` holds one row per date with a column per key.
+// The hovered row is set as the plot's value, so the chart works as a viewof.
+historyCrosshair = (plot, series, wide) => {
+  const lastRow = wide.at(-1)
+  const svg    = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
+  const xScale = plot.scale("x")
+  const yScale = plot.scale("y")
+  // vertical distance between two stacked labels, in pixels: the 13px font plus
+  // enough room that the white halo of one does not bite into the next
+  const labelGap = 18
+
+  const overlay = d3.select(svg).append("g").style("pointer-events", "none")
+  const crosshair = overlay.append("line")
+    .attr("stroke", "#999").attr("stroke-width", 1)
+    .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(1))
+  // connectors, dots and labels go into three layers, appended in that order, so
+  // every label paints above every dot. With one group per coalition instead, SVG
+  // paint order puts a later coalition's dot on top of an earlier one's text
+  // wherever the crosshair bunches them together.
+  const linkLayer  = overlay.append("g")
+  const dotLayer   = overlay.append("g")
+  const labelLayer = overlay.append("g")
+  const items = series.map(d => {
+    const { key, label, color, halo = "white" } = d
+    // drawn only where a label had to be pushed off its own value, so a reader can
+    // still tell which point on the crosshair the displaced label belongs to
+    const link = linkLayer.append("line")
+      .attr("stroke", color).attr("stroke-width", 1).attr("stroke-opacity", 0.5)
+    const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", color)
+    const text = labelLayer.append("text").attr("dx", 8).attr("dy", "0.32em")
+      .attr("fill", color).attr("font-size", 13).attr("font-weight", "bold")
+      .attr("paint-order", "stroke")
+      .attr("stroke", halo).attr("stroke-width", 3).attr("stroke-linejoin", "round")
+    return { key, label, link, dot, text }
+  })
+  const dateLabel = overlay.append("text")
+    .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
+    .attr("paint-order", "stroke")
+    .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
+
+  const position = row => {
+    const present = items
+      .map(it => ({ ...it, probability: row[it.key] }))
+      .filter(it => it.probability != null)
+      .sort((a, b) => a.probability - b.probability)
+
+    // Stack the labels in pixel space rather than in probability units: on the
+    // many days where several coalitions sit at exactly 0% or 100%, a gap
+    // expressed as a probability turns into a different number of pixels per
+    // chart, and the labels end up overlapping. Walking the list bottom-up (it is
+    // sorted ascending by probability, i.e. descending in pixels) pushes each
+    // colliding label above the previous one.
+    const yTop    = yScale.apply(1)
+    const yBottom = yScale.apply(0)
+    const gap = present.length > 1
+      ? Math.min(labelGap, (yBottom - yTop) / (present.length - 1))
+      : labelGap
+    const labelY = []
+    present.forEach((it, i) => {
+      let y = yScale.apply(it.probability)
+      if (i > 0 && labelY[i - 1] - y < gap) y = labelY[i - 1] - gap
+      labelY.push(y)
+    })
+    // the stack only ever grows upwards, so just its top can run out of the frame;
+    // slide the whole stack back down, but never past the bottom of the frame
+    if (labelY.length) {
+      const shift = Math.max(0, Math.min(yTop - labelY.at(-1), yBottom - labelY[0]))
+      for (let i = 0; i < labelY.length; i++) labelY[i] += shift
+    }
+
+    const px = xScale.apply(row.date)
+    crosshair.attr("x1", px).attr("x2", px)
+
+    // keep labels inside the SVG at the right-hand end of the series, where the
+    // chart rests when nobody is hovering: a long coalition name drawn to the
+    // right of the crosshair there runs past the edge of the SVG and paints over
+    // whatever sits beside the chart. Flip the stack to the left instead, and
+    // clamp the date label to the frame the same way.
+    // getComputedTextLength() reports 0 while the plot is still detached, hence
+    // the character-count fallback; position() re-runs on hover once attached.
+    const svgWidth = +svg.getAttribute("width") || svg.getBoundingClientRect().width
+    const pad = 4
+    const widthOf = node => {
+      const w = node.getComputedTextLength ? node.getComputedTextLength() : 0
+      return w || node.textContent.length * 7.2
+    }
+
+    // fill the labels first: their widths decide which side of the crosshair the
+    // whole stack goes on, and getComputedTextLength() needs the final text
+    items.forEach(it => {
+      const match = present.find(p => p.key === it.key)
+      const visible = Boolean(match)
+      it.dot.style("display", visible ? null : "none")
+      it.text.style("display", visible ? null : "none")
+      it.link.style("display", "none")
+      if (!visible) return
+      it.text.text(`${it.label} ${formatDe(match.probability * 100)}%`)
+    })
+
+    // one side for all of them, chosen from the widest label. Deciding per label
+    // scatters a stack of near-identical entries across both sides of the
+    // crosshair, which reads as broken rather than as two columns.
+    const maxWidth = d3.max(present, p => widthOf(p.text.node())) ?? 0
+    const flip = px + 8 + maxWidth > svgWidth - pad && px - 8 - maxWidth >= pad
+
+    present.forEach((it, i) => {
+      const dotY = yScale.apply(it.probability)
+      it.dot.attr("cx", px).attr("cy", dotY)
+      it.text.attr("x", px).attr("y", labelY[i])
+        .attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
+      if (Math.abs(labelY[i] - dotY) > 2) {
+        it.link.style("display", null)
+          .attr("x1", px).attr("y1", dotY)
+          .attr("x2", px + (flip ? -8 : 8)).attr("y2", labelY[i])
+      }
+    })
+
+    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 56)
+      .text(d3.utcFormat("%d.%m.%Y")(row.date))
+    const dateWidth = widthOf(dateLabel.node())
+    dateLabel.attr("x", Math.max(pad + dateWidth / 2,
+                                 Math.min(svgWidth - pad - dateWidth / 2, px)))
+  }
+
+  // find the nearest point ourselves (rather than relying on Plot's own
+  // pointer transform) so sparse series never lose track of the crosshair
+  const nearestRow = px => {
+    const target = xScale.invert(px)
+    let best = wide[0]
+    let bestDist = Infinity
+    for (const row of wide) {
+      const dist = Math.abs(row.date - target)
+      if (dist < bestDist) { bestDist = dist; best = row }
+    }
+    return best
+  }
+
+  const setValue = row => {
+    plot.value = row
+    plot.dispatchEvent(new Event("input"))
+  }
+
+  position(lastRow)
+  setValue(lastRow)
+
+  // No pointerleave reset: once a date has been hovered the crosshair stays
+  // there, so a value can be read off after moving the pointer away. The most
+  // recent date is only the initial state, set by the position() call above.
+  d3.select(svg)
+    .on("pointermove", event => {
+      const [px] = d3.pointer(event, svg)
+      const row = nearestRow(px)
+      position(row)
+      setValue(row)
+    })
+
+}
+
 // Ceiling for the Umfrageverlauf Stimmenanteil axes, per election: the derived
 // domain runs to 40 % for the Bundestagswahl, where nothing has polled above 33.
 // Per election because the state series really do reach the low 40s; an election
@@ -802,6 +966,32 @@ cleanHurdles = hurdles => {
       label: party_names[d.key] || d.key
     }))
     .sort((a, b) => b.prob_above_hurdle - a.prob_above_hurdle)
+}
+
+// The Einzugswahrscheinlichkeit series per party, one row per (date, party)
+// with exact duplicates averaged as in cleanCoalitionHistory(). Only parties
+// whose probability fell below 100% somewhere in the shown period are kept:
+// the bar chart's rule ("still uncertain") applied to the whole history, so a
+// party that is safe now but was not half a year ago still gets its line.
+cleanHurdleHistory = rows => {
+  const byPartyDate = d3.rollup(
+    rows.filter(d => d.party !== "others"),
+    v => d3.mean(v, d => d.prob_above_hurdle),
+    d => d.party,
+    d => d.date
+  )
+  return Array.from(byPartyDate)
+    .filter(([, byDate]) => d3.min(byDate.values()) < 1)
+    .sort(([a], [b]) => {
+      const ai = party_order.indexOf(a)
+      const bi = party_order.indexOf(b)
+      return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi)
+    })
+    .map(([party, byDate]) => ({
+      party,
+      label: party_names[party] || party,
+      byDate: new Map(Array.from(byDate, ([date, p]) => [+new Date(date), p]))
+    }))
 }
 
 cleanCoalitions = (coalitions, shares) => {
@@ -1239,7 +1429,7 @@ html`<details style="
   ">
     <div><b>Überblick:</b> aktuelle Stimmenanteile, Mehrheitschancen und Hürdenwahrscheinlichkeiten.</div>
     <div style="margin-top:5px"><b>Sitzverteilung:</b> Verteilung möglicher Sitzanteile ausgewählter Parteikombinationen.</div>
-    <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Mehrheitswahrscheinlichkeiten über die Zeit.</div>
+    <div style="margin-top:5px"><b>Zeitverlauf:</b> Entwicklung der Mehrheits- und Einzugswahrscheinlichkeiten über die Zeit.</div>
     <div style="margin-top:5px"><b>Umfragedaten:</b> Umfragen, gepoolte Schätzung und Parteienwerte im Verlauf.</div>
     <div style="margin-top:5px"><b>Blog:</b> Analysen zu abgeschlossenen Wahlen.</div>
     <div style="margin-top:5px"><b>Methodik:</b> Erklärung der statistischen Methoden.</div>
@@ -1290,94 +1480,103 @@ viewof election = {
 election_files = {
   return {
     ST: {
-      coalitions        : FileAttachment("data/st/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/st/party_shares.json"),
-      last_result_data  : FileAttachment("data/st/last_results.json"),
-      hurdle_data       : FileAttachment("data/st/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/st/per_pollster.json"),
-      history_data      : FileAttachment("data/st/poll_history.json"),
-      coal_history_data : FileAttachment("data/st/coalition_history.json"),
-      density_data      : FileAttachment("data/st/coalition_densities.json")
+      coalitions          : FileAttachment("data/st/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/st/party_shares.json"),
+      last_result_data    : FileAttachment("data/st/last_results.json"),
+      hurdle_data         : FileAttachment("data/st/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/st/per_pollster.json"),
+      history_data        : FileAttachment("data/st/poll_history.json"),
+      coal_history_data   : FileAttachment("data/st/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/st/hurdle_history.json"),
+      density_data        : FileAttachment("data/st/coalition_densities.json")
     },
     MV: {
-      coalitions        : FileAttachment("data/mv/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/mv/party_shares.json"),
-      last_result_data  : FileAttachment("data/mv/last_results.json"),
-      hurdle_data       : FileAttachment("data/mv/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/mv/per_pollster.json"),
-      history_data      : FileAttachment("data/mv/poll_history.json"),
-      coal_history_data : FileAttachment("data/mv/coalition_history.json"),
-      density_data      : FileAttachment("data/mv/coalition_densities.json")
+      coalitions          : FileAttachment("data/mv/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/mv/party_shares.json"),
+      last_result_data    : FileAttachment("data/mv/last_results.json"),
+      hurdle_data         : FileAttachment("data/mv/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/mv/per_pollster.json"),
+      history_data        : FileAttachment("data/mv/poll_history.json"),
+      coal_history_data   : FileAttachment("data/mv/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/mv/hurdle_history.json"),
+      density_data        : FileAttachment("data/mv/coalition_densities.json")
     },
     BE: {
-      coalitions        : FileAttachment("data/be/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/be/party_shares.json"),
-      last_result_data  : FileAttachment("data/be/last_results.json"),
-      hurdle_data       : FileAttachment("data/be/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/be/per_pollster.json"),
-      history_data      : FileAttachment("data/be/poll_history.json"),
-      coal_history_data : FileAttachment("data/be/coalition_history.json"),
-      density_data      : FileAttachment("data/be/coalition_densities.json")
+      coalitions          : FileAttachment("data/be/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/be/party_shares.json"),
+      last_result_data    : FileAttachment("data/be/last_results.json"),
+      hurdle_data         : FileAttachment("data/be/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/be/per_pollster.json"),
+      history_data        : FileAttachment("data/be/poll_history.json"),
+      coal_history_data   : FileAttachment("data/be/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/be/hurdle_history.json"),
+      density_data        : FileAttachment("data/be/coalition_densities.json")
     },
     SL: {
-      coalitions        : FileAttachment("data/sl/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/sl/party_shares.json"),
-      last_result_data  : FileAttachment("data/sl/last_results.json"),
-      hurdle_data       : FileAttachment("data/sl/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/sl/per_pollster.json"),
-      history_data      : FileAttachment("data/sl/poll_history.json"),
-      coal_history_data : FileAttachment("data/sl/coalition_history.json"),
-      density_data      : FileAttachment("data/sl/coalition_densities.json")
+      coalitions          : FileAttachment("data/sl/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/sl/party_shares.json"),
+      last_result_data    : FileAttachment("data/sl/last_results.json"),
+      hurdle_data         : FileAttachment("data/sl/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/sl/per_pollster.json"),
+      history_data        : FileAttachment("data/sl/poll_history.json"),
+      coal_history_data   : FileAttachment("data/sl/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/sl/hurdle_history.json"),
+      density_data        : FileAttachment("data/sl/coalition_densities.json")
     },
     SH: {
-      coalitions        : FileAttachment("data/sh/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/sh/party_shares.json"),
-      last_result_data  : FileAttachment("data/sh/last_results.json"),
-      hurdle_data       : FileAttachment("data/sh/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/sh/per_pollster.json"),
-      history_data      : FileAttachment("data/sh/poll_history.json"),
-      coal_history_data : FileAttachment("data/sh/coalition_history.json"),
-      density_data      : FileAttachment("data/sh/coalition_densities.json")
+      coalitions          : FileAttachment("data/sh/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/sh/party_shares.json"),
+      last_result_data    : FileAttachment("data/sh/last_results.json"),
+      hurdle_data         : FileAttachment("data/sh/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/sh/per_pollster.json"),
+      history_data        : FileAttachment("data/sh/poll_history.json"),
+      coal_history_data   : FileAttachment("data/sh/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/sh/hurdle_history.json"),
+      density_data        : FileAttachment("data/sh/coalition_densities.json")
     },
     NW: {
-      coalitions        : FileAttachment("data/nw/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/nw/party_shares.json"),
-      last_result_data  : FileAttachment("data/nw/last_results.json"),
-      hurdle_data       : FileAttachment("data/nw/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/nw/per_pollster.json"),
-      history_data      : FileAttachment("data/nw/poll_history.json"),
-      coal_history_data : FileAttachment("data/nw/coalition_history.json"),
-      density_data      : FileAttachment("data/nw/coalition_densities.json")
+      coalitions          : FileAttachment("data/nw/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/nw/party_shares.json"),
+      last_result_data    : FileAttachment("data/nw/last_results.json"),
+      hurdle_data         : FileAttachment("data/nw/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/nw/per_pollster.json"),
+      history_data        : FileAttachment("data/nw/poll_history.json"),
+      coal_history_data   : FileAttachment("data/nw/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/nw/hurdle_history.json"),
+      density_data        : FileAttachment("data/nw/coalition_densities.json")
     },
     HB: {
-      coalitions        : FileAttachment("data/hb/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/hb/party_shares.json"),
-      last_result_data  : FileAttachment("data/hb/last_results.json"),
-      hurdle_data       : FileAttachment("data/hb/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/hb/per_pollster.json"),
-      history_data      : FileAttachment("data/hb/poll_history.json"),
-      coal_history_data : FileAttachment("data/hb/coalition_history.json"),
-      density_data      : FileAttachment("data/hb/coalition_densities.json")
+      coalitions          : FileAttachment("data/hb/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/hb/party_shares.json"),
+      last_result_data    : FileAttachment("data/hb/last_results.json"),
+      hurdle_data         : FileAttachment("data/hb/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/hb/per_pollster.json"),
+      history_data        : FileAttachment("data/hb/poll_history.json"),
+      coal_history_data   : FileAttachment("data/hb/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/hb/hurdle_history.json"),
+      density_data        : FileAttachment("data/hb/coalition_densities.json")
     },
     NI: {
-      coalitions        : FileAttachment("data/ni/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/ni/party_shares.json"),
-      last_result_data  : FileAttachment("data/ni/last_results.json"),
-      hurdle_data       : FileAttachment("data/ni/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/ni/per_pollster.json"),
-      history_data      : FileAttachment("data/ni/poll_history.json"),
-      coal_history_data : FileAttachment("data/ni/coalition_history.json"),
-      density_data      : FileAttachment("data/ni/coalition_densities.json")
+      coalitions          : FileAttachment("data/ni/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/ni/party_shares.json"),
+      last_result_data    : FileAttachment("data/ni/last_results.json"),
+      hurdle_data         : FileAttachment("data/ni/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/ni/per_pollster.json"),
+      history_data        : FileAttachment("data/ni/poll_history.json"),
+      coal_history_data   : FileAttachment("data/ni/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/ni/hurdle_history.json"),
+      density_data        : FileAttachment("data/ni/coalition_densities.json")
     },
     BTW: {
-      coalitions        : FileAttachment("data/btw/coalition_probabilities.json"),
-      party_data        : FileAttachment("data/btw/party_shares.json"),
-      last_result_data  : FileAttachment("data/btw/last_results.json"),
-      hurdle_data       : FileAttachment("data/btw/hurdle_probabilities.json"),
-      pollster_data     : FileAttachment("data/btw/per_pollster.json"),
-      history_data      : FileAttachment("data/btw/poll_history.json"),
-      coal_history_data : FileAttachment("data/btw/coalition_history.json"),
-      density_data      : FileAttachment("data/btw/coalition_densities.json")
+      coalitions          : FileAttachment("data/btw/coalition_probabilities.json"),
+      party_data          : FileAttachment("data/btw/party_shares.json"),
+      last_result_data    : FileAttachment("data/btw/last_results.json"),
+      hurdle_data         : FileAttachment("data/btw/hurdle_probabilities.json"),
+      pollster_data       : FileAttachment("data/btw/per_pollster.json"),
+      history_data        : FileAttachment("data/btw/poll_history.json"),
+      coal_history_data   : FileAttachment("data/btw/coalition_history.json"),
+      hurdle_history_data : FileAttachment("data/btw/hurdle_history.json"),
+      density_data        : FileAttachment("data/btw/coalition_densities.json")
     }
   }
 }
@@ -1403,9 +1602,10 @@ cur = Object.fromEntries(          // Überblick + sidebar, ~77 KB
   )
 )
 
-cur_polls        = election_files[election].history_data.json()       // Umfragedaten
-cur_coal_history = election_files[election].coal_history_data.json()  // Zeitverlauf
-cur_density      = election_files[election].density_data.json()       // Koalitionswahrscheinlichkeiten
+cur_polls          = election_files[election].history_data.json()                 // Umfragedaten
+cur_coal_history   = election_files[election].coal_history_data.json()            // Zeitverlauf
+cur_hurdle_history = election_files[election].hurdle_history_data.json()          // Zeitverlauf
+cur_density        = election_files[election].density_data.json()                 // Koalitionswahrscheinlichkeiten
 
 // Once the newest poll postdates the election, the polls are for the next one:
 // roll over to its after_election entry, as prepare_data.R does when it picks the
@@ -1504,6 +1704,10 @@ selectable_parties = {
 coal_history_source = institute === "Pooled"
   ? cur_coal_history.coalitions_history.filter(d => d.pollster === "pooled")
   : cur_coal_history.coalitions_history.filter(d => d.pollster === institute)
+
+hurdle_history_source = institute === "Pooled"
+  ? cur_hurdle_history.hurdle_history.filter(d => d.pollster === "pooled")
+  : cur_hurdle_history.hurdle_history.filter(d => d.pollster === institute)
 ```
 
 ```{ojs}
@@ -2603,10 +2807,12 @@ html`<div style="
 
 # Zeitverlauf
 
-<!-- tall enough for the selector with all three party combinations opened -->
-## Row {height=1120px}
+<!-- One tab per kind of probability. Tall enough for the selector with all
+     three party combinations opened; the Einzug tab is shorter and leaves the
+     rest of the card empty. -->
+## Row {height=1120px .tabset}
 
-::: {.card .zeitverlauf-card}
+::: {.card title="Mehrheitswahrscheinlichkeit"}
 
 ```{ojs}
 //| label: chart-coalition-history
@@ -2717,162 +2923,7 @@ viewof hoveredCoalitionRow = {
     ]
   })
 
-  if (!lastRow || !series.length) return plot
-
-  // custom overlay, synced to the plot's own scales: a dot + label per selected
-  // coalition that tracks the crosshair, defaulting to the last date when not hovering
-  const svg    = plot.tagName === "FIGURE" ? plot.querySelector("svg") : plot
-  const xScale = plot.scale("x")
-  const yScale = plot.scale("y")
-  // vertical distance between two stacked labels, in pixels: the 13px font plus
-  // enough room that the white halo of one does not bite into the next
-  const labelGap = 18
-
-  const overlay = d3.select(svg).append("g").style("pointer-events", "none")
-  const crosshair = overlay.append("line")
-    .attr("stroke", "#999").attr("stroke-width", 1)
-    .attr("y1", yScale.apply(0)).attr("y2", yScale.apply(1))
-  // connectors, dots and labels go into three layers, appended in that order, so
-  // every label paints above every dot. With one group per coalition instead, SVG
-  // paint order puts a later coalition's dot on top of an earlier one's text
-  // wherever the crosshair bunches them together.
-  const linkLayer  = overlay.append("g")
-  const dotLayer   = overlay.append("g")
-  const labelLayer = overlay.append("g")
-  const items = series.map(d => {
-    const { key, label, color } = d
-    // drawn only where a label had to be pushed off its own value, so a reader can
-    // still tell which point on the crosshair the displaced label belongs to
-    const link = linkLayer.append("line")
-      .attr("stroke", color).attr("stroke-width", 1).attr("stroke-opacity", 0.5)
-    const dot  = dotLayer.append("circle").attr("r", 4).attr("fill", color)
-    const text = labelLayer.append("text").attr("dx", 8).attr("dy", "0.32em")
-      .attr("fill", color).attr("font-size", 13).attr("font-weight", "bold")
-      .attr("paint-order", "stroke")
-      .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
-    return { key, label, link, dot, text }
-  })
-  const dateLabel = overlay.append("text")
-    .attr("text-anchor", "middle").attr("font-size", 14).attr("fill", "#333")
-    .attr("paint-order", "stroke")
-    .attr("stroke", "white").attr("stroke-width", 3).attr("stroke-linejoin", "round")
-
-  const position = row => {
-    const present = items
-      .map(it => ({ ...it, probability: row[it.key] }))
-      .filter(it => it.probability != null)
-      .sort((a, b) => a.probability - b.probability)
-
-    // Stack the labels in pixel space rather than in probability units: on the
-    // many days where several coalitions sit at exactly 0% or 100%, a gap
-    // expressed as a probability turns into a different number of pixels per
-    // chart, and the labels end up overlapping. Walking the list bottom-up (it is
-    // sorted ascending by probability, i.e. descending in pixels) pushes each
-    // colliding label above the previous one.
-    const yTop    = yScale.apply(1)
-    const yBottom = yScale.apply(0)
-    const gap = present.length > 1
-      ? Math.min(labelGap, (yBottom - yTop) / (present.length - 1))
-      : labelGap
-    const labelY = []
-    present.forEach((it, i) => {
-      let y = yScale.apply(it.probability)
-      if (i > 0 && labelY[i - 1] - y < gap) y = labelY[i - 1] - gap
-      labelY.push(y)
-    })
-    // the stack only ever grows upwards, so just its top can run out of the frame;
-    // slide the whole stack back down, but never past the bottom of the frame
-    if (labelY.length) {
-      const shift = Math.max(0, Math.min(yTop - labelY.at(-1), yBottom - labelY[0]))
-      for (let i = 0; i < labelY.length; i++) labelY[i] += shift
-    }
-
-    const px = xScale.apply(row.date)
-    crosshair.attr("x1", px).attr("x2", px)
-
-    // keep labels inside the SVG at the right-hand end of the series, where the
-    // chart rests when nobody is hovering: a long coalition name drawn to the
-    // right of the crosshair there runs past the edge of the SVG and paints over
-    // whatever sits beside the chart. Flip the stack to the left instead, and
-    // clamp the date label to the frame the same way.
-    // getComputedTextLength() reports 0 while the plot is still detached, hence
-    // the character-count fallback; position() re-runs on hover once attached.
-    const svgWidth = +svg.getAttribute("width") || svg.getBoundingClientRect().width
-    const pad = 4
-    const widthOf = node => {
-      const w = node.getComputedTextLength ? node.getComputedTextLength() : 0
-      return w || node.textContent.length * 7.2
-    }
-
-    // fill the labels first: their widths decide which side of the crosshair the
-    // whole stack goes on, and getComputedTextLength() needs the final text
-    items.forEach(it => {
-      const match = present.find(p => p.key === it.key)
-      const visible = Boolean(match)
-      it.dot.style("display", visible ? null : "none")
-      it.text.style("display", visible ? null : "none")
-      it.link.style("display", "none")
-      if (!visible) return
-      it.text.text(`${it.label} ${formatDe(match.probability * 100)}%`)
-    })
-
-    // one side for all of them, chosen from the widest label. Deciding per label
-    // scatters a stack of near-identical entries across both sides of the
-    // crosshair, which reads as broken rather than as two columns.
-    const maxWidth = d3.max(present, p => widthOf(p.text.node())) ?? 0
-    const flip = px + 8 + maxWidth > svgWidth - pad && px - 8 - maxWidth >= pad
-
-    present.forEach((it, i) => {
-      const dotY = yScale.apply(it.probability)
-      it.dot.attr("cx", px).attr("cy", dotY)
-      it.text.attr("x", px).attr("y", labelY[i])
-        .attr("text-anchor", flip ? "end" : "start").attr("dx", flip ? -8 : 8)
-      if (Math.abs(labelY[i] - dotY) > 2) {
-        it.link.style("display", null)
-          .attr("x1", px).attr("y1", dotY)
-          .attr("x2", px + (flip ? -8 : 8)).attr("y2", labelY[i])
-      }
-    })
-
-    dateLabel.attr("x", px).attr("y", yScale.apply(0) + 56)
-      .text(d3.utcFormat("%d.%m.%Y")(row.date))
-    const dateWidth = widthOf(dateLabel.node())
-    dateLabel.attr("x", Math.max(pad + dateWidth / 2,
-                                 Math.min(svgWidth - pad - dateWidth / 2, px)))
-  }
-
-  // find the nearest point ourselves (rather than relying on Plot's own
-  // pointer transform) so sparse series never lose track of the crosshair
-  const nearestRow = px => {
-    const target = xScale.invert(px)
-    let best = wide[0]
-    let bestDist = Infinity
-    for (const row of wide) {
-      const dist = Math.abs(row.date - target)
-      if (dist < bestDist) { bestDist = dist; best = row }
-    }
-    return best
-  }
-
-  const setValue = row => {
-    plot.value = row
-    plot.dispatchEvent(new Event("input"))
-  }
-
-  position(lastRow)
-  setValue(lastRow)
-
-  // No pointerleave reset: once a date has been hovered the crosshair stays
-  // there, so a value can be read off after moving the pointer away. The most
-  // recent date is only the initial state, set by the position() call above.
-  d3.select(svg)
-    .on("pointermove", event => {
-      const [px] = d3.pointer(event, svg)
-      const row = nearestRow(px)
-      position(row)
-      setValue(row)
-    })
-
+  if (lastRow && series.length) historyCrosshair(plot, series, wide)
   return plot
 }
 ```
@@ -3070,6 +3121,96 @@ viewof selectedCoalitions = {
   form.value = valueOf()
   persist()
   return form
+}
+```
+
+:::
+
+::: {.card title="Einzugswahrscheinlichkeit"}
+
+```{ojs}
+//| label: chart-hurdle-history
+viewof hoveredHurdleRow = {
+  const parties = cleanHurdleHistory(hurdle_history_source)
+  const dates = Array.from(
+    new Set(hurdle_history_source.map(d => +new Date(d.date)))
+  ).sort((a, b) => a - b)
+
+  if (!parties.length || !dates.length) {
+    const note = html`<div style="padding:16px;color:#555">
+      Keine Partei lag im gezeigten Zeitraum unter 100% Einzugswahrscheinlichkeit.
+    </div>`
+    note.value = null
+    return note
+  }
+
+  // A party missing on a date (not yet polled, or not polled by the selected
+  // institute that day) stays a gap rather than being drawn at 0%: unlike a
+  // coalition nobody simulated, its probability is unknown there, not zero.
+  const series = parties.map(({ party, label, byDate }) => ({
+    key: party,
+    label,
+    color: party_colors[party] || "#aaa",
+    // FDP yellow is near invisible on white: grey outline as in the Umfrageverlauf
+    halo: party === "fdp" ? "#999" : undefined,
+    rows: dates.map(t => ({ date: new Date(t), probability: byDate.get(t) ?? null }))
+  }))
+
+  const wide = dates.map(t => Object.assign(
+    { date: new Date(t) },
+    ...parties.map(d => ({ [d.party]: d.byDate.get(t) }))
+  ))
+
+  const plot = Plot.plot({
+    title: "Einzugswahrscheinlichkeit über die Zeit",
+    subtitle: `In wie viel Prozent der Simulationen die Partei die Sperrklausel von ${cur_meta.hurdle} überwindet. Gezeigt sind die Parteien, deren Einzugswahrscheinlichkeit im Zeitraum unter 100% lag`,
+    style: { fontSize: "14px" },
+    marginTop: 40,
+    // as in the Mehrheitswahrscheinlichkeit chart: room for the crosshair's date
+    marginBottom: 64,
+    marginLeft: 55,
+    marginRight: 110,
+    height: 530,
+    // Explicit, unlike the Mehrheitswahrscheinlichkeit chart: Plot otherwise
+    // takes the width of its container, and this one sits in the tab that is
+    // hidden on load, so it measured 0 and the chart came out empty. Sidebar
+    // width as in the Überblick charts.
+    width: Math.max(640, window.innerWidth - 310),
+    x: {
+      type: "utc",
+      label: null,
+      interval: "day",
+      tickPadding: 12,
+      domain: [new Date(dates[0]), new Date(dates.at(-1))],
+      ticks: yearTicks(wide[0]?.date, wide.at(-1)?.date),
+      tickFormat: formatYear
+    },
+    y: {
+      label: "Einzugswahrscheinlichkeit",
+      grid: true,
+      domain: [0, 1],
+      tickFormat: d => formatDe(d * 100, 0) + "%"
+    },
+    marks: [
+      Plot.ruleY([0]),
+      ...series.flatMap(d => [
+        ...(d.halo ? [Plot.line(d.rows, { x: "date", y: "probability", strokeWidth: 4, stroke: d.halo })] : []),
+        Plot.line(d.rows, {
+          x: "date",
+          y: "probability",
+          strokeWidth: 2,
+          stroke: d.color
+        }),
+        // single-date histories get a dot, as in the Mehrheitswahrscheinlichkeit chart
+        ...(dates.length === 1
+          ? [Plot.dot(d.rows, { x: "date", y: "probability", fill: d.color, stroke: "white", strokeWidth: 1, r: 4 })]
+          : [])
+      ])
+    ]
+  })
+
+  historyCrosshair(plot, series, wide)
+  return plot
 }
 ```
 
