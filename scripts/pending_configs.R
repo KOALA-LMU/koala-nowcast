@@ -1,4 +1,4 @@
-RESULT_FILES <- c("coalProbs_grouping", "biggestParty", "passHurdle", "shares")
+RESULT_FILES <- c("coalProbs_grouping", "passHurdle", "shares")
 
 #' Newest date per pollster, as a named Date vector
 #' @noRd
@@ -17,7 +17,7 @@ result_pairs <- function(path) {
   txt <- readChar(path, file.size(path), useBytes = TRUE)
   # Whitespace-tolerant: write_compact() emits no spaces, write_result() writes
   # with pretty = TRUE. Matching only the compact form silently skipped
-  # coalProbs_grouping/biggestParty/passHurdle, so a stale copy of the file the
+  # coalProbs_grouping/passHurdle, so a stale copy of the file the
   # dashboard actually renders was never flagged as pending (#96).
   m   <- regmatches(txt, gregexpr('"pollster"\\s*:\\s*"[^"]*"\\s*,\\s*"date"\\s*:\\s*"[0-9]{4}-[0-9]{2}-[0-9]{2}"',
                                   txt, useBytes = TRUE))[[1]]
