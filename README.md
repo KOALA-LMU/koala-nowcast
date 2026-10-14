@@ -159,7 +159,6 @@ Per election under `data/`, mirrored to the `koala-data` bucket:
 | `surveys/<id>/pending_dates.json` | Transient: dates awaiting computation |
 | `results/<id>/coalProbs_grouping.json` | Just the configured/derived coalitions with labels — what the dashboard uses |
 | `results/<id>/passHurdle.json` | Probability each party clears the threshold |
-| `results/<id>/biggestParty.json` | "Strongest force" probabilities per contest |
 | `results/<id>/shares.json` | Seat-share distribution per party/coalition — a 100-point quantile grid, the KDE bandwidth measured on the draws, and how often all member parties are in parliament |
 
 Every row of a result file carries two timestamps: `date` is the reference date
