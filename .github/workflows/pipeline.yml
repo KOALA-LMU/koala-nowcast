@@ -58,11 +58,14 @@ jobs:
 
       # The endpoint carries a path (/storage/v1/s3), which virtual-hosted
       # addressing would turn into a bucket subdomain that does not exist.
-      # Newer AWS CLIs also send checksum headers by default, which Supabase
-      # rejects on downloads; only send them when an operation requires it.
-      - name: Use path-style S3 addressing
+      # `aws s3 sync` otherwise picks the CRT transfer client, which signs for the
+      # wrong region and gets every GetObject rejected; the classic client signs
+      # with AWS_DEFAULT_REGION. Checksums are only sent where an operation
+      # requires them, since newer CLIs add them by default to every request.
+      - name: Configure the AWS CLI for Supabase
         run: |
           aws configure set default.s3.addressing_style path
+          aws configure set default.s3.preferred_transfer_client classic
           aws configure set default.request_checksum_calculation when_required
           aws configure set default.response_checksum_validation when_required
 
