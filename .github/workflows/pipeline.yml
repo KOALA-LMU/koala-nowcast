@@ -33,7 +33,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     env:
-      SUPABASE_ENDPOINT: https://agmqujupclwlttjwfnaq.storage.supabase.co/storage/v1/s3
+      SUPABASE_ENDPOINT: https://ddkvzjhqyhwhjpsaaunv.storage.supabase.co/storage/v1/s3
       # A push changes code, not poll data, so it renders without scraping.
       RUN_COMPUTE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.skip_compute) }}
 
@@ -58,8 +58,13 @@ jobs:
 
       # The endpoint carries a path (/storage/v1/s3), which virtual-hosted
       # addressing would turn into a bucket subdomain that does not exist.
+      # Newer AWS CLIs also send checksum headers by default, which Supabase
+      # rejects on downloads; only send them when an operation requires it.
       - name: Use path-style S3 addressing
-        run: aws configure set default.s3.addressing_style path
+        run: |
+          aws configure set default.s3.addressing_style path
+          aws configure set default.request_checksum_calculation when_required
+          aws configure set default.response_checksum_validation when_required
 
       # In full: the upload syncs with --delete, so anything missing here is
       # dropped from the bucket.
@@ -68,12 +73,12 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
           # Supabase signs against the project's real region; "auto" fails here.
-          AWS_DEFAULT_REGION: eu-central-1
+          AWS_DEFAULT_REGION: eu-west-1
         run: |
           mkdir -p pipeline/data/surveys pipeline/data/results
-          aws s3 sync s3://koala-data/surveys pipeline/data/surveys/ \
+          aws s3 sync s3://data/surveys pipeline/data/surveys/ \
             --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
-          aws s3 sync s3://koala-data/results pipeline/data/results/ \
+          aws s3 sync s3://data/results pipeline/data/results/ \
             --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
 
       - name: Check if results exist
@@ -165,11 +170,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
           # Supabase signs against the project's real region; "auto" fails here.
-          AWS_DEFAULT_REGION: eu-central-1
+          AWS_DEFAULT_REGION: eu-west-1
         run: |
-          aws s3 sync pipeline/data/surveys/ s3://koala-data/surveys \
+          aws s3 sync pipeline/data/surveys/ s3://data/surveys \
             --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
-          aws s3 sync pipeline/data/results/ s3://koala-data/results \
+          aws s3 sync pipeline/data/results/ s3://data/results \
             --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
 
       - name: Hand the data to both site checkouts
