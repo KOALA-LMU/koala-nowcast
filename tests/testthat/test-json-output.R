@@ -10,7 +10,6 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
 
   expected_files <- c(
     "coalProbs_grouping.json",
-    "biggestParty.json",
     "passHurdle.json",
     "shares.json"
   )
@@ -38,22 +37,8 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
     all(grouping$prob >= 0 & grouping$prob <= 100)
   )
 
-  # biggestParty
-  biggest <- jsonlite::fromJSON(file.path(result_dir, expected_files[[2]]))
-  testthat::expect_true(
-    all(c("pollster", "date", "index", "party", "prob") %in% colnames(biggest))
-  )
-  character_cols <- c("pollster", "index", "party")
-  for (col in character_cols) {
-    testthat::expect_type(biggest[[col]], "character")
-  }
-  testthat::expect_true(is.numeric(biggest$prob))
-  testthat::expect_true(
-    all(biggest$prob >= 0 & biggest$prob <= 100)
-  )
-
   # passHurdle
-  hurdle <- jsonlite::fromJSON(file.path(result_dir, expected_files[[3]]))
+  hurdle <- jsonlite::fromJSON(file.path(result_dir, expected_files[[2]]))
   testthat::expect_true(
     all(c("pollster", "date", "party", "prob") %in% colnames(hurdle))
   )
@@ -62,7 +47,7 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
   testthat::expect_true(all(hurdle$prob >= 0 & hurdle$prob <= 100))
 
   # shares
-  shares <- jsonlite::fromJSON(file.path(result_dir, expected_files[[4]]))
+  shares <- jsonlite::fromJSON(file.path(result_dir, expected_files[[3]]))
   testthat::expect_true(
     all(c("pollster", "date", "coalition") %in% colnames(shares))
   )
@@ -89,15 +74,14 @@ testthat::test_that("calc_coalProbs() writes all expected JSON outputs", {
 
   # Every result carries the time of its computation, in one and the same format,
   # and a single run stamps all of its rows alike.
-  for (res in list(grouping, biggest, hurdle, shares)) {
+  for (res in list(grouping, hurdle, shares)) {
     testthat::expect_true("computed_at" %in% colnames(res))
     testthat::expect_type(res$computed_at, "character")
     testthat::expect_true(all(grepl(stamp_re, res$computed_at)))
     testthat::expect_length(unique(res$computed_at), 1)
   }
   testthat::expect_length(
-    unique(c(grouping$computed_at, biggest$computed_at,
-             hurdle$computed_at, shares$computed_at)),
+    unique(c(grouping$computed_at, hurdle$computed_at, shares$computed_at)),
     1
   )
 })
@@ -109,7 +93,7 @@ testthat::test_that("a second run keeps the earlier dates and their computed_at"
 
   result_dir <- "data/results/test-election"
   read_res   <- function(name) jsonlite::fromJSON(file.path(result_dir, paste0(name, ".json")))
-  names_all  <- c("shares", "coalProbs_grouping", "biggestParty", "passHurdle")
+  names_all  <- c("shares", "coalProbs_grouping", "passHurdle")
 
   first <- lapply(setNames(names_all, names_all), read_res)
   stamp_first <- unique(first$shares$computed_at)
@@ -165,7 +149,7 @@ testthat::test_that("force_newCalculation restamps every row it recomputes", {
   Sys.sleep(1.1)
   calc_coalProbs(config_path, nsim = 100, cores = 1, force_newCalculation = TRUE)
 
-  for (name in c("shares", "coalProbs_grouping", "biggestParty", "passHurdle")) {
+  for (name in c("shares", "coalProbs_grouping", "passHurdle")) {
     res <- read_res(name)
     testthat::expect_setequal(unique(res$date), c("2026-08-01", "2026-09-01"))
     stamp_after <- unique(res$computed_at)

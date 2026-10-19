@@ -103,8 +103,7 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     dates_ins     <- unique(survey_byTime$date[survey_byTime$date %in% dates])
     if (length(dates_ins) == 0) {
       return(list("shares" = NULL,
-                  "coalProbs_grouping" = NULL, "biggestParty" = NULL,
-                  "passHurdle" = NULL))
+                  "coalProbs_grouping" = NULL, "passHurdle" = NULL))
     }
     print(paste0("Perform new calculations for ", cfg$name, " (", p, ")..."))
 
@@ -178,23 +177,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       res_grouping$prob <- rowMeans(res_grouping[seq_len(ncol(res_grouping) - 1)])
       res_grouping      <- res_grouping[, c("coal_type", "prob")]
 
-      # ── Biggest-party analyses ───────────────────────────────────────────────
-      # Normalised by the rows actually drawn, not by nsim: draw_from_posterior()
-      # discards draws where the correction pushed a share below 0, which happens
-      # once a party polls under the correction width (0.5pp by default).
-      res_biggestParty <- if (!is.null(cfg$analyses$biggest_party)) {
-        bind_rows(lapply(seq_along(cfg$analyses$biggest_party), function(i) {
-          p_vec        <- intersect(cfg$analyses$biggest_party[[i]]$parties, colnames(dirichlet.draws))
-          biggestParty <- p_vec[apply(dirichlet.draws[, p_vec, drop = FALSE], 1, which.max)]
-          data.frame("index" = paste0("biggestParty", i),
-                     "party" = p_vec,
-                     "prob"  = sapply(p_vec, function(x) sum(biggestParty == x) / nrow(dirichlet.draws), USE.NAMES = FALSE),
-                     stringsAsFactors = FALSE)
-        }))
-      } else {
-        data.frame("index" = character(), "party" = character(), "prob" = numeric())
-      }
-
       # ── Hurdle probabilities ─────────────────────────────────────────────────
       is_party       <- allShares$coalition %in% parties_ins
       partyShares    <- allShares[is_party, colnames(allShares) != "coalition"]
@@ -217,12 +199,10 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
       # below keep the stamp they were written with.
       shares           <- shares           %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
       res_grouping     <- res_grouping     %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
-      res_biggestParty <- res_biggestParty %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
       res_passHurdle   <- res_passHurdle   %>% mutate(pollster = p, date = date_ins, computed_at = run_stamp) %>% select(pollster, date, computed_at, everything())
 
       list("shares" = shares,
-           "coalProbs_grouping" = res_grouping, "biggestParty" = res_biggestParty,
-           "passHurdle" = res_passHurdle)
+           "coalProbs_grouping" = res_grouping, "passHurdle" = res_passHurdle)
     }
 
     results  <- lapply(dates_ins, calc_oneDate)
@@ -231,7 +211,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     list(
       "shares"             = bind_rows(lapply(results, `[[`, "shares")),
       "coalProbs_grouping" = bind_rows(lapply(results, `[[`, "coalProbs_grouping")),
-      "biggestParty"       = bind_rows(lapply(results, `[[`, "biggestParty")),
       "passHurdle"         = bind_rows(lapply(results, `[[`, "passHurdle"))
     )
   })
@@ -239,14 +218,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
   # ── Bind all pollsters ───────────────────────────────────────────────────────
   shares             <- bind_rows(lapply(results, `[[`, "shares"))
   coalProbs_grouping <- bind_rows(lapply(results, `[[`, "coalProbs_grouping"))
-  biggestParty       <- bind_rows(lapply(results, `[[`, "biggestParty"))
   passHurdle         <- bind_rows(lapply(results, `[[`, "passHurdle"))
 
   # ── Post-processing of new results (must happen before merging with saved results
   # which are already in post-processed format) ──────────────────────────────────
   coalProbs_grouping <- coalProbs_grouping %>%
     mutate(prob = prob * 100)
-  biggestParty <- biggestParty %>% mutate(prob = prob * 100)
   passHurdle   <- passHurdle   %>% mutate(prob = prob * 100)
 
   # ── Merge with pre-existing results ─────────────────────────────────────────
@@ -265,14 +242,12 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
     }
     shares             <- bind_rows(shares,             saved_shares                      %>% filter(!date %in% dates))
     coalProbs_grouping <- bind_rows(coalProbs_grouping, read_result("coalProbs_grouping") %>% filter(!date %in% dates))
-    biggestParty       <- bind_rows(biggestParty,       read_result("biggestParty")       %>% filter(!date %in% dates))
     passHurdle         <- bind_rows(passHurdle,         read_result("passHurdle")         %>% filter(!date %in% dates))
   }
 
   # ── Sort final output by date, then pollster ─────────────────────────────────
   shares             <- shares             %>% dplyr::arrange(date, pollster)
   coalProbs_grouping <- coalProbs_grouping %>% dplyr::arrange(date, pollster)
-  biggestParty       <- biggestParty       %>% dplyr::arrange(date, pollster)
   passHurdle         <- passHurdle         %>% dplyr::arrange(date, pollster)
 
   # ── Save results ─────────────────────────────────────────────────────────────
@@ -295,7 +270,6 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
 
   write_compact(shares_out,         "shares")
   write_result(coalProbs_grouping,  "coalProbs_grouping")
-  write_result(biggestParty,        "biggestParty")
   write_result(passHurdle,          "passHurdle")
 
   # Every result file is on disk, so the pending list has served its purpose.

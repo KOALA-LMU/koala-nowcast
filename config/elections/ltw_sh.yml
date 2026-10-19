@@ -77,9 +77,6 @@ pollsters:
 # Leaving this key absent/empty is what triggers the dynamic path.
 
 analyses:
-  biggest_party:
-    - parties: [cdu, afd, greens, spd]
-      label: "Wer wird stärkste Kraft?"
   pass_hurdle:
     parties: [left, fdp, bsw]
     label: "Schaffen es die folgenden Parteien in den Landtag?"

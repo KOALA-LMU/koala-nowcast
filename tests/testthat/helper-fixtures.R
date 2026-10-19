@@ -91,10 +91,7 @@ local_calc_project <- function(polls, env = parent.frame()) {
       "    color: '#cc0000'",
       "  - parties: [cdu, spd]",
       "    label: CDU-SPD",
-      "    color: '#111111'",
-      "analyses:",
-      "  biggest_party:",
-      "    - parties: [cdu, spd, greens]"),
+      "    color: '#111111'"),
     config_path
   )
 
