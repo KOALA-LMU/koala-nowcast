@@ -446,3 +446,13 @@ testthat::test_that("summarise_shareDraws marks a degenerate row with bw NA", {
   res <- summarise_shareDraws(shares, party_shares, probs = c(0.25, 0.75))
   testthat::expect_true(is.na(res$bw))
 })
+
+testthat::test_that("derive_seed() is stable and separates its keys", {
+  testthat::expect_identical(derive_seed(1L, "btw", "pooled", "2026-08-01"),
+                             derive_seed(1L, "btw", "pooled", "2026-08-01"))
+  testthat::expect_type(derive_seed(1L, "btw"), "integer")
+  testthat::expect_false(derive_seed(1L, "btw", "pooled", "2026-08-01") ==
+                         derive_seed(1L, "btw", "pooled", "2026-08-02"))
+  testthat::expect_false(derive_seed(1L, "btw", "insa", "2026-08-01") ==
+                         derive_seed(2L, "btw", "insa", "2026-08-01"))
+})

@@ -11,9 +11,12 @@
 #' @param correction see argument \code{correction} from \code{coalitions::draw_from_posterior()}
 #' @param cores number of cores for parallel processing (fork on Unix, PSOCK on Windows).
 #' @param force_newCalculation If TRUE, recalculate even for dates that were already computed.
+#' @param seed base seed for the posterior draws. Each pollster and date is seeded
+#' from this, the election id, the pollster and the date (see \code{\link{derive_seed}}),
+#' so a result is reproducible on its own. \code{NULL} leaves the RNG unseeded.
 #' @import coalitions dplyr tidyr parallel yaml jsonlite
 #' @export
-calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores = 1, force_newCalculation = FALSE) {
+calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores = 1, force_newCalculation = FALSE, seed = 1L) {
   if (missing(config_path))
     stop("Please specify a config_path!")
   cfg <- yaml::yaml.load(paste(readLines(config_path, encoding = "UTF-8", warn = FALSE), collapse = "\n"))
@@ -130,7 +133,10 @@ calc_coalProbs <- function(config_path, nsim = 10000, correction = 0.005, cores 
         arrange(party)
       parties_ins <- intersect(parties, survey$party)
 
-      dirichlet.draws    <- coalitions::draw_from_posterior(survey = survey, nsim = nsim, correction = correction)
+      # draw_from_posterior() seeds from the clock by default, so without an
+      # explicit seed no two runs agree.
+      draw_seed          <- if (is.null(seed)) NULL else derive_seed(seed, cfg$id, p, format(date_ins))
+      dirichlet.draws    <- coalitions::draw_from_posterior(survey = survey, nsim = nsim, seed = draw_seed, correction = correction)
       # Drop "others" before seat allocation so majorities are computed over the
       # explicitly modelled parties only (matching the parties vector).
       dirichlet.draws    <- dirichlet.draws[, colnames(dirichlet.draws) != "others", drop = FALSE]

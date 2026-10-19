@@ -157,9 +157,31 @@ testthat::test_that("force_newCalculation restamps every row it recomputes", {
     testthat::expect_true(stamp_after > stamp_before)
   }
 
-  # Same rows as before, only recomputed: the draws are random, so the numbers
-  # move, but the shape of the file does not.
+  # Same rows as before, only recomputed: the draws are seeded per pollster and
+  # date, so the numbers come out identical, only the stamp differs.
   after <- read_res("shares")
   testthat::expect_equal(dim(after), dim(before))
   testthat::expect_equal(colnames(after), colnames(before))
+  testthat::expect_equal(
+    after  %>% dplyr::select(-computed_at),
+    before %>% dplyr::select(-computed_at)
+  )
+})
+
+testthat::test_that("a date's draws do not depend on what else the run computes", {
+  # One date computed alone, then again alongside a second date: seeding once per
+  # run would shift the RNG stream and change the first date's numbers.
+  config_path <- local_calc_project(make_polls_json("2026-08-01"))
+  calc_coalProbs(config_path, nsim = 100, cores = 1)
+  read_grouping <- function() jsonlite::fromJSON("data/results/test-election/coalProbs_grouping.json")
+  alone <- read_grouping()
+
+  write_polls(make_polls_json(c("2026-08-01", "2026-09-01")))
+  calc_coalProbs(config_path, nsim = 100, cores = 1, force_newCalculation = TRUE)
+  together <- read_grouping() %>% dplyr::filter(date == "2026-08-01")
+
+  testthat::expect_equal(
+    together %>% dplyr::select(-computed_at) %>% dplyr::arrange(pollster, coal_type),
+    alone    %>% dplyr::select(-computed_at) %>% dplyr::arrange(pollster, coal_type)
+  )
 })

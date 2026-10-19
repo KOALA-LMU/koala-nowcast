@@ -256,3 +256,21 @@ summarise_shareDraws <- function(shares, party_shares, probs = (seq_len(100) - 0
              qs,
              stringsAsFactors = FALSE, check.names = FALSE)
 }
+
+#' Derive a reproducible seed for one simulation
+#'
+#' Hashes a base seed together with the keys of one simulation (election,
+#' pollster, date) into an integer seed. Seeding each simulation from its own
+#' keys, rather than seeding once per run, keeps a date's draws the same however
+#' many other dates the run happens to compute alongside it.
+#'
+#' @param seed base seed (integer).
+#' @param ... keys identifying the simulation; pasted together as strings.
+#' @return an integer usable with \code{set.seed()}.
+#' @export
+derive_seed <- function(seed, ...) {
+  key <- paste(c(seed, ...), collapse = "|")
+  h   <- 0
+  for (code in utf8ToInt(key)) h <- (h * 31 + code) %% 2147483647
+  as.integer(h)
+}
