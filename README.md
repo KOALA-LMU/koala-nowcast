@@ -31,7 +31,7 @@ wahlrecht.de ──▶ │ scrape_polls.R ──▶ pool ──▶ calc_coalProb
               data/surveys/<id>/polls.json                   data/results/<id>/*.json
                          │                                              │
                          └──────────▶ Supabase Storage (S3) ◀───────────┘
-                                       bucket: koala-data
+                                       bucket: data
                                               │
                  ┌──────────── same run, only if the numbers moved ──────────────────────┐
                  │ prepare_data.R ──▶ dashboard/data/<id>/*.json ──▶ quarto render       │
@@ -151,7 +151,7 @@ Two things outside the config also need touching:
 
 ## Data files
 
-Per election under `data/`, mirrored to the `koala-data` bucket:
+Per election under `data/`, mirrored to the `data` bucket:
 
 | File | Contents |
 | --- | --- |
@@ -169,7 +169,7 @@ that need it and carries the rest over unchanged, keeping their original
 `computed_at` — so the files are a history, and the two fields together say what
 was known when.
 
-`prepare_data.R` turns those into seven slim files under `dashboard/data/<id>/`,
+`prepare_data.R` turns those into nine slim files under `dashboard/data/<id>/`,
 each carrying an `updated` field — the date of the newest raw poll behind the
 numbers, not a build timestamp. It reads only the newest date per pollster out of
 `shares.json` and ignores the rest.
@@ -196,8 +196,8 @@ rebuild, since the site's own code is what changed.
 The run checks out `master` as `stable/` and `dev` as `beta/` (served at `/dev`),
 plus the triggering ref as `pipeline/` — so a manual dispatch from a branch
 exercises that branch's scraper while the site still renders from `master` and
-`dev`. Secrets: `SUPABASE_S3_KEY_ID`, `SUPABASE_S3_SECRET`. The workflow uses
-path-style S3 addressing and region `eu-central-1`, because Supabase's endpoint
+`dev`. Secrets: `SUPABASE_REBUILD_KEY_ID`, `SUPABASE_REBUILD_SECRET`. The workflow uses
+path-style S3 addressing and region `eu-west-1`, because Supabase's endpoint
 carries a path (`/storage/v1/s3`) and signs against the project's real region.
 
 ## Credits
