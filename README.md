@@ -196,7 +196,7 @@ rebuild, since the site's own code is what changed.
 The run checks out `master` as `stable/` and `dev` as `beta/` (served at `/dev`),
 plus the triggering ref as `pipeline/` — so a manual dispatch from a branch
 exercises that branch's scraper while the site still renders from `master` and
-`dev`. Secrets: `SUPABASE_S3_KEY_ID`, `SUPABASE_S3_SECRET`. The workflow uses
+`dev`. Secrets: `SUPABASE_REBUILD_KEY_ID`, `SUPABASE_REBUILD_SECRET`. The workflow uses
 path-style S3 addressing and region `eu-west-1`, because Supabase's endpoint
 carries a path (`/storage/v1/s3`) and signs against the project's real region.
 

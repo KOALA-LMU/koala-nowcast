@@ -70,8 +70,8 @@ jobs:
       # dropped from the bucket.
       - name: Download existing data from Supabase Storage
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_REBUILD_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_REBUILD_SECRET }}
           # Supabase signs against the project's real region; "auto" fails here.
           AWS_DEFAULT_REGION: eu-west-1
         run: |
@@ -167,8 +167,8 @@ jobs:
       - name: Upload data to Supabase Storage
         if: steps.gate.outputs.changed == 'true'
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_REBUILD_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_REBUILD_SECRET }}
           # Supabase signs against the project's real region; "auto" fails here.
           AWS_DEFAULT_REGION: eu-west-1
         run: |
