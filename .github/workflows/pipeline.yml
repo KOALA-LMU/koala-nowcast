@@ -17,7 +17,7 @@ on:
       - dev
 
 permissions:
-  contents: read
+  contents: write   # the data branch
   pages: write
   id-token: write
 
@@ -33,7 +33,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     env:
-      SUPABASE_ENDPOINT: https://ddkvzjhqyhwhjpsaaunv.storage.supabase.co/storage/v1/s3
       # A push changes code, not poll data, so it renders without scraping.
       RUN_COMPUTE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.skip_compute) }}
 
@@ -56,33 +55,38 @@ jobs:
           ref: dev
           path: beta
 
-      # The endpoint carries a path (/storage/v1/s3), which virtual-hosted
-      # addressing would turn into a bucket subdomain that does not exist.
-      # `aws s3 sync` otherwise picks the CRT transfer client, which signs for the
-      # wrong region and gets every GetObject rejected; the classic client signs
-      # with AWS_DEFAULT_REGION. Checksums are only sent where an operation
-      # requires them, since newer CLIs add them by default to every request.
-      - name: Configure the AWS CLI for Supabase
-        run: |
-          aws configure set default.s3.addressing_style path
-          aws configure set default.s3.preferred_transfer_client classic
-          aws configure set default.request_checksum_calculation when_required
-          aws configure set default.response_checksum_validation when_required
-
-      # In full: the upload syncs with --delete, so anything missing here is
-      # dropped from the bucket.
-      - name: Download existing data from Supabase Storage
+      # State lives on the branch `data`: a single commit with no history,
+      # every file gzipped, since GitHub refuses files over 100 MB and the full
+      # history of shares.json is larger than that. Until the branch exists, the
+      # data is taken over once from the Supabase bucket it replaces.
+      - name: Fetch pipeline data
+        id: fetch
         env:
+          SUPABASE_ENDPOINT: https://ddkvzjhqyhwhjpsaaunv.storage.supabase.co/storage/v1/s3
           AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_REBUILD_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_REBUILD_SECRET }}
-          # Supabase signs against the project's real region; "auto" fails here.
           AWS_DEFAULT_REGION: eu-west-1
         run: |
           mkdir -p pipeline/data/surveys pipeline/data/results
-          aws s3 sync s3://data/surveys pipeline/data/surveys/ \
-            --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
-          aws s3 sync s3://data/results pipeline/data/results/ \
-            --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
+          remote="https://github.com/$GITHUB_REPOSITORY"
+          if git ls-remote --exit-code --heads "$remote" data >/dev/null; then
+            git clone --quiet --depth 1 --branch data "$remote" data-store
+            rm -rf data-store/.git
+            find data-store -type f -name '*.gz' -exec gunzip {} +
+            cp -R data-store/. pipeline/data/
+          else
+            # Path-style addressing, the classic transfer client and checksums
+            # only where required: what Supabase's S3 endpoint accepts.
+            aws configure set default.s3.addressing_style path
+            aws configure set default.s3.preferred_transfer_client classic
+            aws configure set default.request_checksum_calculation when_required
+            aws configure set default.response_checksum_validation when_required
+            for dir in surveys results; do
+              aws s3 sync "s3://data/$dir" "pipeline/data/$dir/" \
+                --endpoint-url "$SUPABASE_ENDPOINT" --no-progress
+            done
+            echo "from_bucket=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Check if results exist
         id: check_results
@@ -167,18 +171,31 @@ jobs:
             invisible(lapply(todo, calc_coalProbs, cores = 4))
           '
 
-      - name: Upload data to Supabase Storage
-        if: steps.gate.outputs.changed == 'true'
+      # One commit replaces the last, so the files always come from the same
+      # run and the branch does not grow with every update. The state it
+      # replaces is kept as data-previous, for rolling back by hand. Data just
+      # taken over from the bucket is saved even if nothing else changed, so
+      # the next run reads the branch.
+      - name: Save pipeline data to the data branch
+        if: steps.gate.outputs.changed == 'true' || steps.fetch.outputs.from_bucket == 'true'
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_REBUILD_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_REBUILD_SECRET }}
-          # Supabase signs against the project's real region; "auto" fails here.
-          AWS_DEFAULT_REGION: eu-west-1
+          GH_TOKEN: ${{ github.token }}
         run: |
-          aws s3 sync pipeline/data/surveys/ s3://data/surveys \
-            --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
-          aws s3 sync pipeline/data/results/ s3://data/results \
-            --endpoint-url "$SUPABASE_ENDPOINT" --delete --no-progress
+          remote="https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY"
+          mkdir data-next
+          cp -R pipeline/data/surveys pipeline/data/results data-next/
+          cd data-next
+          find . -type f -exec gzip -n {} +
+          git init --quiet --initial-branch data
+          git add -A
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit --quiet -m "Data from run $GITHUB_RUN_ID"
+          if git ls-remote --exit-code --heads "$remote" data >/dev/null; then
+            git fetch --quiet --depth 1 "$remote" data
+            git push --quiet --force "$remote" FETCH_HEAD:refs/heads/data-previous
+          fi
+          git push --quiet --force "$remote" HEAD:refs/heads/data
 
       - name: Hand the data to both site checkouts
         if: steps.gate.outputs.render == 'true'
