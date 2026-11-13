@@ -30,8 +30,8 @@ wahlrecht.de ──▶ │ scrape_polls.R ──▶ pool ──▶ calc_coalProb
                          ▼                                              ▼
               data/surveys/<id>/polls.json                   data/results/<id>/*.json
                          │                                              │
-                         └──────────▶ Supabase Storage (S3) ◀───────────┘
-                                       bucket: data
+                         └──────────▶ git branch `data` ◀───────────────┘
+                                   (one commit, gzipped files)
                                               │
                  ┌──────────── same run, only if the numbers moved ──────────────────────┐
                  │ prepare_data.R ──▶ dashboard/data/<id>/*.json ──▶ quarto render       │
@@ -40,9 +40,10 @@ wahlrecht.de ──▶ │ scrape_polls.R ──▶ pool ──▶ calc_coalProb
                                        GitHub Pages (Quarto + Observable JS)
 ```
 
-State lives in the **Supabase bucket**, not in git — `data/` and
-`dashboard/data/` are generated and gitignored. Each CI run pulls the bucket
-down, does incremental work, syncs back. `scripts/` is the pipeline,
+State lives on the **branch `data`** of this repository, not next to the code
+— `data/` and `dashboard/data/` are generated and gitignored. Each CI run clones
+that branch, does incremental work, and replaces it with a single new commit;
+the state before is kept as `data-previous`. `scripts/` is the pipeline,
 `dashboard/` the frontend, `website/` an unused placeholder; R dependencies are
 in [DESCRIPTION](DESCRIPTION).
 
@@ -151,7 +152,7 @@ Two things outside the config also need touching:
 
 ## Data files
 
-Per election under `data/`, mirrored to the `data` bucket:
+Per election under `data/`, stored gzipped (`*.json.gz`) on the `data` branch:
 
 | File | Contents |
 | --- | --- |
@@ -180,25 +181,27 @@ numbers, not a build timestamp. It reads only the newest date per pollster out o
 
 | Trigger | Does |
 | --- | --- |
-| `cron 0 2,8,14,20 * * *` (4/10/16/22 CEST) | Pull bucket → scrape + pool → compute pending → sync back → **rebuild the site only if something changed** |
-| Push to `master` or `dev` | Pull bucket → rebuild the site (no scraping) |
+| `cron 23 */2 * * *` (every two hours) | Clone `data` → scrape + pool → compute pending → commit to `data` → **rebuild the site only if something changed** |
+| Push to `master` or `dev` | Clone `data` → rebuild the site (no scraping) |
 | Manual | Same as the cron run; tick `skip_compute` to redeploy without scraping |
 
 Compute and deploy share one job because they need the same R library and the
-same bucket data, and a second job would mean a second runner setting up both
+same data, and a second job would mean a second runner setting up both
 again.
 
 Computation runs when the scrape found new polls, when `pending_configs.R`
-reports uncomputed dates, or when the bucket is empty (`FORCE_ALL`); a scheduled
+reports uncomputed dates, or when there are no results yet (`FORCE_ALL`); a scheduled
 run rebuilds the site on exactly those conditions. Pushes and manual runs always
 rebuild, since the site's own code is what changed.
 
 The run checks out `master` as `stable/` and `dev` as `beta/` (served at `/dev`),
 plus the triggering ref as `pipeline/` — so a manual dispatch from a branch
 exercises that branch's scraper while the site still renders from `master` and
-`dev`. Secrets: `SUPABASE_REBUILD_KEY_ID`, `SUPABASE_REBUILD_SECRET`. The workflow uses
-path-style S3 addressing and region `eu-west-1`, because Supabase's endpoint
-carries a path (`/storage/v1/s3`) and signs against the project's real region.
+`dev`. The data branch is written with the run's own `GITHUB_TOKEN`, which is why
+the workflow has `contents: write`. To roll the data back by hand, point `data`
+at `data-previous`. The Supabase secrets (`SUPABASE_REBUILD_KEY_ID`,
+`SUPABASE_REBUILD_SECRET`) are only read while the `data` branch does not exist
+yet, to take over the bucket's contents once.
 
 ## Credits
 
